@@ -56,7 +56,7 @@
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-semibold">Filière</p>
                         <p class="text-sm font-medium text-gray-900">{{ $subject->department->name ?? '—' }}</p>
-                        <p class="text-xs text-gray-500">{{ $subject->department->faculty ?? '' }}</p>
+                        <p class="text-xs text-gray-500">{{ $subject->department->faculty->name ?? '' }}</p>
                     </div>
                 </div>
 

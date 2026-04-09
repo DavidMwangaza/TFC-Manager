@@ -42,7 +42,7 @@ class DashboardController extends Controller
             'validated_subjects' => Subject::where('status', 'validated')->count(),
             'rejected_subjects' => Subject::where('status', 'rejected')->count(),
             'total_departments' => Department::count(),
-            'total_faculties' => Department::distinct('faculty')->count('faculty'),
+            'total_faculties' => \App\Models\Faculty::count(),
             'blocked_users' => User::where('is_blocked', true)->count(),
         ];
 

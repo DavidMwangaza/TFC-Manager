@@ -77,7 +77,7 @@
                                     <select name="department_id" id="department_id"
                                             class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                         <option value="">— Aucun —</option>
-                                        @foreach($departments->groupBy('faculty') as $faculty => $depts)
+                                        @foreach($departments->groupBy(fn($d) => $d->faculty?->name ?? 'Sans faculté') as $faculty => $depts)
                                             <optgroup label="{{ $faculty }}">
                                                 @foreach($depts as $dept)
                                                     <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>

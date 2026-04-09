@@ -48,7 +48,7 @@ class UserController extends Controller
 
         $users = $query->latest()->paginate(20)->withQueryString();
         $roles = Role::all();
-        $departments = Department::orderBy('faculty')->orderBy('name')->get();
+        $departments = Department::with('faculty')->orderBy('faculty_id')->orderBy('name')->get();
 
         return view('admin.users.index', compact('users', 'roles', 'departments'));
     }
@@ -59,7 +59,7 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::all();
-        $departments = Department::orderBy('faculty')->orderBy('name')->get();
+        $departments = Department::with('faculty')->orderBy('faculty_id')->orderBy('name')->get();
 
         return view('admin.users.create', compact('roles', 'departments'));
     }
@@ -101,7 +101,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        $departments = Department::orderBy('faculty')->orderBy('name')->get();
+        $departments = Department::with('faculty')->orderBy('faculty_id')->orderBy('name')->get();
 
         return view('admin.users.edit', compact('user', 'roles', 'departments'));
     }

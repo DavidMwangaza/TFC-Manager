@@ -20,7 +20,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $departments = Department::orderBy('faculty')->orderBy('name')->get();
+        $departments = Department::with('faculty')->orderBy('faculty_id')->orderBy('name')->get();
         return view('auth.register', compact('departments'));
     }
 

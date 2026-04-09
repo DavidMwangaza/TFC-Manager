@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Department;
+use App\Models\Faculty;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -15,52 +16,79 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // =====================================================
+        // FACULTÉS
+        // =====================================================
+        $esis = Faculty::create([
+            'name' => 'ESIS',
+            'code' => 'FSI',
+            'description' => 'Faculté des Sciences Informatiques',
+        ]);
+
+        $ecopo = Faculty::create([
+            'name' => 'ECOPO',
+            'code' => 'ECOPO',
+            'description' => 'Faculté de Gestion et Ingénierie Financière',
+        ]);
+
+        $kansebula = Faculty::create([
+            'name' => 'KANSEBULA',
+            'code' => 'KANSEBULA',
+            'description' => 'Faculté des Sciences de l\'Homme et de la Société',
+        ]);
+
+        $theologicum = Faculty::create([
+            'name' => 'THEOLOGICUM',
+            'code' => 'THEOLOGICUM',
+            'description' => 'Faculté de Théologie',
+        ]);
+
+        // =====================================================
         // FACULTÉ DES SCIENCES INFORMATIQUES (ESIS)
         // =====================================================
         $genieLogiciel = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'Génie Logiciel',
             'code' => 'GL',
             'description' => 'Systèmes informatiques et Gestion informatique',
         ]);
 
         $reseaux = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'Réseaux et Administration Système',
-            'code' => 'RAS',
+            'code' => 'AS',
             'description' => 'Réseaux, Administration système et Télécommunications',
         ]);
 
         $design = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'Design et Multimédia',
-            'code' => 'DM',
+            'code' => 'DSN',
             'description' => 'Design graphique et Multimédia',
         ]);
 
         $msi = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'Management des Systèmes d\'Information',
             'code' => 'MSI',
             'description' => 'Management des Systèmes d\'Information',
         ]);
 
         $dataScience = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'Data Science',
             'code' => 'DS',
             'description' => 'Master spécialisé en Data Science',
         ]);
 
         $devops = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'DevOps et Sécurité',
             'code' => 'DEVOPS',
             'description' => 'Master spécialisé en DevOps et Sécurité informatique',
         ]);
 
         $comNum = Department::create([
-            'faculty' => 'ESIS',
+            'faculty_id' => $esis->id,
             'name' => 'Communication Numérique',
             'code' => 'CN',
             'description' => 'Master spécialisé en Communication numérique',
@@ -70,28 +98,28 @@ class UserSeeder extends Seeder
         // FACULTÉ DE GESTION ET INGÉNIERIE FINANCIÈRE (ECOPO)
         // =====================================================
         $gestionEntreprise = Department::create([
-            'faculty' => 'ECOPO',
+            'faculty_id' => $ecopo->id,
             'name' => 'Gestion des Entreprises et Ingénierie Financière',
             'code' => 'GEIF',
             'description' => 'Gestion des entreprises et ingénierie financière',
         ]);
 
         $marketing = Department::create([
-            'faculty' => 'ECOPO',
+            'faculty_id' => $ecopo->id,
             'name' => 'Management Commercial et Marketing',
             'code' => 'MCM',
             'description' => 'Management commercial et marketing',
         ]);
 
         $affairesPubliques = Department::create([
-            'faculty' => 'ECOPO',
+            'faculty_id' => $ecopo->id,
             'name' => 'Gestion des Affaires Publiques',
             'code' => 'GAP',
             'description' => 'Gestion des affaires publiques',
         ]);
 
         $agroAlimentaire = Department::create([
-            'faculty' => 'ECOPO',
+            'faculty_id' => $ecopo->id,
             'name' => 'Diversification et Développement Agro-Alimentaire',
             'code' => 'DDAI',
             'description' => 'Diversification et développement agro-alimentaire et industrie',
@@ -101,7 +129,7 @@ class UserSeeder extends Seeder
         // FACULTÉ DES SCIENCES DE L'HOMME ET DE LA SOCIÉTÉ (KANSEBULA)
         // =====================================================
         $sciencesHumaines = Department::create([
-            'faculty' => 'KANSEBULA',
+            'faculty_id' => $kansebula->id,
             'name' => 'Sciences de l\'Homme et de la Société',
             'code' => 'SHS',
             'description' => 'Disciplines centrées sur l\'humain et le développement social',
@@ -111,7 +139,7 @@ class UserSeeder extends Seeder
         // FACULTÉ DE THÉOLOGIE (THEOLOGICUM)
         // =====================================================
         $theologie = Department::create([
-            'faculty' => 'THEOLOGICUM',
+            'faculty_id' => $theologicum->id,
             'name' => 'Théologie',
             'code' => 'THEO',
             'description' => 'Sciences religieuses et théologiques',

@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\DepartmentController as AdminDepartmentController;
+use App\Http\Controllers\Admin\FacultyController as AdminFacultyController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -16,6 +18,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Archives des travaux défendus (accès public)
+Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
+Route::get('/archives/{thesisFile}/download', [ArchiveController::class, 'download'])->name('archives.download');
+
 // Dashboard dynamique selon le rôle
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -24,8 +30,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     // Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // === SUJETS (Étudiant) ===
     Route::middleware('role:Etudiant')->group(function () {
@@ -76,6 +80,14 @@ Route::middleware('auth')->group(function () {
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::patch('/users/{user}/toggle-block', [AdminUserController::class, 'toggleBlock'])->name('users.toggle-block');
         Route::patch('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
+
+        // --- Facultés ---
+        Route::get('/faculties', [AdminFacultyController::class, 'index'])->name('faculties.index');
+        Route::get('/faculties/create', [AdminFacultyController::class, 'create'])->name('faculties.create');
+        Route::post('/faculties', [AdminFacultyController::class, 'store'])->name('faculties.store');
+        Route::get('/faculties/{faculty}/edit', [AdminFacultyController::class, 'edit'])->name('faculties.edit');
+        Route::put('/faculties/{faculty}', [AdminFacultyController::class, 'update'])->name('faculties.update');
+        Route::delete('/faculties/{faculty}', [AdminFacultyController::class, 'destroy'])->name('faculties.destroy');
 
         // --- Facultés & Filières ---
         Route::get('/departments', [AdminDepartmentController::class, 'index'])->name('departments.index');

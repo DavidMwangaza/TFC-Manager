@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Department;
+use App\Models\Faculty;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
@@ -14,12 +15,13 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::withCount(['users', 'subjects'])
-            ->orderBy('faculty')
+        $departments = Department::with('faculty')
+            ->withCount(['users', 'subjects'])
+            ->orderBy('faculty_id')
             ->orderBy('name')
             ->get();
 
-        $faculties = $departments->groupBy('faculty');
+        $faculties = $departments->groupBy(fn($d) => $d->faculty?->name ?? 'Sans faculté');
 
         return view('admin.departments.index', compact('departments', 'faculties'));
     }
@@ -29,10 +31,9 @@ class DepartmentController extends Controller
      */
     public function create()
     {
-        // Récupérer les facultés existantes pour les proposer
-        $existingFaculties = Department::distinct()->pluck('faculty')->sort()->values();
+        $faculties = Faculty::orderBy('name')->get();
 
-        return view('admin.departments.create', compact('existingFaculties'));
+        return view('admin.departments.create', compact('faculties'));
     }
 
     /**
@@ -41,15 +42,16 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'faculty' => ['required', 'string', 'max:100'],
+            'faculty_id' => ['required', 'exists:faculties,id'],
             'name' => ['required', 'string', 'max:255', 'unique:departments'],
             'code' => ['required', 'string', 'max:20', 'unique:departments'],
             'description' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $dept = Department::create($request->only('faculty', 'name', 'code', 'description'));
+        $dept = Department::create($request->only('faculty_id', 'name', 'code', 'description'));
+        $dept->load('faculty');
 
-        ActivityLog::log('created', "Filière \"{$dept->name}\" ({$dept->code}) créée dans la faculté {$dept->faculty}.", $dept);
+        ActivityLog::log('created', "Filière \"{$dept->name}\" ({$dept->code}) créée dans la faculté {$dept->faculty->name}.", $dept);
 
         return redirect()->route('admin.departments.index')
             ->with('success', "La filière {$dept->name} a été créée.");
@@ -60,9 +62,9 @@ class DepartmentController extends Controller
      */
     public function edit(Department $department)
     {
-        $existingFaculties = Department::distinct()->pluck('faculty')->sort()->values();
+        $faculties = Faculty::orderBy('name')->get();
 
-        return view('admin.departments.edit', compact('department', 'existingFaculties'));
+        return view('admin.departments.edit', compact('department', 'faculties'));
     }
 
     /**
@@ -71,13 +73,13 @@ class DepartmentController extends Controller
     public function update(Request $request, Department $department)
     {
         $request->validate([
-            'faculty' => ['required', 'string', 'max:100'],
+            'faculty_id' => ['required', 'exists:faculties,id'],
             'name' => ['required', 'string', 'max:255', 'unique:departments,name,' . $department->id],
             'code' => ['required', 'string', 'max:20', 'unique:departments,code,' . $department->id],
             'description' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $department->update($request->only('faculty', 'name', 'code', 'description'));
+        $department->update($request->only('faculty_id', 'name', 'code', 'description'));
 
         ActivityLog::log('updated', "Filière \"{$department->name}\" modifiée.", $department);
 

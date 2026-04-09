@@ -28,15 +28,17 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="faculty" class="block text-sm font-medium text-gray-700">Faculté <span class="text-red-500">*</span></label>
-                                    <input type="text" name="faculty" id="faculty" value="{{ old('faculty', $department->faculty) }}" required list="faculties"
-                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    <datalist id="faculties">
-                                        @foreach($existingFaculties as $f)
-                                            <option value="{{ $f }}">
+                                    <label for="faculty_id" class="block text-sm font-medium text-gray-700">Faculté <span class="text-red-500">*</span></label>
+                                    <select name="faculty_id" id="faculty_id" required
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">— Choisir une faculté —</option>
+                                        @foreach($faculties as $faculty)
+                                            <option value="{{ $faculty->id }}" {{ old('faculty_id', $department->faculty_id) == $faculty->id ? 'selected' : '' }}>
+                                                [{{ $faculty->code }}] {{ $faculty->name }}
+                                            </option>
                                         @endforeach
-                                    </datalist>
-                                    @error('faculty') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </select>
+                                    @error('faculty_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>

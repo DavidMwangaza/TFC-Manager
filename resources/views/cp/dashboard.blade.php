@@ -24,7 +24,7 @@
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-4 text-white">
                 <p class="text-blue-100 text-sm">Ma filière</p>
                 <p class="text-2xl font-bold">{{ Auth::user()->department?->name ?? 'Non assignée' }}</p>
-                <p class="text-blue-200 text-sm mt-1">Faculté: {{ Auth::user()->department?->faculty ?? '—' }}</p>
+                <p class="text-blue-200 text-sm mt-1">Faculté: {{ Auth::user()->department?->faculty?->name ?? '—' }}</p>
             </div>
 
             {{-- Statistiques rapides --}}
