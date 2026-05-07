@@ -186,7 +186,7 @@
                                         {{ $file->version_type === 'jury' ? 'Version Jury' : 'Version Finale' }}
                                         — {{ $file->created_at->format('d/m/Y à H:i') }}
                                     </p>
-                                    @if($file->aiReport && Auth::user()->hasAnyRole(['Enseignant', 'Admin', 'Chef Departement']))
+                                    @if($file->aiReport && Auth::user()->hasAnyRole(['Enseignant', 'Admin', 'Chef de département']))
                                         <div class="mt-1 flex gap-4 text-xs">
                                             <span class="{{ $file->aiReport->ai_score < 30 ? 'text-green-600' : ($file->aiReport->ai_score < 60 ? 'text-yellow-600' : 'text-red-600') }}">
                                                 IA: {{ $file->aiReport->ai_score }}%

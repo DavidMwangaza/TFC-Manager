@@ -225,13 +225,26 @@
                             </div>
 
                             {{-- Encadreur --}}
-                            <div class="px-4 py-3 bg-gray-50 border-t">
+                            <div class="px-4 py-3 bg-gray-50 border-t flex flex-col gap-2">
                                 @if($subject->teacher)
                                     <span class="text-sm text-gray-600 flex items-center gap-1.5"><x-icon name="user" class="w-4 h-4" /> Encadreur : <strong>{{ $subject->teacher->name }}</strong></span>
                                 @elseif($subject->status === 'validated')
                                     <span class="text-sm text-orange-500">Encadreur en cours d'assignation...</span>
                                 @elseif($subject->status === 'pending')
                                     <span class="text-sm text-blue-700 flex items-center gap-1.5"><x-icon name="lock-closed" class="w-4 h-4" /> Fiche verrouillée — En attente d'examen par le Chef de Filière.</span>
+                                @endif
+
+                                @if($subject->defense_date)
+                                    <div class="mt-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="mt-0.5 h-5 w-5 shrink-0 text-green-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" /></svg>
+                                            <div class="space-y-1 leading-5">
+                                                <p class="font-medium">Soutenance planifiée</p>
+                                                <p>Date : <strong>{{ \Carbon\Carbon::parse($subject->defense_date)->format('d/m/Y H:i') }}</strong></p>
+                                                <p>Salle : <strong>{{ $subject->defense_room ?? 'à définir' }}</strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endif
                             </div>
                         </div>

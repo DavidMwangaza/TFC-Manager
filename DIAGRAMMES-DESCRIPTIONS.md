@@ -15,7 +15,7 @@
 7. [Diagramme de séquence — Soumission de sujet](#diagramme-de-séquence--soumission-de-sujet)
 8. [Diagramme de séquence — Validation/Rejet](#diagramme-de-séquence--validationrejet-de-sujet)
 9. [Diagramme de séquence — Dépôt de fichier avec analyse IA](#diagramme-de-séquence--dépôt-de-fichier-avec-analyse-ia)
-10. [Diagramme de séquence — Autorisation de soutenance](#diagramme-de-séquence--autorisation-de-soutenance)
+10. [Diagramme de séquence — Autorisation et planification de soutenance](#diagramme-de-séquence--autorisation-et-planification-de-soutenance)
 11. [Diagramme de classes](#diagramme-de-classes)
 12. [Modèle relationnel de la base de données](#modèle-relationnel-de-la-base-de-données)
 13. [Diagramme d'activités — Processus complet](#diagramme-dactivités--processus-complet-de-gestion-dun-tfc)
@@ -37,7 +37,7 @@ graph TB
     end
     
     subgraph Etudiant["Étudiant"]
-        E1["S'inscrire / Se connecter"]
+        E1["Se connecter"]
         E2["Soumettre sujet<br/>5 étapes"]
         E3["Consulter état sujet"]
         E4["Déposer fichier jury"]
@@ -54,6 +54,7 @@ graph TB
         C4["Suivre TFC"]
         C5["Consulter rapports IA"]
         C6["Exporter CSV"]
+        C7["Planifier soutenance\n(date et salle)"]
     end
     
     subgraph Enseignant["Enseignant"]
@@ -61,7 +62,8 @@ graph TB
         T2["Télécharger fichiers"]
         T3["Consulter rapports IA"]
         T4["Autoriser la soutenance"]
-        T5["Ajouter commentaires"]
+        T5["Consulter planification"]
+        T6["Retirer le Feu Vert<br/>(avant dépôt final)"]
     end
     
     subgraph Admin["Administrateur"]
@@ -93,11 +95,13 @@ graph TB
     C4 --> APP
     C5 --> APP
     C6 --> APP
+    C7 --> APP
     T1 --> APP
     T2 --> APP
     T3 --> APP
     T4 --> APP
     T5 --> APP
+    T6 --> APP
     A1 --> APP
     A2 --> APP
     A3 --> APP
@@ -111,7 +115,7 @@ graph TB
 - **Visiteur public** : Accès en lecture seule aux archives
 - **Étudiant** : Soumission de sujet et dépôt de fichiers
 - **Chef de Département** : Validation et suivi des sujets
-- **Enseignant** : Encadrement et autorisation de soutenance
+- **Enseignant** : Encadrement, autorisation et retrait conditionnel du Feu Vert
 - **Administrateur** : Gestion globale du système
 
 ---
@@ -122,7 +126,7 @@ graph TB
 graph TB
     subgraph Systeme["Plateforme TFC Manager"]
         subgraph Authentification["Authentification"]
-            CU01["S'inscrire"]
+            CU01["Créer compte utilisateur (Admin)"]
             CU02["Se connecter"]
             CU02bis["Se déconnecter"]
         end
@@ -137,11 +141,13 @@ graph TB
             CU04["Valider un sujet"]
             CU05["Rejeter un sujet"]
             CU_ChefSuiv["Suivre les TFC"]
+            CU13["Planifier soutenance"]
         end
         
         subgraph Enseignant_CU["Cas d'utilisation Enseignant"]
             CU07["Autoriser soutenance"]
-            CU_EnseignInfo["Consulter informations"]
+            CU14["Retirer Feu Vert"]
+            CU_EnseignInfo["Consulter planification"]
         end
         
         subgraph Admin_CU["Cas d'utilisation Administrateur"]
@@ -172,12 +178,12 @@ graph TB
 graph LR
     Actor["ÉTUDIANT"]
     
-    Actor -->|CU01| Inscription["S'inscrire"]
     Actor -->|CU02| Connexion["Se connecter"]
     Actor -->|CU03| Soumettre["Soumettre un sujet<br/>5 étapes"]
     Actor -->|CU06| Depot["Déposer fichier TFC<br/>jury ou final"]
     Actor -->|CU_Consult| EtatSujet["Consulter état du sujet"]
     Actor -->|CU_Consult| RapportIA["Consulter rapport IA"]
+    Actor -->|CU_Consult| Planif["Consulter planification\n(date et salle)"]
     Actor -->|CU_Notif| Notifications["Consulter notifications"]
     
     Soumettre -->|déclenche| NotifCP["Notification au<br/>Chef de Département"]
@@ -185,12 +191,12 @@ graph LR
     Depot -->|déclenche| NotifEnseignant["Notification au<br/>Directeur de mémoire"]
     
     style Actor fill:#e1f5ff
-    style Inscription fill:#fff3e0
     style Connexion fill:#fff3e0
     style Soumettre fill:#f3e5f5
     style Depot fill:#f3e5f5
     style EtatSujet fill:#e8f5e9
     style RapportIA fill:#e8f5e9
+    style Planif fill:#e8f5e9
     style Notifications fill:#e8f5e9
     style NotifCP fill:#ffe0b2
     style AnalyseIA fill:#ffe0b2
@@ -201,7 +207,7 @@ graph LR
 
 | Action | Précondition | Résultat |
 |--------|---|---|
-| **S'inscrire** | Aucun compte | Compte créé, rôle Étudiant |
+| **Compte créé par l'admin** | Rôle et filière définis | Compte étudiant actif |
 | **Se connecter** | Compte validé | Accès au tableau de bord étudiant |
 | **Soumettre sujet** | Connecté, pas de sujet en attente | Sujet créé, notification au Chef de Département |
 | **Déposer fichier** | Sujet validé (jury) ou autorisation de soutenance accordée (final) | Analyse IA lancée, encadreur notifié |
@@ -222,6 +228,7 @@ graph LR
     Actor -->|CU_Consult| TousRapports["Consulter rapports IA"]
     Actor -->|CU_Export| Export["Exporter liste CSV"]
     Actor -->|CU_Assign| Assigner["Assigner encadreur"]
+    Actor -->|CU_Soutenance| Planifier["Planifier soutenance\n(date et salle)"]
     
     Valider -->|déclenche| NotifEtu["Notification Étudiant<br/>Sujet validé"]
     Valider -->|déclenche| NotifEnseignant["Notification Enseignant<br/>Assignation"]
@@ -235,6 +242,7 @@ graph LR
     style Suivre fill:#bbdefb
     style TousRapports fill:#bbdefb
     style Export fill:#e1bee7
+    style Planifier fill:#e1bee7
     style Assigner fill:#c8e6c9
     style NotifEtu fill:#ffe0b2
     style NotifEnseignant fill:#ffe0b2
@@ -266,12 +274,15 @@ graph LR
     Actor -->|CU_TelechargerE| Telecharger["Télécharger fichiers<br/>TFC"]
     Actor -->|CU_RapportE| RapportIA["Consulter rapport IA"]
     Actor -->|CU07| Autoriser["Autoriser la soutenance"]
-    Actor -->|CU_CommentE| Commenter["Ajouter commentaires<br/>ou motifs"]
+    Actor -->|CU14| Retirer["Retirer le Feu Vert<br/>(avant dépôt final)"]
+    Actor -->|CU_Consult| VoirPlanif["Consulter planification\n(date et salle)"]
     
     Autoriser -->|déclenche| NotifFeuVert["Notification Étudiant<br/>Autorisation accordée"]
     Autoriser -->|active| FinalVersion["Permet dépôt version<br/>finale"]
+    Retirer -->|déclenche| NotifRetrait["Notification Étudiant<br/>Autorisation retirée"]
+    Retirer -->|bloque| FinalBloque["Bloque dépôt version<br/>finale"]
     RapportIA -->|affiche| Scores["Scores IA<br/>et risques"]
-    Commenter -->|lie aux fichiers| Archive["Archive des<br/>commentaires"]
+    VoirPlanif -->|affiche| Planif["Date et salle\nplanifiées"]
     
     style Actor fill:#fff3e0
     style Connexion fill:#fff3e0
@@ -279,11 +290,14 @@ graph LR
     style Telecharger fill:#e8f5e9
     style RapportIA fill:#e8f5e9
     style Autoriser fill:#c8e6c9
-    style Commenter fill:#e8f5e9
+    style Retirer fill:#ffcdd2
+    style VoirPlanif fill:#e8f5e9
     style NotifFeuVert fill:#ffe0b2
+    style NotifRetrait fill:#ffe0b2
     style FinalVersion fill:#b3e5fc
+    style FinalBloque fill:#ef9a9a
     style Scores fill:#f8bbd0
-    style Archive fill:#e1bee7
+    style Planif fill:#e1bee7
 ```
 
 **Actions principales:**
@@ -294,7 +308,8 @@ graph LR
 | **Télécharger fichiers** | Sujet avec fichier déposé | Fichier PDF en local |
 | **Consulter rapport IA** | Fichier analysé | Affichage des scores et détails |
 | **Autoriser soutenance** | Sujet validé, contenu satisfaisant | `defense_validated=true`, notification d'autorisation |
-| **Ajouter commentaires** | Fichier consulté | Texte lié au sujet en archives |
+| **Retirer Feu Vert** | `defense_validated=true`, version finale non déposée, motif saisi | `defense_validated=false`, motif enregistré, date/salle effacées, notification de retrait |
+| **Consulter planification** | Soutenance planifiée | Date et salle visibles |
 
 ---
 
@@ -668,7 +683,7 @@ Ce diagramme illustre le processus complet lorsqu'un étudiant dépose un fichie
 - L'étudiant se connecte à son tableau de bord
 - L'étudiant vérifie l'état de son sujet (doit être `validé`)
 - L'étudiant sélectionne le type de version :
-  - **Version jury** : première version à analyser avant correction (autorisée après validation du sujet)
+    - **Version jury** : première version à analyser (autorisée après validation du sujet)
   - **Version finale** : dernière version après accord du directeur (autorisée après « Feu Vert »)
 - **Travail de l'étudiant** : sélection du fichier PDF depuis son ordinateur
 
@@ -815,7 +830,7 @@ Ce diagramme illustre le processus complet lorsqu'un étudiant dépose un fichie
 
 ---
 
-## DIAGRAMME — Autorisation de soutenance (CU07)
+## DIAGRAMME — Autorisation et planification de soutenance (CU07 + CU13)
 
 ### Contexte
 Ce diagramme montre le processus par lequel un directeur de mémoire examine le travail et autorise (ou non) la soutenance.
@@ -848,19 +863,12 @@ Ce diagramme montre le processus par lequel un directeur de mémoire examine le 
   - Détails des sections signalées
   - Probabilités calculées
 - L'enseignant peut décider de :
-  - Autoriser directement la soutenance
-  - Demander des corrections à l'étudiant
-  - Bloquer la soutenance (suspicion de plagiat ou d'IA excessive)
+    - Autoriser directement la soutenance
 - **Travail de l'enseignant** : analyse et décision
 
 #### Étape 3 : L'enseignant clique sur « Autoriser la soutenance »
 - L'enseignant appuie sur le bouton « Feu Vert — Autoriser la soutenance »
-- Un formulaire optionnel s'affiche pour ajouter un commentaire
-- L'enseignant peut saisir :
-  - « Travail de bonne qualité, prêt pour la soutenance »
-  - Ou laisser vide
-- L'enseignant confirmé son action via un bouton « Valider »
-- **Interface** : modal ou formulaire de confirmation
+- **Interface** : confirmation simple
 
 #### Étape 4 : Vérification des permissions
 - Le système vérifie que l'utilisateur authentifié est bien l'enseignant encadreur du sujet
@@ -872,7 +880,6 @@ Ce diagramme montre le processus par lequel un directeur de mémoire examine le 
 #### Étape 5 : Mise à jour du sujet
 - Le sujet est mis à jour dans la base de données :
   - `defense_validated = true` (indicateur d'autorisation)
-  - Optionnel : `teacher_comment = "[commentaire]"` (si saisi)
   - `updated_at = NOW()` (horodatage)
 - **Travail du Système** : UPDATE dans la BD
 - **Résultat** : statut du sujet changé, soutenance autorisée
@@ -883,7 +890,6 @@ Ce diagramme montre le processus par lequel un directeur de mémoire examine le 
 - **Contenu** :
     - Message : « Félicitations ! Votre directeur de mémoire vous autorise à soutenir »
     - Indicateur visuel d'autorisation
-  - Commentaire optionnel du directeur
   - Lien pour consulter les prochaines étapes
   - Instructions pour préparer la soutenance
 - **Canaux** : Courriel principal + notification dans l'application
@@ -894,6 +900,11 @@ Ce diagramme montre le processus par lequel un directeur de mémoire examine le 
 - Un message de succès s'affiche : « La soutenance a été autorisée »
 - Le sujet disparaît de la liste « En cours » et apparaît dans « En soutenance »
 - **Interface** : actualisation de la page avec le nouveau statut
+
+#### Étape 8 : Planification par le Chef de Département
+- Le Chef de Département renseigne la **date** et la **salle**
+- Le système enregistre `defense_date` et `defense_room`
+- Les informations deviennent visibles sur les tableaux de bord concernés
 
 ### Fluxogramme ASCII
 ```
@@ -926,6 +937,13 @@ Enseignant       Système (SubjectController)      Base de données      Étudia
     │  8. Redirect +        │                            │                  │
     │  success              │                            │                  │
     │<──────────────────────│                            │                  │
+    │                       │                            │                  │
+    │  9. Planifier          │                            │                  │
+    │  date + salle          │                            │                  │
+    │───────────────────────>                            │                  │
+    │                       │  10. Enregistrer            │                  │
+    │                       │  defense_date/room          │                  │
+    │                       │───────────────────────────>│                  │
 ```
 
 ---
@@ -1171,71 +1189,43 @@ sequenceDiagram
 
 ---
 
-## DIAGRAMME DE SÉQUENCE — AUTORISATION DE SOUTENANCE
+## DIAGRAMME DE SÉQUENCE — AUTORISATION ET PLANIFICATION DE SOUTENANCE
 
 ```mermaid
 sequenceDiagram
     participant Enseignant as Enseignant
     participant Navigateur as Navigateur
-    participant SubjectController as Contrôleur des sujets
-    participant Subject as Modèle Sujet
-    participant BDD as Base de données
+    participant SubjectController as Controleur des sujets
+    participant BDD as Base de donnees
     participant Notification as Service de notification
-    participant Etudiant as Étudiant
-    
-    Enseignant->>Navigateur: 1. Consulter<br/>« Sujets encadrés »
-    Navigateur->>SubjectController: GET /subjects/supervised
-    SubjectController->>BDD: SELECT subjects<br/>WHERE teacher_id = X
+    participant Etudiant as Etudiant
+    participant ChefDept as Chef de Departement
+
+    Enseignant->>Navigateur: 1. Consulter "Sujets encadres"
+    Navigateur->>SubjectController: GET /subjects (filtre teacher)
+    SubjectController->>BDD: SELECT subjects WHERE teacher_id = X
     BDD-->>SubjectController: Liste des sujets
-    SubjectController->>Navigateur: Afficher le tableau de bord<br/>avec 3 sections :<br/>- En cours<br/>- Autorisés<br/>- En soutenance
-    
-    Enseignant->>Navigateur: 2. Cliquer sur un sujet<br/>état : validé
+    SubjectController->>Navigateur: Afficher tableau de bord
+
+    Enseignant->>Navigateur: 2. Ouvrir un sujet valide
     Navigateur->>SubjectController: GET /subjects/{id}
-    SubjectController->>BDD: SELECT subject<br/>+ thesis_files<br/>+ ai_reports
-    BDD-->>SubjectController: Données complètes
-    SubjectController->>Navigateur: Afficher :<br/>- Informations du sujet<br/>- Fichier(s) déposé(s)<br/>- Rapport(s) IA<br/>- Bouton « Autoriser »
-    
-    Enseignant->>Navigateur: 3. Consulter les fichiers<br/>(jury + final si 2)
-    Navigateur->>Navigateur: Afficher le visionneur PDF
-    
-    Enseignant->>Enseignant: 4. Lire rapport IA
-    Navigateur->>Navigateur: Afficher :<br/>- Score IA numérique<br/>- Barre colorée<br/>- Interprétation<br/>- Passages signalés
-    
-    Enseignant->>Enseignant: 5. Évaluer le travail<br/>- Qualité de contenu<br/>- Originalité<br/>- Risques IA<br/>- Prêt pour soutenance?
-    
-    alt Prêt pour soutenance
-        Enseignant->>Navigateur: 6a. Cliquer sur<br/>« Autoriser la soutenance »
-        
-        Navigateur->>Navigateur: 7a. Afficher une fenêtre<br/>avec option : commentaire
-        
-        Enseignant->>Navigateur: 8a. Saisir un commentaire
-        
-        Navigateur->>SubjectController: 9a. POST /subjects/{id}/authorize<br/>{ comment?: "..." }
-        
-        SubjectController->>SubjectController: 10a. Vérifier :<br/>- Utilisateur = enseignant ?<br/>- Enseignant = encadreur ?<br/>- Statut = validé ?<br/>- defense_validated != true ?
-        
-        SubjectController->>BDD: 11a. Mettre à jour le sujet<br/>defense_validated=TRUE<br/>teacher_comment=optionnel
-        BDD-->>SubjectController: Mise à jour effectuée
-        
-        SubjectController->>Notification: 12a. Créer notification<br/>DefenseAuthorized
-        Notification->>Etudiant: Courriel + notification dans l'application<br/>« Autorisation de soutenance »<br/>Commentaire optionnel
-        
-        SubjectController->>Navigateur: 13a. Redirection avec succès
-        Navigateur->>Enseignant: Afficher le message<br/>« Autorisation accordée »<br/>Sujet prêt pour la soutenance
-        
-    else Travail insuffisant
-        Enseignant->>Navigateur: 6b. Cliquer sur<br/>« Demander corrections »
-        
-        Navigateur->>SubjectController: 9b. POST /subjects/{id}/request-revision<br/>{ reason: "...", comment: "..." }
-        
-        SubjectController->>BDD: 11b. Mettre à jour le sujet<br/>statut conservé = validé<br/>revision_requested = TRUE<br/>revision_reason = "..."
-        
-        SubjectController->>Notification: 12b. Créer notification
-        Notification->>Etudiant: Courriel + notification dans l'application<br/>« Révisions demandées »<br/>Détails des corrections
-    end
-    
-    Etudiant->>Navigateur: Consulter son tableau de bord
-    Navigateur->>Etudiant: Afficher :<br/>« Autorisation de soutenance »<br/>Dépôt final autorisé
+    SubjectController->>BDD: SELECT subject + thesis_files + ai_reports
+    BDD-->>SubjectController: Donnees completes
+    SubjectController->>Navigateur: Afficher details + bouton Autoriser
+
+    Enseignant->>Navigateur: 3. Autoriser la soutenance
+    Navigateur->>SubjectController: POST /subjects/{id}/authorize-defense
+    SubjectController->>SubjectController: Verifier encadreur et statut
+    SubjectController->>BDD: defense_validated = true
+    SubjectController->>Notification: Creer notification DefenseAuthorized
+    Notification->>Etudiant: Notification "Feu Vert"
+
+    ChefDept->>Navigateur: 4. Planifier soutenance
+    Navigateur->>SubjectController: PATCH /subjects/{id}/schedule-defense
+    SubjectController->>SubjectController: Verifier defense_validated
+    SubjectController->>BDD: Enregistrer defense_date/defense_room
+    BDD-->>SubjectController: Planification enregistree
+    SubjectController->>Navigateur: Confirmation
 ```
 
 **Flux Autorisation:**
@@ -1245,19 +1235,15 @@ sequenceDiagram
 3. **Consultation fichiers** : Téléchargement ou visionnage en intégré
 4. **Consultation rapport IA** : Affichage des scores et risques détectés
 5. **Évaluation** : Enseignant juge la qualité et l'originalité
-6a. **Accord d'autorisation** : Clique sur « Autoriser la soutenance »
-7a. **Modal commentaire** : Possibilité d'ajouter un commentaire
-8a. **Confirmation** : POST vers l'API
-9a. **Vérification droits** : Confirmation que l'enseignant est bien l'encadreur
-10a. **Mise à jour BD** : `defense_validated=TRUE`
-11a. **Notification** : Courriel + notification dans l'application à l'étudiant
-12a. **Confirmation** : Affichage du nouveau statut
+6. **Accord d'autorisation** : Clique sur « Autoriser la soutenance »
+7. **Confirmation** : POST vers l'API
+8. **Vérification droits** : Confirmation que l'enseignant est bien l'encadreur
+9. **Mise à jour BD** : `defense_validated=TRUE`
+10. **Notification** : Courriel + notification dans l'application à l'étudiant
+11. **Confirmation** : Affichage du nouveau statut
 
-**Flux Révision (alternative):**
-- Enseignant ajoute commentaires détaillant les corrections demandées
-- Notification envoyée à l'étudiant avec les commentaires
-- Sujet reste validé avec le drapeau `revision_requested`
-- Étudiant peut redéposer un fichier révisé
+**Flux complémentaire:**
+- Le Chef de Département planifie la soutenance apres le Feu Vert
 
 ---
 
@@ -1340,7 +1326,8 @@ classDiagram
         enum status
         text rejection_reason
         boolean defense_validated
-        text teacher_comment
+        datetime defense_date
+        string defense_room
         timestamp created_at
         timestamp updated_at
         +student() BelongsTo~User
@@ -1350,24 +1337,18 @@ classDiagram
         +thesisFiles() HasMany
         +isValidated() boolean
         +isPending() boolean
-        +isRejected() boolean
     }
     
     class ThesisFile {
         int id
         int subject_id
-        int user_id
         string file_path
         string original_name
         enum version_type
-        string mime_type
-        int file_size
         timestamp created_at
         timestamp updated_at
         +subject() BelongsTo
-        +user() BelongsTo
         +aiReport() HasOne
-        +download() Response
     }
     
     class AiReport {
@@ -1379,18 +1360,14 @@ classDiagram
         timestamp created_at
         timestamp updated_at
         +thesisFile() BelongsTo
-        +getRiskLevel() string
-        +getColor() string
     }
     
     class Notification {
         int id
-        int user_id
         string type
         timestamp read_at
         json data
         timestamp created_at
-        +user() BelongsTo
         +markAsRead() void
     }
     
@@ -1403,7 +1380,6 @@ classDiagram
         string description
         json old_values
         json new_values
-        string ip_address
         timestamp created_at
         +user() BelongsTo
         +static log() void
@@ -1444,7 +1420,7 @@ classDiagram
 | **Department** | Filière (GL, AS, etc.) | faculty_id |
 | **AcademicYear** | Année académique | — |
 | **Subject** | Sujet de TFC | student_id, teacher_id, department_id, academic_year_id |
-| **ThesisFile** | Fichier PDF déposé | subject_id, user_id |
+| **ThesisFile** | Fichier PDF déposé | subject_id |
 | **AiReport** | Rapport d'analyse IA | thesis_file_id |
 | **Notification** | Notification utilisateur | user_id |
 | **ActivityLog** | Journal d'audit | user_id |
@@ -1473,7 +1449,6 @@ erDiagram
     THESIS_FILES ||--o{ AI_REPORTS : produit
     USERS ||--o{ NOTIFICATIONS : reçoit
     USERS ||--o{ ACTIVITY_LOGS : génère
-    THESIS_FILES ||--o{ ACTIVITY_LOGS : journalise
 
     FACULTIES {
         int id PK
@@ -1538,7 +1513,8 @@ erDiagram
         enum status
         text rejection_reason
         boolean defense_validated
-        text teacher_comment
+        datetime defense_date
+        string defense_room
         timestamp created_at
         timestamp updated_at
     }
@@ -1546,12 +1522,9 @@ erDiagram
     THESIS_FILES {
         int id PK
         int subject_id FK
-        int user_id FK
         string file_path
         string original_name
         enum version_type
-        string mime_type
-        int file_size
         timestamp created_at
         timestamp updated_at
     }
@@ -1570,7 +1543,6 @@ erDiagram
         int id PK
         int user_id FK
         string type
-        boolean read
         timestamp read_at
         json data
         timestamp created_at
@@ -1586,7 +1558,6 @@ erDiagram
         string description
         json old_values
         json new_values
-        string ip_address
         timestamp created_at
     }
 ```
@@ -1600,7 +1571,7 @@ erDiagram
 | **USERS** | Tous les utilisateurs (étudiants, enseignants, CP, admin) | department_id |
 | **ACADEMIC_YEARS** | Années académiques (2025-2026, etc.) | — |
 | **SUBJECTS** | Sujets de TFC soumis | student_id, teacher_id*, department_id, academic_year_id |
-| **THESIS_FILES** | Fichiers PDF déposés (jury + final) | subject_id, user_id |
+| **THESIS_FILES** | Fichiers PDF déposés (jury + final) | subject_id |
 | **AI_REPORTS** | Rapports d'analyse IA pour chaque fichier | thesis_file_id |
 | **NOTIFICATIONS** | Notifications utilisateurs (email + in-app) | user_id |
 | **ACTIVITY_LOGS** | Journal d'audit de toutes les actions | user_id |
@@ -1623,7 +1594,7 @@ erDiagram
 - `teacher_id` dans `SUBJECTS` peut être NULL (avant assignation)
 - `read_at` dans `NOTIFICATIONS` peut être NULL (avant lecture)
 - `rejection_reason` dans `SUBJECTS` peut être NULL (si status ≠ 'rejected')
-- `teacher_comment` dans `SUBJECTS` peut être NULL (si pas d'autorisation)
+- `defense_date` et `defense_room` dans `SUBJECTS` peuvent être NULL (avant planification)
 
 ---
 
@@ -1664,15 +1635,10 @@ graph TD
     
     NotifyTeacher1 --> Step5{"L'enseignant<br/>approuve ?"}
     
-    Step5 -->|Révisions| RequestRev["Demander des révisions<br/>avec commentaires"]
-    RequestRev --> NotifyRev["Notifier l'étudiant"]
-    NotifyRev --> Step3_Rev["Corriger le document<br/>et intégrer les remarques"]
-    Step3_Rev --> Upload1
-    
-    Step5 -->|Approuve| FeuVert["Autorisation de soutenance accordée<br/>defense_validated = true"]
+    Step5 -->|Oui| FeuVert["Autorisation de soutenance accordée<br/>defense_validated = true"]
     FeuVert --> NotifyFeuVert["Notifier l'étudiant<br/>autorisation accordée"]
-    
-    NotifyFeuVert --> Step6["L'étudiant prépare<br/>la version finale"]
+    NotifyFeuVert --> Planif["Planifier la soutenance<br/>(date et salle)"]
+    Planif --> Step6["L'étudiant prépare<br/>la version finale"]
     Step6 --> Step7{"Version finale<br/>prête ?"}
     
     Step7 -->|Non| Wait3["Poursuivre la rédaction"]
@@ -1684,16 +1650,8 @@ graph TD
     AnalyzeAI2 --> CreateReport2["Créer le rapport IA<br/>de la version finale"]
     CreateReport2 --> NotifyTeacher2["Notifier l'enseignant<br/>version finale prête"]
     
-    NotifyTeacher2 --> Step8{"Prêt pour la<br/>soutenance ?"}
-    
-    Step8 -->|Non| RequestRev2["Demander des révisions<br/>finales"]
-    RequestRev2 --> NotifyRev2["Notifier l'étudiant"]
-    NotifyRev2 --> Upload2
-    
-    Step8 -->|Oui| ReadyDefense["Mémoire prêt<br/>pour la soutenance"]
-    ReadyDefense --> Planning["Planifier la soutenance<br/>(hors système TFC Manager)"]
-    
-    Planning --> Defense["Soutenance effectuée<br/>(évaluation externe)"]
+    NotifyTeacher2 --> ReadyDefense["Mémoire prêt<br/>pour la soutenance"]
+    ReadyDefense --> Defense["Soutenance effectuée<br/>(évaluation externe)"]
     Defense --> Archive["Archiver le mémoire<br/>version finale + rapport IA"]
     
     Archive --> PublishArchive["Publier dans les archives<br/>publiques consultables"]
@@ -1722,12 +1680,11 @@ graph TD
 | **Phase 1: Soumission** | Étudiant remplit formulaire 5 étapes, soumet sujet | pending | 1-2 jours |
 | **Phase 2: Validation CP** | Chef de Département valide et assigne enseignant, OU rejette | validated / rejected | 3-7 jours |
 | **Phase 3: Rédaction & Jury** | Étudiant rédige version jury, dépose fichier, analyse IA | validated | 2-4 semaines |
-| **Phase 4: Encadrement** | Enseignant consulte fichier, demande révisions OU approuve | validated / revision_requested | 3-7 jours |
-| **Phase 5: Corrections & FeuVert** | Étudiant corrige si nécessaire, obtient Feu Vert | defense_validated | 1-2 semaines |
-| **Phase 6: Version Finale** | Étudiant rédige version finale, dépose, analyse IA | defense_validated | 1-3 semaines |
-| **Phase 7: Vérification Finale** | Enseignant approuve version finale | ready_defense | 2-5 jours |
-| **Phase 8: Soutenance** | Soutenance devant jury, défense du TFC | defended | 1-2 jours |
-| **Phase 9: Archivage** | Mémoire archivé + disponible publiquement | archived | 1 jour |
+| **Phase 4: Encadrement** | Enseignant consulte fichier et approuve | defense_validated | 3-7 jours |
+| **Phase 5: Planification** | CP planifie date et salle de soutenance | defense_validated | 1-3 jours |
+| **Phase 6: Version Finale** | Étudiant dépose version finale, analyse IA | defense_validated | 1-3 semaines |
+| **Phase 7: Soutenance** | Soutenance devant jury, défense du TFC | defended | 1-2 jours |
+| **Phase 8: Archivage** | Mémoire archivé + disponible publiquement | archived | 1 jour |
 
 **Critères de progression:**
 
@@ -1735,14 +1692,14 @@ graph TD
 - **Fichier déposé (jury)** : Fichier PDF stocké + analyse IA effectuée
 - **Autorisation accordée** : Enseignant approuve qualité + scores IA acceptables
 - **Version finale prête** : Deuxième fichier déposé + analyse IA
-- **Prêt soutenance** : Enseignant approuve la version finale
+- **Soutenance planifiée** : Date et salle enregistrées par le CP
 - **Soutenance effectuée** : Défense réussie
 - **Archivé** : Mémoire public dans les archives
 
 **Points de blocage possibles:**
 
 - Sujet rejeté par le Chef → Possibilité de resoumettre
-- Révisions demandées par l'enseignant → L'étudiant doit corriger et redéposer
+- Soutenance non planifiée → Attendre l'enregistrement de la date et de la salle
 - Score IA > 50% → Risque élevé, discussion obligatoire avant approbation
 
 ---

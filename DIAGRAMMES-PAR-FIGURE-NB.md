@@ -14,6 +14,7 @@ graph TB
     B --> U4[Deposer fichier]
     C[Chef de Departement] --> U5[Valider ou rejeter]
     C --> U6[Assigner enseignant]
+    C --> U10[Planifier soutenance]
     D[Enseignant] --> U7[Autoriser soutenance]
     E[Administrateur] --> U8[Gerer utilisateurs]
     E --> U9[Gerer structure academique]
@@ -31,6 +32,7 @@ graph LR
     E --> F[Consulter rapport IA]
     E --> G[Deposer version finale]
     E --> H[Consulter notifications]
+    E --> I[Consulter planification]
 ```
 
 ## Figure 4 - Cas d'utilisation Chef de Departement
@@ -44,6 +46,7 @@ graph LR
     C --> E[Assigner encadreur]
     C --> F[Suivre TFC]
     C --> G[Exporter CSV]
+    C --> H[Planifier soutenance]
 ```
 
 ## Figure 5 - Cas d'utilisation Enseignant
@@ -54,7 +57,7 @@ graph LR
     T[Enseignant] --> A[Consulter sujets encadres]
     T --> B[Telecharger fichiers]
     T --> C[Consulter rapport IA]
-    T --> D[Demander corrections]
+    T --> D[Consulter planification]
     T --> E[Autoriser soutenance]
 ```
 
@@ -143,11 +146,14 @@ sequenceDiagram
     participant DB as Base de donnees
     participant S as Service Notification
     participant E as Etudiant
+    participant CP as Chef de Departement
 
     T->>C: Autoriser soutenance
     C->>DB: defense_validated = true
     C->>S: Notifier etudiant
     S->>E: Autorisation accordee
+    CP->>C: Planifier soutenance
+    C->>DB: Enregistrer date et salle
 ```
 
 ## Figure 11 - Diagramme de classes
@@ -192,13 +198,11 @@ graph TD
     B -->|Oui| D[Assignation enseignant]
     D --> E[Depot version jury]
     E --> F[Analyse IA]
-    F --> G{Corrections?}
-    G -->|Oui| H[Correction et redepot]
-    H --> E
-    G -->|Non| I[Autorisation soutenance]
-    I --> J[Depot version finale]
-    J --> K[Analyse finale]
-    K --> L[Archivage]
+    F --> G[Autorisation soutenance]
+    G --> H[Planification soutenance]
+    H --> I[Depot version finale]
+    I --> J[Analyse finale]
+    J --> K[Archivage]
 ```
 
 ## Figure 14 - Architecture MVC de Laravel

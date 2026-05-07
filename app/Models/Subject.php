@@ -27,6 +27,9 @@ class Subject extends Model
         'status',
         'rejection_reason',
         'defense_validated',
+        'defense_date',
+        'defense_room',
+        'defense_revocation_reason',
         'student_id',
         'teacher_id',
         'department_id',
@@ -37,6 +40,7 @@ class Subject extends Model
     {
         return [
             'defense_validated' => 'boolean',
+            'defense_date' => 'datetime',
             'specific_objectives' => 'array',
             'state_of_art' => 'array',
         ];

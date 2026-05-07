@@ -75,8 +75,12 @@ class ThesisFileController extends Controller
         }
 
         // Notifier l'enseignant encadreur
-        $thesisFile->load('subject.student');
-        if ($subject->teacher) {
+        $thesisFile->load('subject.student', 'subject.teacher');
+        if (
+            $subject->teacher
+            && $subject->teacher->hasRole('Enseignant')
+            && $subject->teacher->department_id === $subject->department_id
+        ) {
             $subject->teacher->notify(new ThesisFileUploaded($thesisFile));
         }
 
@@ -96,7 +100,7 @@ class ThesisFileController extends Controller
         $canDownload = $user->hasRole('Admin')
             || ($user->hasRole('Etudiant') && $subject->student_id === $user->id)
             || ($user->hasRole('Enseignant') && $subject->teacher_id === $user->id)
-            || ($user->hasRole('Chef Departement') && $subject->department_id === $user->department_id);
+            || ($user->hasRole('Chef de département') && $subject->department_id === $user->department_id);
 
         if (!$canDownload) {
             abort(403, 'Accès non autorisé.');

@@ -27,6 +27,7 @@ graph TB
     UC9[Gerer utilisateurs]
     UC10[Gerer facultes et filieres]
     UC11[Gerer annees academiques]
+    UC12[Planifier soutenance]
 
     Visiteur --> UC1
     Visiteur --> UC2
@@ -37,6 +38,7 @@ graph TB
 
     ChefDept --> UC6
     ChefDept --> UC7
+    ChefDept --> UC12
 
     Enseignant --> UC8
 
@@ -59,6 +61,7 @@ graph LR
     U6[Consulter rapport IA]
     U7[Deposer version finale]
     U8[Consulter notifications]
+    U9[Consulter planification]
 
     A --> U1
     A --> U2
@@ -68,6 +71,7 @@ graph LR
     A --> U6
     A --> U7
     A --> U8
+    A --> U9
 ```
 
 ### 2.3 Diagramme de cas d'utilisation - Chef de Departement
@@ -83,6 +87,7 @@ graph LR
     U5[Suivre avancement TFC]
     U6[Consulter rapports IA]
     U7[Exporter liste CSV]
+    U8[Planifier soutenance]
 
     A --> U1
     A --> U2
@@ -91,6 +96,7 @@ graph LR
     A --> U5
     A --> U6
     A --> U7
+    A --> U8
 ```
 
 ### 2.4 Diagramme de cas d'utilisation - Enseignant
@@ -102,7 +108,7 @@ graph LR
     U1[Consulter sujets encadres]
     U2[Telecharger fichiers]
     U3[Consulter rapport IA]
-    U4[Demander corrections]
+    U4[Consulter planification]
     U5[Autoriser soutenance]
 
     A --> U1
@@ -224,6 +230,7 @@ sequenceDiagram
     participant DB as Base de donnees
     participant S as Service Notification
     participant E as Etudiant
+    participant CP as Chef de Departement
 
     T->>C: Autoriser soutenance
     C->>DB: Verifier encadreur et statut valide
@@ -231,6 +238,8 @@ sequenceDiagram
     C->>DB: defense_validated = true
     C->>S: Creer notification DefenseAuthorized
     S->>E: Autorisation de soutenance accordee
+    CP->>C: Planifier soutenance
+    C->>DB: Enregistrer date et salle
 ```
 
 ## Chapitre II - Section 4 : Diagramme de classes
@@ -274,12 +283,13 @@ classDiagram
         +academic_year_id
         +status
         +defense_validated
+        +defense_date
+        +defense_room
     }
 
     class ThesisFile {
         +id
         +subject_id
-        +user_id
         +version_type
         +file_path
     }
@@ -358,16 +368,18 @@ erDiagram
         int department_id FK
         int academic_year_id FK
         string status
+        datetime defense_date
+        string defense_room
     }
     THESIS_FILES {
         int id PK
         int subject_id FK
-        int user_id FK
         string version_type
     }
     AI_REPORTS {
         int id PK
         int thesis_file_id FK
+        float similarity_score
         float ai_score
     }
 ```
@@ -384,15 +396,13 @@ graph TD
     C -->|Oui| E[Assignation de l enseignant]
     E --> F[Depot version jury]
     F --> G[Analyse IA automatique]
-    G --> H{Corrections demandees?}
-    H -->|Oui| I[Corrections et redepot]
-    I --> F
-    H -->|Non| J[Autorisation de soutenance]
-    J --> K[Depot version finale]
-    K --> L[Analyse IA finale]
-    L --> M[Memoire pret pour soutenance]
-    M --> N[Archivage]
-    N --> O[Fin]
+    G --> H[Autorisation de soutenance]
+    H --> I[Planification soutenance]
+    I --> J[Depot version finale]
+    J --> K[Analyse IA finale]
+    K --> L[Memoire pret pour soutenance]
+    L --> M[Archivage]
+    M --> N[Fin]
 ```
 
 ## Chapitre III - Section 2 : Architecture MVC de Laravel

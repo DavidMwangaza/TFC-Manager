@@ -1,14 +1,14 @@
 # RAPPORT COMPLET — UDBL-TFC-MANAGER
 
 > **Application web de gestion des Travaux de Fin de Cycle**
-> Université UDBL — Février 2026
+> Université UDBL — février 2026
 > Généré le 12 février 2026
 
 ---
 
-## 1. PRESENTATION DU PROJET
+## 1. PRÉSENTATION DU PROJET
 
-**UDBL TFC Manager** est une application web permettant de gérer l'intégralité du cycle de vie des Travaux de Fin de Cycle (TFC) à l'Université UDBL : de la soumission du sujet par l'étudiant, en passant par la validation par le Chef de Filière, l'assignation d'un encadreur, le dépôt du document PDF, l'analyse IA anti-plagiat, jusqu'à l'autorisation de soutenance.
+**UDBL TFC Manager** est une application web permettant de gérer l'intégralité du cycle de vie des Travaux de Fin de Cycle (TFC) à l'Université UDBL : de la soumission du sujet par l'étudiant, en passant par la validation par le chef de département, l'assignation d'un encadreur, le dépôt du document PDF, l'analyse IA anti-plagiat, jusqu'à l'autorisation (et son retrait contrôlé) puis la planification de la soutenance.
 
 ### Objectifs principaux
 
@@ -33,7 +33,7 @@
 | **Alpine.js** | ^3.4 | Interactivité JavaScript (wizard, toggles) |
 | **Vite** | ^7.0 | Build frontend |
 | **Chart.js** | CDN | Graphiques dashboard admin |
-| **PosgreSQL** | — | Base de données (développement et production) |
+| **PostgreSQL** | 14+ | Base de données relationnelle utilisée par l'application |
 
 ---
 
@@ -43,15 +43,15 @@
 
 | Element | Nombre |
 |---|---|
-| Contrôleurs | **11** |
+| Contrôleurs | **12** |
 | Méthodes (total) | **47** |
-| Modèles Eloquent | **8** |
+| Modèles Eloquent | **9** |
 | Vues Blade | **53** |
 | Composants Blade | **15** |
 | Notifications | **6** |
 | Middleware personnalisé | **1** |
 | Seeders | **3** |
-| Migrations | **18** |
+| Migrations | **20** |
 | Icônes SVG (Heroicons) | **43** |
 | Routes | **58** |
 
@@ -60,24 +60,26 @@
 | Contrôleur | Méthodes | Description |
 |---|---|---|
 | `DashboardController` | 5 | Dashboard dynamique par rôle (admin, CP, enseignant, étudiant) |
-| `SubjectController` | 8 | CRUD sujets, validation, rejet, export CSV, autorisation soutenance |
+| `SubjectController` | 10 | CRUD sujets, validation, rejet, export CSV, autorisation/retrait du feu vert et planification soutenance |
 | `ThesisFileController` | 3 | Upload PDF, téléchargement, analyse IA |
-| `NotificationController` | 3 | Liste, marquer lu, marquer tout lu |
-| `ProfileController` | 3 | Edition profil, changement mot de passe, suppression compte |
+| `NotificationController` | 5 | Liste, marquer lu, marquer tout lu, suppression |
+| `ProfileController` | 1 | Consultation du profil (lecture seule) |
 | `Admin\UserController` | 8 | CRUD utilisateurs, blocage, reset mot de passe |
+| `Admin\FacultyController` | 6 | CRUD facultés |
 | `Admin\DepartmentController` | 6 | CRUD filières |
 | `Admin\AcademicYearController` | 6 | Années académiques (créer, définir courante, clôturer) |
 | `Admin\SettingController` | 2 | Paramètres système |
 | `Admin\LogController` | 1 | Journal d'activité |
-| `Auth\RegisteredUserController` | 2 | Inscription étudiant (avec matricule + filière) |
+| `Auth\RegisteredUserController` | 2 | Contrôleur d'inscription étudiant (présent mais route publique désactivée) |
 
 ### 3.3 Modèles de données
 
 | Modèle | Champs principaux | Relations |
 |---|---|---|
 | **User** | name, email, matricule, department_id, is_blocked | department, subjects, supervisedSubjects |
-| **Subject** | title, subject_type, description, 10 champs structurés, status, defense_validated | student, teacher, department, academicYear, thesisFiles |
-| **Department** | faculty, name, code, description | users, subjects |
+| **Subject** | title, subject_type, description, 10 champs structurés, status, defense_validated, defense_date, defense_room | student, teacher, department, academicYear, thesisFiles |
+| **Faculty** | name, code, description | departments |
+| **Department** | faculty_id, name, code, description | users, subjects |
 | **ThesisFile** | subject_id, file_path, original_name, version_type | subject, aiReport |
 | **AiReport** | thesis_file_id, similarity_score, ai_score, details | thesisFile |
 | **AcademicYear** | name, start_date, end_date, is_current, is_closed | subjects |
@@ -89,13 +91,13 @@
 | Répertoire | Fichiers | Détail |
 |---|---|---|
 | `admin/` | 12 | Dashboard, users (index/create/edit), departments (index/create/edit), academic-years (index/create), settings, logs, sidebar |
-| `auth/` | 6 | Login, register, forgot-password, reset-password, verify-email, confirm-password |
+| `auth/` | 6 | Login, forgot-password, reset-password, verify-email, confirm-password (+ vue register non exposée) |
 | `components/` | 15 | icon, breadcrumb, modal, boutons, inputs, dropdown, nav-link, etc. |
-| `cp/` | 1 | Dashboard Chef de Filière |
+| `cp/` | 1 | Dashboard Chef de département |
 | `errors/` | 4 | Pages 403, 404, 419, 500 (en français) |
 | `layouts/` | 3 | app, guest, navigation |
 | `notifications/` | 1 | Liste des notifications |
-| `profile/` | 4 | Edition + 3 partiels (infos, mot de passe, suppression) |
+| `profile/` | 4 | Page profil active (lecture seule) + partiels legacy non exposés |
 | `student/` | 1 | Dashboard étudiant |
 | `subjects/` | 3 | Index (liste + filtres), create (wizard 5 étapes), show (détail) |
 | `teacher/` | 1 | Dashboard enseignant |
@@ -109,14 +111,14 @@
 
 | Rôle | Permissions |
 |---|---|
-| **Admin** | Toutes les 13 permissions |
-| **Chef Departement** | subjects.view, subjects.validate, subjects.reject, subjects.assign-teacher, thesis.download, thesis.view-reports |
+| **Admin** | Toutes les 17 permissions |
+| **Chef de département** | subjects.view, subjects.validate, subjects.reject, subjects.assign-teacher, thesis.download, thesis.view-reports |
 | **Enseignant** | subjects.view, thesis.download, thesis.view-reports, thesis.validate-defense |
 | **Etudiant** | subjects.create, subjects.view, thesis.upload, thesis.final-deposit |
 
-### 4.2 Permissions (13)
+### 4.2 Permissions (17)
 
-`subjects.create`, `subjects.view`, `subjects.validate`, `subjects.reject`, `subjects.assign-teacher`, `thesis.upload`, `thesis.download`, `thesis.view-reports`, `thesis.final-deposit`, `thesis.validate-defense`, `users.manage`, `departments.manage`
+`subjects.create`, `subjects.view`, `subjects.validate`, `subjects.reject`, `subjects.assign-teacher`, `thesis.upload`, `thesis.download`, `thesis.view-reports`, `thesis.final-deposit`, `thesis.validate-defense`, `users.manage`, `departments.manage`, `academic-years.manage`, `settings.manage`, `logs.view`, `users.block`, `users.reset-password`
 
 ### 4.3 Middleware de sécurité
 
@@ -125,17 +127,17 @@
 | `CheckUserBlocked` | Global (groupe web) | Déconnecte les utilisateurs bloqués |
 | `role:Admin` | Routes `/admin/*` | Accès administration |
 | `role:Etudiant` | Création sujet + upload | Accès étudiant |
-| `role:Chef Departement` | Validation/rejet | Accès chef de filière |
-| `role:Enseignant` | Autorisation soutenance | Accès enseignant |
+| `role:Chef de département` | Validation/rejet | Accès chef de département |
+| `role:Enseignant` | Autorisation/retrait soutenance | Accès enseignant |
 | `auth` | Toutes routes internes | Authentification requise |
 
-### 4.4 Inscription
+### 4.4 Création des comptes
 
-- L'inscription publique (`/register`) est réservée aux **étudiants uniquement**
-- Un bandeau informatif l'indique clairement sur le formulaire
-- Champs : Nom, Email, **Matricule** (obligatoire, unique), Filière, Mot de passe
-- Le rôle `Etudiant` est automatiquement assigné à l'inscription
-- Les comptes Admin, Chef de Filière et Enseignant sont créés par l'administrateur
+- L'inscription publique (`/register`) est actuellement **désactivée**
+- Tous les comptes sont créés par l'administrateur via la gestion des utilisateurs (`/admin/users`)
+- Pour les étudiants, l'administrateur renseigne notamment : Nom, Email, Matricule (unique), Filière
+- Le rôle approprié (`Etudiant`, `Enseignant`, `Chef de département`, `Admin`) est assigné par l'administrateur
+- La réinitialisation des mots de passe est également gérée par l'administrateur
 
 ---
 
@@ -151,13 +153,15 @@
   5. Méthodologie et démarcation + récapitulatif
 - Upload du fichier TFC en PDF (max 20 Mo, version jury + version finale)
 - Consultation de sa progression (sujet, statut, fichiers, analyse IA globale)
-- Notifications reçues : sujet validé, sujet rejeté, encadreur assigné, soutenance autorisée
+- Consultation de la date et de la salle de soutenance lorsqu'elles sont planifiées
+- Notifications reçues : sujet validé, sujet rejeté, encadreur assigné, soutenance autorisée ou autorisation retirée
 
-### 5.2 Chef de Filière
+### 5.2 Chef de département
 
 - Visualisation de tous les sujets de sa filière
 - Validation d'un sujet avec assignation d'un enseignant encadreur
 - Rejet d'un sujet avec motif obligatoire
+- Planification de la soutenance (date et salle) après le feu vert
 - Export CSV des sujets de sa filière
 - Notifications reçues : nouveau sujet soumis
 
@@ -166,13 +170,16 @@
 - Visualisation des sujets supervisés
 - Téléchargement des fichiers TFC
 - Consultation des scores IA (similarité + score IA) avec badges colorés
+- Affichage de la date et de la salle de soutenance si planifiées
 - Autorisation de soutenance
+- Retrait du feu vert (possible uniquement avant dépôt de la version finale, avec motif obligatoire)
 - Notifications reçues : assignation comme encadreur, nouveau fichier TFC déposé
 
 ### 5.4 Administrateur
 
 - **Dashboard** avec graphiques Chart.js (doughnut statuts, barres par filière)
 - **CRUD Utilisateurs** : créer, modifier, supprimer, bloquer/débloquer, réinitialiser mot de passe
+- **CRUD Facultés** : nom + code + description
 - **CRUD Filières** : faculté + nom + code + description
 - **Années Académiques** : créer, définir l'année courante, clôturer
 - **Paramètres système** : configuration clé/valeur
@@ -185,12 +192,13 @@
 
 | Notification | Canal | Déclencheur | Destinataire |
 |---|---|---|---|
-| `NewSubjectSubmitted` | database + mail | Etudiant soumet un sujet | Chef de Filière |
+| `NewSubjectSubmitted` | database + mail | Etudiant soumet un sujet | Chef de département |
 | `SubjectValidated` | database + mail | CP valide un sujet | Etudiant |
 | `SubjectRejected` | database + mail | CP rejette un sujet | Etudiant |
 | `TeacherAssigned` | database + mail | CP assigne un encadreur | Enseignant |
 | `ThesisFileUploaded` | database + mail | Etudiant dépose un PDF | Enseignant encadreur |
 | `DefenseAuthorized` | database + mail | Enseignant autorise la soutenance | Etudiant |
+| `DefenseAuthorizationRevoked` | database + mail | Enseignant retire le Feu Vert avec motif (avant version finale) | Etudiant |
 
 Les notifications apparaissent dans l'icône cloche de la barre de navigation (badge rouge avec compteur).
 
@@ -203,22 +211,20 @@ Les notifications apparaissent dans l'icône cloche de la barre de navigation (b
 Le fichier `app/Services/AiDetectionService.php` gère :
 
 1. **Extraction de texte** depuis le PDF via `smalot/pdfparser`
-2. **Envoi à l'API** de détection (GPTZero ou ZeroGPT)
+2. **Envoi à l'API** de détection (GPTZero)
 3. **Stockage du rapport** dans la table `ai_reports`
 
-### 7.2 Fournisseurs supportés
+### 7.2 Fournisseur supporte
 
 | Fournisseur | Variable .env | URL API |
 |---|---|---|
-| **GPTZero** | `AI_DETECTION_PROVIDER=gptzero` | `https://api.gptzero.me/v2/predict/text` |
-| **ZeroGPT** | `AI_DETECTION_PROVIDER=zerogpt` | `https://api.zerogpt.com/api/detect/detectText` |
+| **GPTZero** | `AI_DETECTION_API_KEY` | `https://api.gptzero.me/v2/predict/text` |
 | **Simulation** | (vide ou non configuré) | Scores aléatoires pour le développement |
 
 ### 7.3 Configuration (.env)
 
 ```env
-AI_DETECTION_PROVIDER=         # gptzero, zerogpt, ou vide = simulation
-AI_DETECTION_API_KEY=          # Clé API du fournisseur
+AI_DETECTION_API_KEY=          # Cle API du fournisseur (optionnelle)
 AI_DETECTION_API_URL=https://api.gptzero.me/v2/predict/text
 ```
 
@@ -251,9 +257,9 @@ Mot de passe pour tous : **`password`**
 | Nom | Email | Matricule | Rôle | Filière |
 |---|---|---|---|---|
 | Administrateur Système | `admin@udbl-tfc.cd` | ADM-001 | Admin | — |
-| Prof. Jean Kabongo | `cp.gl@udbl-tfc.cd` | CP-001 | Chef Departement | Génie Logiciel |
-| Prof. Sylvie Kyungu | `cp.ras@udbl-tfc.cd` | CP-002 | Chef Departement | Réseaux et Admin Sys. |
-| Prof. Joseph Kalala | `cp.ecopo@udbl-tfc.cd` | CP-003 | Chef Departement | Gestion Entreprises |
+| Prof. Jean Kabongo | `cp.gl@udbl-tfc.cd` | CP-001 | Chef de département | Génie Logiciel |
+| Prof. Sylvie Kyungu | `cp.ras@udbl-tfc.cd` | CP-002 | Chef de département | Réseaux et Admin Sys. |
+| Prof. Joseph Kalala | `cp.ecopo@udbl-tfc.cd` | CP-003 | Chef de département | Gestion Entreprises |
 | Prof. Marie Lukusa | `prof1@udbl-tfc.cd` | ENS-001 | Enseignant | Génie Logiciel |
 | Prof. Patrick Mbuyi | `prof2@udbl-tfc.cd` | ENS-002 | Enseignant | Génie Logiciel |
 | Prof. Claude Ngoy | `prof3@udbl-tfc.cd` | ENS-003 | Enseignant | Réseaux |
@@ -264,11 +270,11 @@ Mot de passe pour tous : **`password`**
 
 ---
 
-## 9. MIGRATIONS (18)
+## 9. MIGRATIONS (20)
 
 | # | Migration | Description |
 |---|---|---|
-| 1 | `create_departments_table` | Table des filières (faculty, name, code) |
+| 1 | `create_departments_table` | Table des filières (name, code) |
 | 2 | `create_users_table` | Table utilisateurs (+ matricule, department_id) |
 | 3 | `create_cache_table` | Cache Laravel |
 | 4 | `create_jobs_table` | File d'attente / jobs |
@@ -286,23 +292,25 @@ Mot de passe pour tous : **`password`**
 | 16 | `seed_system_settings` | Paramètres système par défaut |
 | 17 | `add_defense_validated_to_subjects_table` | Champ autorisation soutenance |
 | 18 | `add_structured_fields_to_subjects_table` | 10 champs structurés du wizard |
+| 19 | `create_faculties_table` | Table des facultés + rattachement aux filières |
+| 20 | `add_defense_details_to_subjects_table` | Date et salle de soutenance |
 
 ---
 
-## 10. ROUTES (58)
+## 10. ROUTES (60)
 
 ### Routes publiques
 | Méthode | URI | Description |
 |---|---|---|
 | GET | `/` | Page d'accueil |
+| GET | `/archives` | Archives publiques |
+| GET | `/archives/{id}/download` | Télécharger un fichier final |
 
 ### Routes authentifiées
 | Méthode | URI | Middleware | Description |
 |---|---|---|---|
 | GET | `/dashboard` | auth, verified | Dashboard (rôle dynamique) |
-| GET | `/profile` | auth | Edition du profil |
-| PATCH | `/profile` | auth | Mise à jour profil |
-| DELETE | `/profile` | auth | Suppression compte |
+| GET | `/profile` | auth | Consultation du profil (lecture seule) |
 
 ### Routes Etudiant
 | Méthode | URI | Description |
@@ -316,11 +324,13 @@ Mot de passe pour tous : **`password`**
 |---|---|---|
 | POST | `/subjects/{id}/validate` | Valider un sujet |
 | POST | `/subjects/{id}/reject` | Rejeter un sujet |
+| PATCH | `/subjects/{id}/schedule-defense` | Planifier date/salle de soutenance |
 
 ### Routes Enseignant
 | Méthode | URI | Description |
 |---|---|---|
 | POST | `/subjects/{id}/authorize-defense` | Autoriser la soutenance |
+| DELETE | `/subjects/{id}/authorize-defense` | Retirer le Feu Vert (si version finale non déposée, motif obligatoire) |
 
 ### Routes communes (auth)
 | Méthode | URI | Description |
@@ -332,8 +342,10 @@ Mot de passe pour tous : **`password`**
 | GET | `/notifications` | Liste des notifications |
 | POST | `/notifications/{id}/read` | Marquer notification comme lue |
 | POST | `/notifications/mark-all-read` | Tout marquer comme lu |
+| DELETE | `/notifications/{id}` | Supprimer une notification |
+| DELETE | `/notifications` | Supprimer toutes les notifications |
 
-### Routes Admin (17 routes, préfixe `/admin`)
+### Routes Admin (préfixe `/admin`)
 | Méthode | URI | Description |
 |---|---|---|
 | GET | `/admin/users` | Liste utilisateurs |
@@ -344,6 +356,12 @@ Mot de passe pour tous : **`password`**
 | DELETE | `/admin/users/{id}` | Supprimer utilisateur |
 | PATCH | `/admin/users/{id}/toggle-block` | Bloquer/débloquer |
 | PATCH | `/admin/users/{id}/reset-password` | Réinitialiser mot de passe |
+| GET | `/admin/faculties` | Liste facultés |
+| GET | `/admin/faculties/create` | Créer faculté |
+| POST | `/admin/faculties` | Enregistrer faculté |
+| GET | `/admin/faculties/{id}/edit` | Modifier faculté |
+| PUT | `/admin/faculties/{id}` | Mettre à jour faculté |
+| DELETE | `/admin/faculties/{id}` | Supprimer faculté |
 | GET | `/admin/departments` | Liste filières |
 | GET | `/admin/departments/create` | Créer filière |
 | POST | `/admin/departments` | Enregistrer filière |
@@ -361,7 +379,7 @@ Mot de passe pour tous : **`password`**
 | GET | `/admin/logs` | Journal d'activité |
 
 ### Routes Auth (12 routes Breeze)
-Login, register, forgot-password, reset-password, verify-email, confirm-password, logout.
+Login, forgot-password, reset-password, verify-email, confirm-password, logout (register désactivé).
 
 ---
 
@@ -437,7 +455,12 @@ APP_FALLBACK_LOCALE=fr
 APP_FAKER_LOCALE=fr_FR
 
 # Base de données
-DB_CONNECTION=sqlite
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=udbl_tfc_manager
+DB_USERNAME=postgres
+DB_PASSWORD=
 
 # Sessions & Cache
 SESSION_DRIVER=database
@@ -448,8 +471,7 @@ QUEUE_CONNECTION=database
 MAIL_MAILER=log
 
 # Détection IA
-AI_DETECTION_PROVIDER=          # gptzero | zerogpt | (vide = simulation)
-AI_DETECTION_API_KEY=           # Clé API
+AI_DETECTION_API_KEY=           # Cle API (optionnelle)
 AI_DETECTION_API_URL=https://api.gptzero.me/v2/predict/text
 ```
 
@@ -471,7 +493,7 @@ cp .env.example .env
 php artisan key:generate
 
 # 4. Base de données
-touch database/database.sqlite
+# Configurer PostgreSQL dans .env (DB_CONNECTION=pgsql, etc.)
 php artisan migrate --seed
 
 # 5. Stockage
@@ -496,7 +518,7 @@ php artisan serve
 | # | Amélioration | Détail |
 |---|---|---|
 | 1 | **Configuration mail production** | Remplacer `MAIL_MAILER=log` par un SMTP réel (Mailtrap, Gmail, etc.) pour envoyer les notifications par email |
-| 2 | **Base de données production** | Migrer de SQLite vers PostgreSQL ou MySQL pour la production |
+| 2 | **Base de données production** | Renforcer la stratégie PostgreSQL en production (sauvegardes, supervision, réplication selon besoins) |
 | 3 | **Tests automatisés** | Ecrire des tests Feature pour les workflows métier (soumission, validation, upload, rôles) |
 | 4 | **Modales de confirmation** | Ajouter des modales JavaScript avant les suppressions |
 | 5 | **Filtres admin avancés** | Ajouter recherche/filtres sur filières, années académiques, logs |
@@ -521,13 +543,13 @@ php artisan serve
 |---|---|
 | Architecture Laravel | Complète et conforme |
 | Système d'authentification | Fonctionnel (Breeze) |
-| Rôles et permissions (4 rôles, 13 permissions) | Implémenté (Spatie) |
-| Workflow sujets (soumission - validation - assignation) | Fonctionnel |
+| Rôles et permissions (4 rôles, 17 permissions) | Implémenté (Spatie) |
+| Workflow sujets (soumission - validation - assignation - soutenance) | Fonctionnel |
 | Wizard 5 étapes (soumission structurée) | Fonctionnel (Alpine.js) |
 | Upload et analyse PDF | Fonctionnel (smalot/pdfparser + API IA) |
-| Fournisseurs IA (GPTZero + ZeroGPT + simulation) | Configuré |
+| Fournisseurs IA (GPTZero + simulation) | Configuré |
 | 4 dashboards par rôle | Implémentés |
-| Administration complète (CRUD users/filières/années/params/logs) | Fonctionnel |
+| Administration complète (CRUD users/facultés/filières/années/params/logs) | Fonctionnel |
 | 6 notifications (database + mail) | Implémentées |
 | Export CSV | Fonctionnel (Admin + CP) |
 | Pages d'erreur FR | 4 pages (403, 404, 419, 500) |

@@ -21,7 +21,7 @@ class DashboardController extends Controller
 
         if ($user->hasRole('Admin')) {
             return $this->adminDashboard();
-        } elseif ($user->hasRole('Chef Departement')) {
+        } elseif ($user->hasRole('Chef de département')) {
             return $this->cpDashboard($user);
         } elseif ($user->hasRole('Enseignant')) {
             return $this->teacherDashboard($user);
@@ -67,7 +67,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dashboard Chef de Filière.
+     * Dashboard Chef de département.
      */
     private function cpDashboard(User $user)
     {

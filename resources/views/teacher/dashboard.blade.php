@@ -60,16 +60,22 @@
                             @foreach($supervisedSubjects as $subject)
                                 <div class="border rounded-lg overflow-hidden">
                                     {{-- En-tête étudiant --}}
-                                    <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
-                                        <div>
-                                            <h4 class="font-bold text-gray-900">{{ $subject->student->name }}</h4>
-                                            <p class="text-sm text-gray-500">{{ $subject->student->matricule ?? '—' }} · {{ $subject->student->email }}</p>
+                                    <div class="bg-gray-50 px-4 py-3 flex flex-wrap items-start justify-between gap-3 sm:items-center">
+                                        <div class="min-w-0">
+                                            <h4 class="font-bold text-gray-900 break-words">{{ $subject->student->name }}</h4>
+                                            <p class="text-sm text-gray-500 break-all sm:break-normal">{{ $subject->student->matricule ?? '—' }} · {{ $subject->student->email }}</p>
                                         </div>
-                                        <div>
+                                        <div class="w-full sm:w-auto flex flex-wrap items-center gap-2 sm:justify-end">
                                             @if($subject->defense_validated ?? false)
                                                 <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     <x-icon name="check-circle" class="w-4 h-4" /> Défense autorisée
                                                 </span>
+                                                @if($subject->defense_date)
+                                                    <span class="inline-flex w-full sm:w-auto items-start gap-1 rounded-md bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
+                                                        <x-icon name="calendar" class="mt-0.5 h-4 w-4 shrink-0" />
+                                                        <span class="leading-4 break-words sm:whitespace-nowrap">{{ \Carbon\Carbon::parse($subject->defense_date)->format('d/m/Y H:i') }} - Salle {{ $subject->defense_room ?? 'à définir' }}</span>
+                                                    </span>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
@@ -208,8 +214,13 @@
                                                 @endforeach
                                             </div>
 
+                                            @php
+                                                $hasJuryVersion = $subject->thesisFiles->where('version_type', 'jury')->count() > 0;
+                                                $hasFinalVersion = $subject->thesisFiles->where('version_type', 'final')->count() > 0;
+                                            @endphp
+
                                             {{-- Bouton "Feu Vert" pour autoriser la défense --}}
-                                            @if($subject->thesisFiles->where('version_type', 'jury')->count() > 0 && !($subject->defense_validated ?? false))
+                                            @if($hasJuryVersion && !($subject->defense_validated ?? false))
                                                 <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                                                     <p class="text-sm text-amber-800 mb-3">
                                                         <strong>Action requise :</strong> Après avoir lu la version Jury et vérifié les scores IA, vous pouvez autoriser l'étudiant à déposer la version finale et passer en défense.
@@ -221,6 +232,48 @@
                                                             <x-icon name="rocket-launch" class="w-5 h-5" /> Autoriser le dépôt final / Valider pour défense
                                                         </button>
                                                     </form>
+                                                </div>
+                                            @endif
+
+                                            {{-- Retrait du Feu Vert --}}
+                                            @if($subject->defense_validated ?? false)
+                                                <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                                    <p class="text-sm text-green-800 mb-3">
+                                                        <strong>Feu Vert accordé :</strong> la soutenance est autorisée pour cet étudiant.
+                                                    </p>
+
+                                                    @if(!$hasFinalVersion)
+                                                        <form action="{{ route('subjects.revoke-defense', $subject) }}" method="POST"
+                                                              onsubmit="return confirm('Retirer le Feu Vert pour {{ $subject->student->name }} ?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <div class="mb-3">
+                                                                <label for="defense_revocation_reason_{{ $subject->id }}" class="block text-sm font-medium text-green-800 mb-1">
+                                                                    Motif du retrait <span class="text-red-600">*</span>
+                                                                </label>
+                                                                <textarea
+                                                                    id="defense_revocation_reason_{{ $subject->id }}"
+                                                                    name="defense_revocation_reason"
+                                                                    rows="3"
+                                                                    required
+                                                                    minlength="10"
+                                                                    maxlength="1000"
+                                                                    class="w-full rounded-md border border-green-300 px-3 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-red-500"
+                                                                    placeholder="Expliquez brièvement pourquoi le Feu Vert est retiré (corrections demandées, anomalies détectées, etc.)"
+                                                                >{{ old('defense_revocation_reason') }}</textarea>
+                                                                @error('defense_revocation_reason')
+                                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                                @enderror
+                                                            </div>
+                                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow">
+                                                                Retirer le Feu Vert
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <p class="text-xs text-green-700">
+                                                            Retrait indisponible : la version finale a déjà été déposée.
+                                                        </p>
+                                                    @endif
                                                 </div>
                                             @endif
                                         @else

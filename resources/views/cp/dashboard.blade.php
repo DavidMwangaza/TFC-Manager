@@ -230,6 +230,7 @@
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Encadreur</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fichiers</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -272,6 +273,51 @@
                                                 @else
                                                     @if($hasJury) <span class="text-blue-600">Jury</span> @endif
                                                     @if($hasFinal) <span class="text-green-600 ml-1">Final</span> @endif
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                                @if($subject->defense_validated)
+                                                    <div x-data="{ openSche: false }">
+                                                        <button @click="openSche = true" class="rounded bg-indigo-100 px-2.5 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-200">
+                                                            Planifier soutenance
+                                                        </button>
+
+                                                       <!-- Modal Planification -->
+                                                        <div x-show="openSche" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0 sm:py-8" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                                            <div class="flex min-h-screen items-center justify-center text-center">
+                                                                <div x-show="openSche" @click="openSche = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                                                                <div x-show="openSche" class="relative z-10 mx-auto w-full max-w-lg overflow-y-auto rounded-lg bg-white text-left shadow-xl transform transition-all max-h-[calc(100vh-2rem)] sm:max-h-[85vh]">
+                                                                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                                        <div class="w-full">
+                                                                            <div class="w-full text-left">
+                                                                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Planifier la soutenance</h3>
+                                                                                <div class="mt-2">
+                                                                                    <form action="{{ route('subjects.schedule-defense', $subject) }}" method="POST">
+                                                                                        @csrf
+                                                                                        @method('PATCH')
+                                                                                        <div class="mb-4">
+                                                                                            <label class="block text-sm font-medium text-gray-700 mb-1 text-left">Date et heure <span class="text-red-500">*</span></label>
+                                                                                            <input type="datetime-local" name="defense_date" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value="{{ $subject->defense_date ? $subject->defense_date->format('Y-m-d\TH:i') : '' }}">
+                                                                                        </div>
+                                                                                        <div class="mb-4">
+                                                                                            <label class="block text-sm font-medium text-gray-700 mb-1 text-left">Salle <span class="text-red-500">*</span></label>
+                                                                                            <input type="text" name="defense_room" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value="{{ $subject->defense_room }}" placeholder="Ex: Salle 1">
+                                                                                        </div>
+                                                                                        <div class="mt-5 flex flex-col-reverse gap-2 border-t pt-4 sm:mt-4 sm:flex-row sm:justify-end">
+                                                                                            <button type="submit" class="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Enregistrer</button>
+                                                                                            <button type="button" @click="openSche = false" class="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Annuler</button>
+                                                                                        </div>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400 text-xs">Non autoris&eacute;</span>
                                                 @endif
                                             </td>
                                         </tr>

@@ -67,7 +67,7 @@
                             @if(request()->hasAny(['search', 'status', 'department_id']))
                                 <a href="{{ route('subjects.index') }}" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900">✕ Réinitialiser</a>
                             @endif
-                            @hasanyrole('Admin|Chef Departement')
+                            @hasanyrole('Admin|Chef de département')
                             <a href="{{ route('subjects.export', request()->query()) }}" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700 transition ml-auto inline-flex items-center gap-1.5">
                                 <x-icon name="arrow-down-tray" class="w-4 h-4" /> Exporter CSV
                             </a>

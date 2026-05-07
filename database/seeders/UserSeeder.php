@@ -168,7 +168,7 @@ class UserSeeder extends Seeder
             'department_id' => $genieLogiciel->id,
             'email_verified_at' => now(),
         ]);
-        $cpGL->assignRole('Chef Departement');
+        $cpGL->assignRole('Chef de département');
 
         // Chef de Département — Réseaux (ESIS)
         $cpRAS = User::create([
@@ -179,7 +179,7 @@ class UserSeeder extends Seeder
             'department_id' => $reseaux->id,
             'email_verified_at' => now(),
         ]);
-        $cpRAS->assignRole('Chef Departement');
+        $cpRAS->assignRole('Chef de département');
 
         // Chef de Département — ECOPO
         $cpECOPO = User::create([
@@ -190,7 +190,7 @@ class UserSeeder extends Seeder
             'department_id' => $gestionEntreprise->id,
             'email_verified_at' => now(),
         ]);
-        $cpECOPO->assignRole('Chef Departement');
+        $cpECOPO->assignRole('Chef de département');
 
         // Enseignants — Génie Logiciel
         $prof1 = User::create([

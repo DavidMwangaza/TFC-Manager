@@ -42,10 +42,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/thesis/upload', [ThesisFileController::class, 'upload'])->name('thesis.upload');
     });
 
-    // === VALIDATION SUJETS (Chef de Filière) ===
-    Route::middleware('role:Chef Departement')->group(function () {
+    // === VALIDATION SUJETS (Chef de département) ===
+    Route::middleware('role:Chef de département')->group(function () {
         Route::post('/subjects/{subject}/validate', [SubjectController::class, 'validateSubject'])->name('subjects.validate');
         Route::post('/subjects/{subject}/reject', [SubjectController::class, 'rejectSubject'])->name('subjects.reject');
+        Route::patch('/subjects/{subject}/schedule-defense', [SubjectController::class, 'scheduleDefense'])->name('subjects.schedule-defense');
     });
 
     // === TÉLÉCHARGEMENT (Enseignant, CP, Admin) ===
@@ -54,17 +55,20 @@ Route::middleware('auth')->group(function () {
     // === AUTORISATION SOUTENANCE (Enseignant) ===
     Route::middleware('role:Enseignant')->group(function () {
         Route::post('/subjects/{subject}/authorize-defense', [SubjectController::class, 'authorizeDefense'])->name('subjects.authorize-defense');
+        Route::delete('/subjects/{subject}/authorize-defense', [SubjectController::class, 'revokeDefenseAuthorization'])->name('subjects.revoke-defense');
     });
 
     // === LISTE DES SUJETS ===
     Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
-    Route::get('/subjects/export', [SubjectController::class, 'export'])->name('subjects.export')->middleware('role:Admin|Chef Departement');
+    Route::get('/subjects/export', [SubjectController::class, 'export'])->name('subjects.export')->middleware('role:Admin|Chef de département');
     Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
 
     // === NOTIFICATIONS ===
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::delete('/notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
 
     // =======================================================
     // === ADMINISTRATION (Admin uniquement) ===

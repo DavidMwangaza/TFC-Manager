@@ -14,6 +14,7 @@ class NotificationController extends Controller
     {
         $notifications = Auth::user()
             ->notifications()
+            ->latest()
             ->paginate(20);
 
         return view('notifications.index', compact('notifications'));
@@ -28,9 +29,11 @@ class NotificationController extends Controller
             ->notifications()
             ->findOrFail($id);
 
-        $notification->markAsRead();
+        if (!$notification->read_at) {
+            $notification->markAsRead();
+        }
 
-        return back();
+        return back()->with('success', 'Notification marquée comme lue.');
     }
 
     /**
@@ -41,5 +44,29 @@ class NotificationController extends Controller
         Auth::user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'Toutes les notifications ont été marquées comme lues.');
+    }
+
+    /**
+     * Supprimer une notification de l'utilisateur connecté.
+     */
+    public function destroy(string $id)
+    {
+        $notification = Auth::user()
+            ->notifications()
+            ->findOrFail($id);
+
+        $notification->delete();
+
+        return back()->with('success', 'Notification supprimée.');
+    }
+
+    /**
+     * Supprimer toutes les notifications de l'utilisateur connecté.
+     */
+    public function destroyAll()
+    {
+        Auth::user()->notifications()->delete();
+
+        return back()->with('success', 'Toutes vos notifications ont été supprimées.');
     }
 }

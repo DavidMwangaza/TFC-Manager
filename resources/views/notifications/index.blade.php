@@ -4,14 +4,29 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight inline-flex items-center gap-2">
                 <x-icon name="bell" class="w-6 h-6" /> Notifications
             </h2>
-            @if(Auth::user()->unreadNotifications->count() > 0)
-                <form method="POST" action="{{ route('notifications.markAllRead') }}">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-200 transition">
-                        Tout marquer comme lu
-                    </button>
-                </form>
-            @endif
+            @php
+                $unreadCount = Auth::user()->unreadNotifications->count();
+                $totalNotifications = Auth::user()->notifications()->count();
+            @endphp
+            <div class="flex items-center gap-2">
+                @if($unreadCount > 0)
+                    <form method="POST" action="{{ route('notifications.markAllRead') }}">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-200 transition">
+                            Tout marquer comme lu
+                        </button>
+                    </form>
+                @endif
+                @if($totalNotifications > 0)
+                    <form method="POST" action="{{ route('notifications.destroyAll') }}" onsubmit="return confirm('Supprimer toutes vos notifications ?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 border border-red-300 rounded-md text-sm text-red-700 hover:bg-red-100 transition">
+                            Tout supprimer
+                        </button>
+                    </form>
+                @endif
+            </div>
         </div>
     </x-slot>
 
@@ -64,15 +79,23 @@
                                         </p>
                                     </div>
 
-                                    {{-- Bouton marquer comme lu --}}
-                                    @unless($notification->read_at)
-                                        <form method="POST" action="{{ route('notifications.markAsRead', $notification->id) }}" class="flex-shrink-0">
+                                    <div class="flex-shrink-0 flex items-center gap-3">
+                                        @unless($notification->read_at)
+                                            <form method="POST" action="{{ route('notifications.markAsRead', $notification->id) }}">
+                                                @csrf
+                                                <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 hover:underline" title="Marquer comme lu">
+                                                    Marquer comme lu
+                                                </button>
+                                            </form>
+                                        @endunless
+                                        <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}" onsubmit="return confirm('Supprimer cette notification ?')">
                                             @csrf
-                                            <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 hover:underline" title="Marquer comme lu">
-                                                ✓ Lu
+                                            @method('DELETE')
+                                            <button type="submit" class="text-xs text-red-600 hover:text-red-800 hover:underline" title="Supprimer la notification">
+                                                Supprimer
                                             </button>
                                         </form>
-                                    @endunless
+                                    </div>
                                 </div>
                             @endforeach
                         </div>

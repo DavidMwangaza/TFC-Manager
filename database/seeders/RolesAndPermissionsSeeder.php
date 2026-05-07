@@ -47,7 +47,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = Role::create(['name' => 'Admin']);
         $admin->givePermissionTo(Permission::all());
 
-        $cp = Role::create(['name' => 'Chef Departement']);
+        $cp = Role::create(['name' => 'Chef de département']);
         $cp->givePermissionTo([
             'subjects.view',
             'subjects.validate',

@@ -104,7 +104,7 @@
                                                 @php
                                                     $colors = [
                                                         'Admin' => 'bg-red-100 text-red-800',
-                                                        'Chef Departement' => 'bg-blue-100 text-blue-800',
+                                                        'Chef de département' => 'bg-blue-100 text-blue-800',
                                                         'Enseignant' => 'bg-purple-100 text-purple-800',
                                                         'Etudiant' => 'bg-green-100 text-green-800',
                                                     ];
@@ -184,7 +184,7 @@
                         <h4 class="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-1.5"><x-icon name="information-circle" class="w-5 h-5" /> Rappel — Périmètre du rôle Admin</h4>
                         <ul class="text-xs text-amber-700 space-y-1">
                             <li>• <strong>Vous gérez :</strong> les accès, la structure académique, les paramètres et la maintenance.</li>
-                            <li>• <strong>Vous ne validez pas</strong> les sujets (c'est le rôle du Chef de Filière).</li>
+                            <li>• <strong>Vous ne validez pas</strong> les sujets (c'est le rôle du Chef de département).</li>
                             <li>• <strong>Vous ne notez pas</strong> les travaux (c'est le rôle du Jury/Directeur).</li>
                             <li>• <strong>Vous ne modifiez pas</strong> le contenu des TFC (titre, fichier) d'un étudiant.</li>
                         </ul>
