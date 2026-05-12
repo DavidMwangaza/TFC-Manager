@@ -11,7 +11,7 @@ class PasswordUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_password_update_route_is_not_available_when_feature_is_disabled(): void
+    public function test_route_mise_a_jour_mot_de_passe_indisponible_si_feature_desactivee(): void
     {
         $user = User::factory()->create();
 
@@ -29,7 +29,7 @@ class PasswordUpdateTest extends TestCase
         $this->assertTrue(Hash::check('password', $user->refresh()->password));
     }
 
-    public function test_password_update_validation_is_not_reachable_when_feature_is_disabled(): void
+    public function test_validation_mise_a_jour_mot_de_passe_indisponible_si_feature_desactivee(): void
     {
         $user = User::factory()->create();
 

@@ -9,14 +9,14 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_is_not_available_when_self_registration_is_disabled(): void
+    public function test_page_inscription_non_disponible_si_autoregistration_desactivee(): void
     {
         $response = $this->get('/register');
 
         $response->assertNotFound();
     }
 
-    public function test_new_users_cannot_register_when_self_registration_is_disabled(): void
+    public function test_nouveaux_utilisateurs_ne_peuvent_pas_s_inscrire_si_autoregistration_desactivee(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
