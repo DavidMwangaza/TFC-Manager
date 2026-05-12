@@ -84,6 +84,13 @@ class Subject extends Model
     }
 
     /**
+     * Jalons (milestones) liés au sujet.
+     */
+    public function milestones(): HasMany
+    {
+        return $this->hasMany(Milestone::class);
+    }
+    /**
      * Vérifie si le sujet est validé.
      */
     public function isValidated(): bool

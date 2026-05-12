@@ -222,6 +222,12 @@ graph LR
 
 ---
 
+## Note technique — Serveur utilisé
+
+- En développement : `php artisan serve` (serveur PHP intégré de Laravel).
+- En production : Apache ou Nginx avec PHP-FPM (préconisé pour les performances et la sécurité).
+- Front-end (développement) : `npm run dev` (Vite) pour le rechargement et la compilation des assets.
+
 ## Recommendation d'usage
 
 - Utiliser `DIAGRAMMES-PAR-CHAPITRE-NB.md` pour la redaction du memoire.

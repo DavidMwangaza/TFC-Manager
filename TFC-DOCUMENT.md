@@ -1,101 +1,99 @@
 # UNIVERSITÉ DON BOSCO DE LUBUMBASHI
 
-## FACULTÉ DES SCIENCES INFORMATIQUES (ESIS)
+# INTRODUCTION GÉNÉRALE
 
-### DÉPARTEMENT DE GÉNIE LOGICIEL
+## 1. Problématique
 
----
+La gestion des Travaux de Fin de Cycle (TFC) constitue un processus académique central au sein des universités congolaises en général, et à l'Université Don Bosco de Lubumbashi (UDBL) en particulier. Ce processus englobe plusieurs étapes critiques : le dépôt d'une fiche de sujet, la décision académique, l'assignation d'un directeur de mémoire, l'encadrement, le dépôt du mémoire, l'autorisation de soutenance et l'archivage.
 
-# TRAVAIL DE FIN DE CYCLE
+Actuellement, ce processus repose principalement sur des mécanismes manuels et fragmentés (courriels, échanges verbaux, dossiers papier), ce qui entraîne des retards, une absence de traçabilité et un risque de perte documentaire. De plus, l'irruption des outils d'intelligence artificielle générative soulève la question de l'intégrité scientifique des travaux soumis, alors qu'aucun contrôle automatisé n'est en place.
 
-## CONCEPTION ET RÉALISATION D'UNE PLATEFORME WEB DE GESTION DES TRAVAUX DE FIN DE CYCLE INTÉGRANT UN MODULE DE DÉTECTION DE CONTENU GÉNÉRÉ PAR INTELLIGENCE ARTIFICIELLE
+Face à ces constats, la question centrale de ce mémoire est : **comment concevoir et déployer une plateforme web qui automatise la gestion des TFC, garantit la traçabilité des décisions et intègre un module de détection du contenu généré par IA ?**
 
-### Cas de l'Université Don Bosco de Lubumbashi
+## 2. Hypothèse
 
----
+Nous partons de l'hypothèse que la conception et le déploiement d'une plateforme web intégrée, associée à des modules d'analyse automatisée (détection IA, extraction de texte PDF) et à un workflow de notifications, permettront :
 
-**Présenté par :** MUMBERE MWANGAZA DAVID
+- de réduire significativement les délais de traitement ;
+- d'assurer une traçabilité et un archivage consultable des décisions et des documents ;
+- d'alerter automatiquement en cas de suspicion de contenu généré par IA ;
+- d'améliorer la qualité de l'encadrement et la transparence du processus.
 
-**Dirigé par :** [Nom du Directeur]
+## 3. État de l'art
 
-**Année académique :** 2025–2026
+Les systèmes de gestion des mémoires et des dépôts institutionnels existent sous diverses formes : répertoires institutionnels, modules de gestion de thèses et fonctionnalités LMS (Learning Management System). De nombreux établissements combinent des solutions open-source et propriétaires pour gérer les dépôts, le suivi et l'archivage.
 
----
+En matière de détection d'originalité et de plagiat, des outils établis (par ex. Turnitin, Unicheck) analysent les similarités textuelles par rapport à des bases documentaires. Plus récemment, des services spécialisés dans la détection de contenu généré par IA (ex. GPTZero et autres) proposent des scores probabilistes basés sur des métriques linguistiques (perplexité, entropie, patterns de génération). Toutefois, ces services présentent des limites : coût, couverture linguistique variable, faux positifs/negatifs, et intégration non systématique dans les workflows universitaires.
 
-\newpage
+L'analyse de l'état de l'art montre un besoin d'intégration : relier la soumission, l'extraction automatique de texte (PDF), l'évaluation par des API de détection IA et le workflow décisionnel (validation/rejet/notification). C'est précisément cette intégration end-to-end que vise notre contribution.
 
-# ÉPIGRAPHE
+## 4. Choix et intérêt du sujet
 
-> « La technologie seule ne suffit pas — c'est la technologie mariée aux arts libéraux, mariée aux humanités, qui nous donne le résultat qui fait chanter notre cœur. »
->
-> — **Steve Jobs**
+### 4.1 Choix du sujet
 
----
+Le choix de porter l'étude sur une plateforme de gestion des TFC s'explique par trois raisons principales : la problématique locale identifiée à l'UDBL (digitalisation incomplète), l'importance institutionnelle d'assurer l'intégrité académique et la pertinence pédagogique du projet pour démontrer des pratiques d'ingénierie logicielle modernes (architecture MVC, bonnes pratiques de sécurité, tests). Le sujet permet d'articuler des enjeux techniques, organisationnels et éthiques.
 
-\newpage
+### 4.2 Intérêt du sujet
 
-# DÉDICACE
+- **Intérêt scientifique :** le projet met en application des concepts du génie logiciel (architecture, modélisation, tests) et explore l'intégration de modules d'intelligence artificielle pour la garantie d'intégrité documentaire.
+- **Intérêt pratique :** il répond à un besoin opérationnel réel à l'UDBL : réduction des délais, traçabilité, archivage numérisé et détection automatisée de contenus suspectés d'être générés par IA.
+- **Intérêt pédagogique / personnel :** ce travail permet aux auteurs d'appliquer et d'approfondir des compétences en développement web, en gestion de bases de données, en modélisation UML et en intégration d'API tierces.
 
-À mes chers parents, pour leur soutien indéfectible et leurs sacrifices consentis tout au long de mon parcours académique.
+## 5. Approche méthodologique
 
-À tous ceux qui croient en la puissance de la technologie au service de l'éducation.
+L'approche adoptée combine modélisation, développement itératif et validation terrain :
 
----
+- **Conception** : modélisation des besoins par UML (cas d'utilisation, diagrammes de classes et de séquence) pour formaliser les processus et les acteurs ;
+- **Développement** : mise en œuvre d'une application web en architecture MVC (Laravel), développement itératif en méthode agile avec intégration continue des retours ;
+- **Intégration d'API** : extraction de texte depuis les PDF (bibliothèques de parsing) puis envoi aux services de détection IA (API) pour génération de rapports automatisés ;
+- **Collecte des besoins** : interviews et observations auprès des acteurs (secrétariats, enseignants, étudiants) pour ajuster les fonctionnalités ;
+- **Validation** : tests unitaires et fonctionnels (PHPUnit), déploiement pilote et retours d'usage pour mesurer l'impact sur les délais et la traçabilité.
 
-\newpage
+## 6. Délimitation du sujet
 
-# AVANT-PROPOS
+### Délimitation spatiale
 
-Le présent travail de fin de cycle constitue l'aboutissement de notre formation en Génie Logiciel au sein de la Faculté des Sciences Informatiques (ESIS) de l'Université Don Bosco de Lubumbashi.
+L'étude est limitée à l'Université Don Bosco de Lubumbashi et à ses quatre facultés (ESIS, ECOPO, KANSEBULA, THEOLOGICUM).
 
-Nous tenons à exprimer notre profonde gratitude à toutes les personnes qui ont contribué, de près ou de loin, à la réalisation de ce travail :
+### Délimitation temporelle
 
-- **[Nom du Directeur]**, notre directeur de mémoire, pour son encadrement rigoureux, ses conseils avisés et sa disponibilité constante ;
-- **Les autorités académiques** de l'Université Don Bosco de Lubumbashi, pour la qualité de la formation dispensée ;
-- **Nos enseignants** de la Faculté ESIS, pour les connaissances transmises durant notre cursus ;
-- **Nos camarades de promotion**, pour les échanges enrichissants et l'entraide mutuelle ;
-- **Nos familles**, pour leur soutien moral et matériel tout au long de nos études.
+Les données et cas pratiques considérés portent principalement sur l'année académique 2025–2026. La solution reste toutefois conçue pour être extensible à d'autres années.
 
----
+### Délimitation fonctionnelle
 
-\newpage
+Le périmètre couvre : gestion des utilisateurs et rôles (RBAC), soumission/validation des sujets, dépôt des fichiers PDF, extraction et analyse automatique des documents, notifications, archivage et administration. Le projet **ne couvre pas** la composition du jury ni la gestion des notes ni la gestion financière.
 
-# TABLE DES MATIÈRES
+## 7. Subdivision du travail
 
-- [INTRODUCTION GÉNÉRALE](#introduction-générale)
-  - [1. Problématique](#1-problématique)
-  - [2. Hypothèses](#2-hypothèses)
-  - [3. Choix et intérêt du sujet](#3-choix-et-intérêt-du-sujet)
-  - [4. Délimitation du sujet](#4-délimitation-du-sujet)
-  - [5. Méthodes et techniques utilisées](#5-méthodes-et-techniques-utilisées)
-  - [6. Subdivision du travail](#6-subdivision-du-travail)
-- [CHAPITRE PREMIER : CONSIDÉRATIONS THÉORIQUES ET ANALYSE DU SYSTÈME EXISTANT](#chapitre-premier--considérations-théoriques-et-analyse-du-système-existant)
-  - [Section 1 : Définition des concepts fondamentaux](#section-1--définition-des-concepts-fondamentaux)
-  - [Section 2 : Présentation de l'organisme d'accueil](#section-2--présentation-de-lorganisme-daccueil)
-  - [Section 3 : Analyse du système existant](#section-3--analyse-du-système-existant)
-  - [Section 4 : Choix technologiques](#section-4--choix-technologiques)
-- [CHAPITRE DEUXIÈME : CONCEPTION ET MODÉLISATION DU SYSTÈME D'INFORMATION](#chapitre-deuxième--conception-et-modélisation-du-système-dinformation)
-  - [Section 1 : Identification des acteurs et des besoins](#section-1--identification-des-acteurs-et-des-besoins)
-  - [Section 2 : Diagrammes de cas d'utilisation](#section-2--diagrammes-de-cas-dutilisation)
-  - [Section 3 : Diagrammes de séquence](#section-3--diagrammes-de-séquence)
-  - [Section 4 : Diagramme de classes](#section-4--diagramme-de-classes)
-  - [Section 5 : Modèle relationnel de la base de données](#section-5--modèle-relationnel-de-la-base-de-données)
-  - [Section 6 : Diagramme d'activités](#section-6--diagramme-dactivités)
-- [CHAPITRE TROISIÈME : IMPLÉMENTATION ET PRÉSENTATION DES RÉSULTATS](#chapitre-troisième--implémentation-et-présentation-des-résultats)
-  - [Section 1 : Environnement de développement](#section-1--environnement-de-développement)
-  - [Section 2 : Architecture technique de l'application](#section-2--architecture-technique-de-lapplication)
-  - [Section 3 : Structure de la base de données](#section-3--structure-de-la-base-de-données)
-  - [Section 4 : Présentation des interfaces](#section-4--présentation-des-interfaces)
-  - [Section 5 : Sécurité et contrôle d'accès](#section-5--sécurité-et-contrôle-daccès)
-  - [Section 6 : Tests et validation](#section-6--tests-et-validation)
-- [CONCLUSION GÉNÉRALE](#conclusion-générale)
-- [BIBLIOGRAPHIE](#bibliographie)
-- [LISTE DES FIGURES](#liste-des-figures)
-- [LISTE DES TABLEAUX](#liste-des-tableaux)
+Le mémoire est structuré comme suit :
+
+- **Chapitre I :** Considérations théoriques et analyse du système existant ;
+- **Chapitre II :** Conception et modélisation (UML, modèle de données) ;
+- **Chapitre III :** Implémentation, tests et résultats (architecture technique, interfaces, validation) ;
+- **Annexes :** guides d'installation, extraits de code, rapports d'analyse IA, captures d'écran.
+
+## 8. Outils logiciels et équipements utilisés
+
+Le projet a été mis en œuvre avec la pile technologique suivante (résumé) :
+
+- **Langage & framework :** PHP 8.2+, Laravel 12 ;
+- **Base de données :** PostgreSQL (production), SQLite (tests) ;
+- **Frontend & build :** Tailwind CSS, Vite, Node.js ;
+- **Gestion des dépendances :** Composer (PHP), npm/yarn (JS) ;
+- **Packages clés :** spatie/laravel-permission (RBAC), smalot/pdfparser (extraction PDF) ;
+- **Détection IA :** intégration d'une API (ex. GPTZero) via un service (voir `app/Services/AiDetectionService.php`) ;
+- **Tests & qualité :** PHPUnit, laravel/pint ;
+- **Infrastructure & outils dev :** Git, Docker (optionnel), serveur PHP local pour le développement ;
+- **Matériel requis :** poste de développement standard (4+ CPU, 8+ GB RAM recommandé), connexion Internet pour les appels API.
+
+ - **Serveur utilisé :** En développement, nous utilisons le serveur PHP intégré de Laravel via la commande `php artisan serve`. En production, déployer l'application derrière un serveur web (Apache ou Nginx) avec PHP-FPM est recommandé. Pour le développement front-end, utiliser `npm run dev` (Vite) pour le rechargement et la compilation des assets.
+
+Pour un inventaire détaillé et des preuves (fichiers de configuration, composer.json, package.json), voir le document dédié : [docs/OUTILS-ET-EQUIPEMENTS.md](docs/OUTILS-ET-EQUIPEMENTS.md).
 
 ---
 
 \newpage
+
 
 # LISTE DES FIGURES
 
@@ -215,70 +213,7 @@ En réponse à la problématique énoncée, nous formulons les hypothèses suiva
 
 4. **La mise à disposition d'archives publiques** des travaux défendus favoriserait la consultation des travaux antérieurs et contribuerait à limiter la redondance des sujets de recherche.
 
-## 3. Choix et intérêt du sujet
 
-### Intérêt scientifique
-
-Ce travail s'inscrit dans le domaine du génie logiciel appliqué à la gestion académique. Il met en œuvre les principes de conception orientée objet, l'architecture Modèle-Vue-Contrôleur (MVC), la modélisation UML et l'intégration d'API d'intelligence artificielle. Il contribue ainsi à démontrer la faisabilité technique d'une solution complète de dématérialisation d'un processus administratif universitaire.
-
-### Intérêt pratique
-
-D'un point de vue pratique, cette plateforme répond à un besoin réel et immédiat de l'Université Don Bosco de Lubumbashi. Elle permet de :
-- Réduire les délais de traitement des sujets ;
-- Fournir une traçabilité complète des actions ;
-- Détecter les potentiels abus liés à l'utilisation de l'IA générative ;
-- Offrir un espace d'archivage pérenne et consultable par tous.
-
-### Intérêt personnel
-
-Ce projet nous permet de mettre en application l'ensemble des compétences acquises durant notre formation : la programmation web, la gestion de bases de données, la modélisation de systèmes d'information, et l'intégration de services tiers via des API REST.
-
-## 4. Délimitation du sujet
-
-### Délimitation spatiale
-
-Cette étude se limite au cadre de l'Université Don Bosco de Lubumbashi et à ses quatre facultés : ESIS (Faculté des Sciences Informatiques), ECOPO (Faculté des Sciences Économiques), KANSEBULA (Faculté des Sciences Humaines) et THEOLOGICUM (Faculté de Théologie).
-
-### Délimitation temporelle
-
-Les données traitées couvrent l'année académique 2025–2026. L'application est conçue pour gérer plusieurs années académiques successives grâce à un système d'archivage intégré.
-
-### Délimitation fonctionnelle
-
-Le système couvre les fonctionnalités suivantes :
-- La gestion des utilisateurs avec contrôle d'accès basé sur les rôles (RBAC) ;
-- La soumission et la validation des sujets de TFC ;
-- Le dépôt et le stockage sécurisé des fichiers PDF ;
-- L'analyse automatique des documents par un module de détection IA ;
-- La planification de la soutenance (date et salle) après autorisation de l'encadreur ;
-- La gestion des notifications et de la communication inter-acteurs ;
-- L'archivage et la consultation publique des travaux défendus ;
-- L'administration du système (utilisateurs, filières, facultés, paramètres).
-
-Le système **ne couvre pas** : la composition du jury et l'attribution des notes de soutenance, ni la gestion financière ou comptable.
-
-## 5. Méthodes et techniques utilisées
-
-### Méthodes
-
-- **Méthode UML (Unified Modeling Language)** : pour la modélisation du système d'information à travers des diagrammes de cas d'utilisation, de séquence, de classes et d'activités.
-- **Méthode agile** : pour le développement itératif de l'application, avec des cycles courts de développement et de validation.
-
-### Techniques
-
-- **Technique d'interview** : pour recueillir les besoins auprès des acteurs du processus existant (secrétariats, enseignants, étudiants) ;
-- **Technique documentaire** : pour la consultation de la littérature technique et des travaux antérieurs ;
-- **Technique d'observation** : pour comprendre le fonctionnement actuel du processus de gestion des TFC à l'UDBL.
-
-## 6. Subdivision du travail
-
-Outre l'introduction et la conclusion générale, ce mémoire se structure en trois chapitres fondamentaux :
-
-- **Chapitre Premier : Considérations Théoriques et Analyse du Système Existant.** Ce chapitre pose les bases conceptuelles, justifie les choix technologiques et dresse le diagnostic critique de l'organisation actuelle.
-
-- **Chapitre Deuxième : Conception et Modélisation du Système d'Information.** Il présente la traduction des besoins en modèles UML détaillés, constituant le plan architectural de la future application.
-
-- **Chapitre Troisième : Implémentation et Présentation des Résultats.** Cette partie est dédiée au développement, aux tests de la solution logicielle et à la démonstration des fonctionnalités réalisées par rapport aux objectifs initiaux.
 
 ---
 
@@ -572,7 +507,7 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 │  ┌──────────────┐    ┌──────────────────────────────────────────┐   │
 │  │    Chef de   │───>│  Valider / Rejeter un sujet              │   │
 │  │  Département │───>│  Assigner un encadreur                   │   │
-│  │              │───>│  Suivre les TFC du département            │   │
+│  │              │───>│  Suivre les TFC du département           │   │
 │  │              │───>│  Planifier date/salle de soutenance      │   │
 │  │              │───>│  Consulter rapports IA                   │   │
 │  │              │───>│  Exporter liste CSV                      │   │
@@ -628,17 +563,17 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
     │  (5 étapes)            │                           │                    │
     │───────────────────────>│                           │                    │
     │                        │  2. Valider les données   │                    │
-    │                        │───────────────────────────>│                    │
+    │                        │──────────────────────────>│                    │
     │                        │                           │                    │
     │                        │  3. Vérifier: pas de sujet│                    │
     │                        │  pending ou validé        │                    │
-    │                        │───────────────────────────>│                    │
+    │                        │──────────────────────────>│                    │
     │                        │  4. OK                    │                    │
     │                        │<──────────────────────────│                    │
     │                        │                           │                    │
     │                        │  5. Créer Subject         │                    │
     │                        │  (status='pending')       │                    │
-    │                        │───────────────────────────>│                    │
+    │                        │──────────────────────────>│                    │
     │                        │  6. Subject créé (id)     │                    │
     │                        │<──────────────────────────│                    │
     │                        │                           │                    │

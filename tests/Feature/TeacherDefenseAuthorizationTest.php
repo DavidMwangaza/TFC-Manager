@@ -17,7 +17,7 @@ class TeacherDefenseAuthorizationTest extends TestCase
 
     private const REVOCATION_REASON = 'Le rapport IA signale des sections a corriger avant toute soutenance.';
 
-    public function test_teacher_can_revoke_defense_authorization_when_no_final_version_exists(): void
+    public function test_enseignant_peut_revoquer_autorisation_soutenance_si_aucune_version_finale(): void
     {
         [$teacher, $student, $subject] = $this->createValidatedSubjectForTeacher(defenseValidated: true);
 
@@ -49,7 +49,7 @@ class TeacherDefenseAuthorizationTest extends TestCase
         ]);
     }
 
-    public function test_teacher_cannot_revoke_defense_authorization_after_final_deposit(): void
+    public function test_enseignant_ne_peut_pas_revoquer_apres_depot_final(): void
     {
         [$teacher, , $subject] = $this->createValidatedSubjectForTeacher(defenseValidated: true);
 
@@ -74,7 +74,7 @@ class TeacherDefenseAuthorizationTest extends TestCase
         $this->assertNotNull($subject->defense_room);
     }
 
-    public function test_teacher_cannot_revoke_defense_authorization_for_subject_not_assigned_to_them(): void
+    public function test_enseignant_ne_peut_pas_revoquer_pour_sujet_non_assigne(): void
     {
         [$teacher, , $subject] = $this->createValidatedSubjectForTeacher(defenseValidated: true);
 
@@ -90,7 +90,7 @@ class TeacherDefenseAuthorizationTest extends TestCase
         $this->assertTrue((bool) $subject->fresh()->defense_validated);
     }
 
-    public function test_teacher_cannot_revoke_defense_authorization_if_not_yet_granted(): void
+    public function test_enseignant_ne_peut_pas_revoquer_si_non_autorise(): void
     {
         [$teacher, , $subject] = $this->createValidatedSubjectForTeacher(defenseValidated: false);
 
@@ -104,7 +104,7 @@ class TeacherDefenseAuthorizationTest extends TestCase
         $this->assertFalse((bool) $subject->fresh()->defense_validated);
     }
 
-    public function test_teacher_must_provide_revocation_reason(): void
+    public function test_enseignant_doit_fournir_motif_retrait(): void
     {
         [$teacher, , $subject] = $this->createValidatedSubjectForTeacher(defenseValidated: true);
 

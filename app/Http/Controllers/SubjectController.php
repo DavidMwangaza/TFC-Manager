@@ -67,7 +67,7 @@ class SubjectController extends Controller
     /**
      * Afficher le détail d'un sujet.
      */
-    public function show(Subject $subject)
+    public function show(Subject $subject, Request $request)
     {
         $user = Auth::user();
 
@@ -84,7 +84,23 @@ class SubjectController extends Controller
 
         $subject->load(['student', 'teacher', 'department', 'academicYear', 'thesisFiles.aiReport']);
 
-        return view('subjects.show', compact('subject'));
+        $milestonesQuery = $subject->milestones();
+        if ($request->filled('sort')) {
+            $sort = $request->get('sort');
+            if ($sort === 'due_desc') {
+                $milestonesQuery->orderBy('due_date', 'desc');
+            } elseif ($sort === 'status') {
+                $milestonesQuery->orderBy('status');
+            } else {
+                $milestonesQuery->orderBy('due_date', 'asc');
+            }
+        } else {
+            $milestonesQuery->orderBy('due_date', 'asc');
+        }
+
+        $milestones = $milestonesQuery->paginate(6)->withQueryString();
+
+        return view('subjects.show', compact('subject', 'milestones'));
     }
 
     /**

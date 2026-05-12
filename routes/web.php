@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ThesisFileController;
+use App\Http\Controllers\MilestoneController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -62,6 +63,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
     Route::get('/subjects/export', [SubjectController::class, 'export'])->name('subjects.export')->middleware('role:Admin|Chef de département');
     Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
+
+    // === JALONS / MILESTONES (Enseignant / Chef de département) ===
+    Route::middleware('role:Enseignant|Chef de département')->group(function () {
+        Route::post('/subjects/{subject}/milestones', [MilestoneController::class, 'store'])->name('milestones.store');
+        Route::post('/milestones/{milestone}/validate', [MilestoneController::class, 'validateMilestone'])->name('milestones.validate');
+        Route::post('/milestones/{milestone}/reject', [MilestoneController::class, 'reject'])->name('milestones.reject');
+    });
+
+    // === SOUMISSION DE JALON (Étudiant) ===
+    Route::middleware('role:Etudiant')->group(function () {
+        Route::post('/milestones/{milestone}/submit', [MilestoneController::class, 'submit'])->name('milestones.submit');
+        Route::post('/milestones/{milestone}/upload', [ThesisFileController::class, 'uploadForMilestone'])->name('milestones.upload');
+    });
 
     // === NOTIFICATIONS ===
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
