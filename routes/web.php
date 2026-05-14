@@ -22,6 +22,8 @@ Route::get('/', function () {
 // Archives des travaux défendus (accès public)
 Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
 Route::get('/archives/{thesisFile}/download', [ArchiveController::class, 'download'])->name('archives.download');
+Route::get('/archives/{thesisFile}/view', [ArchiveController::class, 'view'])->name('archives.view');
+Route::get('/archives/{thesisFile}/file', [ArchiveController::class, 'file'])->name('archives.file');
 
 // Dashboard dynamique selon le rôle
 Route::get('/dashboard', [DashboardController::class, 'index'])

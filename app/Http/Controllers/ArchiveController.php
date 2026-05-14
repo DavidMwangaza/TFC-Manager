@@ -61,4 +61,46 @@ class ArchiveController extends Controller
             $thesisFile->original_name
         );
     }
+
+    /**
+     * Afficher une page d'aperçu (embed) pour un fichier d'archive.
+     */
+    public function view(ThesisFile $thesisFile)
+    {
+        if (!$thesisFile->subject || !$thesisFile->subject->defense_validated || $thesisFile->version_type !== 'final') {
+            abort(403, 'Ce fichier n\'est pas disponible pour visualisation.');
+        }
+
+        $path = Storage::disk('public')->path($thesisFile->file_path);
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        $mime = @mime_content_type($path) ?: Storage::disk('public')->mimeType($thesisFile->file_path) ?? 'application/octet-stream';
+
+        // Pour les PDF et images, on affiche directement une page contenant un iframe vers la ressource
+        return view('archives.view', compact('thesisFile', 'mime'));
+    }
+
+    /**
+     * Retourne le fichier en inline (Content-Disposition: inline) pour embedding.
+     */
+    public function file(ThesisFile $thesisFile)
+    {
+        if (!$thesisFile->subject || !$thesisFile->subject->defense_validated || $thesisFile->version_type !== 'final') {
+            abort(403, 'Ce fichier n\'est pas disponible pour visualisation.');
+        }
+
+        $path = Storage::disk('public')->path($thesisFile->file_path);
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        $mime = @mime_content_type($path) ?: Storage::disk('public')->mimeType($thesisFile->file_path) ?? 'application/octet-stream';
+
+        return response()->file($path, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . $thesisFile->original_name . '"',
+        ]);
+    }
 }
