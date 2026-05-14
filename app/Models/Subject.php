@@ -34,6 +34,9 @@ class Subject extends Model
         'teacher_id',
         'department_id',
         'academic_year_id',
+        'bat_signed_by',
+        'bat_signed_at',
+        'bat_signature_hash',
     ];
 
     protected function casts(): array
@@ -41,6 +44,7 @@ class Subject extends Model
         return [
             'defense_validated' => 'boolean',
             'defense_date' => 'datetime',
+            'bat_signed_at' => 'datetime',
             'specific_objectives' => 'array',
             'state_of_art' => 'array',
         ];
@@ -89,6 +93,22 @@ class Subject extends Model
     public function milestones(): HasMany
     {
         return $this->hasMany(Milestone::class);
+    }
+
+    /**
+     * Les chapitres rattachés au sujet.
+     */
+    public function chapters(): HasMany
+    {
+        return $this->hasMany(\App\Models\Chapter::class);
+    }
+
+    /**
+     * L'utilisateur qui a signé le BAT.
+     */
+    public function batSigner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'bat_signed_by');
     }
     /**
      * Vérifie si le sujet est validé.

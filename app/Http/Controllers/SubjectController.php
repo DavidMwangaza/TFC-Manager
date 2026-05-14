@@ -14,6 +14,7 @@ use App\Notifications\SubjectValidated;
 use App\Notifications\TeacherAssigned;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Response;
 
 class SubjectController extends Controller
@@ -364,6 +365,48 @@ class SubjectController extends Controller
         $subject->student->notify(new DefenseAuthorized($subject));
 
         return back()->with('success', 'Soutenance autorisée avec succès (Feu Vert) !');
+    }
+
+    /**
+     * Le Directeur signe numériquement le BAT (Bon à Tirer).
+     */
+    public function signBat(Subject $subject)
+    {
+        $user = Auth::user();
+
+        // Vérifier que l'enseignant est bien l'encadreur du sujet
+        if ($subject->teacher_id !== $user->id) {
+            abort(403, 'Vous n\'êtes pas l\'encadreur de ce sujet.');
+        }
+
+        // Vérifier que le sujet est validé
+        if ($subject->status !== 'validated') {
+            return back()->with('error', 'Ce sujet n\'est pas encore validé.');
+        }
+
+        // Vérifier qu'il y a un Feu Vert (optionnel selon politique)
+        if (! $subject->defense_validated) {
+            return back()->with('error', 'La soutenance doit être autorisée avant la signature du BAT.');
+        }
+
+        if ($subject->bat_signed_at) {
+            return back()->with('info', 'Le BAT est déjà signé.');
+        }
+
+        $signature = hash('sha256', $subject->id . '|' . $user->id . '|' . now()->timestamp . '|' . Str::random(24));
+
+        $subject->update([
+            'bat_signed_by' => $user->id,
+            'bat_signed_at' => now(),
+            'bat_signature_hash' => $signature,
+        ]);
+
+        // Notifier l'étudiant
+        if ($subject->student) {
+            $subject->student->notify(new \App\Notifications\BatSigned($subject));
+        }
+
+        return back()->with('success', 'BAT signé numériquement.');
     }
 
     /**

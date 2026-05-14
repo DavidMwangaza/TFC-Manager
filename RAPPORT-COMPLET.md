@@ -8,12 +8,13 @@
 
 ## 1. PRÉSENTATION DU PROJET
 
-**UDBL TFC Manager** est une application web permettant de gérer l'intégralité du cycle de vie des Travaux de Fin de Cycle (TFC) à l'Université UDBL : de la soumission du sujet par l'étudiant, en passant par la validation par le chef de département, l'assignation d'un encadreur, le dépôt du document PDF, l'analyse IA anti-plagiat, jusqu'à l'autorisation (et son retrait contrôlé) puis la planification de la soutenance.
+**UDBL TFC Manager** est une application web permettant de gérer l'intégralité du cycle de vie des Travaux de Fin de Cycle (TFC) à l'Université UDBL : de la soumission du sujet par l'étudiant, en passant par la validation par le chef de département, l'assignation d'un encadreur, le suivi des jalons avec délais de correction, le dépôt du document PDF, l'analyse IA anti-plagiat, jusqu'à l'autorisation (et son retrait contrôlé) puis la planification de la soutenance.
 
 ### Objectifs principaux
 
 - Dématérialiser la gestion des sujets de TFC
 - Automatiser le workflow de validation (soumission, validation, rejet)
+- Gérer le suivi par jalons (milestones) avec échéances et délais de correction
 - Intégrer un service de détection IA / plagiat
 - Offrir un tableau de bord adapté à chaque rôle
 - Centraliser l'administration (utilisateurs, filières, années académiques)
@@ -43,9 +44,9 @@
 
 | Element | Nombre |
 |---|---|
-| Contrôleurs | **12** |
-| Méthodes (total) | **47** |
-| Modèles Eloquent | **9** |
+| Contrôleurs | **13** |
+| Méthodes (total) | **52** |
+| Modèles Eloquent | **10** |
 | Vues Blade | **53** |
 | Composants Blade | **15** |
 | Notifications | **6** |
@@ -62,6 +63,7 @@
 | `DashboardController` | 5 | Dashboard dynamique par rôle (admin, CP, enseignant, étudiant) |
 | `SubjectController` | 10 | CRUD sujets, validation, rejet, export CSV, autorisation/retrait du feu vert et planification soutenance |
 | `ThesisFileController` | 3 | Upload PDF, téléchargement, analyse IA |
+| `MilestoneController` | 5 | CRUD des jalons, soumission de fichiers par étape, validation/rejet |
 | `NotificationController` | 5 | Liste, marquer lu, marquer tout lu, suppression |
 | `ProfileController` | 1 | Consultation du profil (lecture seule) |
 | `Admin\UserController` | 8 | CRUD utilisateurs, blocage, reset mot de passe |
@@ -80,7 +82,8 @@
 | **Subject** | title, subject_type, description, 10 champs structurés, status, defense_validated, defense_date, defense_room | student, teacher, department, academicYear, thesisFiles |
 | **Faculty** | name, code, description | departments |
 | **Department** | faculty_id, name, code, description | users, subjects |
-| **ThesisFile** | subject_id, file_path, original_name, version_type | subject, aiReport |
+| **Milestone** | subject_id, title, description, due_date, student_submission_date, teacher_review_date, status, feedback, teacher_sla_hours | subject, file |
+| **ThesisFile** | subject_id, milestone_id, file_path, original_name, version_type | subject, milestone, aiReport |
 | **AiReport** | thesis_file_id, similarity_score, ai_score, details | thesisFile |
 | **AcademicYear** | name, start_date, end_date, is_current, is_closed | subjects |
 | **SystemSetting** | key, value, type, group, label, description | — |
@@ -151,8 +154,9 @@
   3. Hypothèse et objectifs (hypothèse, objectif général, objectifs spécifiques)
   4. Etat de l'art (auteurs, institutions, contributions)
   5. Méthodologie et démarcation + récapitulatif
-- Upload du fichier TFC en PDF (max 20 Mo, version jury + version finale)
-- Consultation de sa progression (sujet, statut, fichiers, analyse IA globale)
+- Suivi visuel des **jalons (milestones)** sous forme de timeline (cartes)
+- Upload du fichier TFC en PDF pour valider un jalon, ou (max 20 Mo, version jury + version finale)
+- Consultation de sa progression (sujet, statut, jalons, fichiers, analyse IA globale)
 - Consultation de la date et de la salle de soutenance lorsqu'elles sont planifiées
 - Notifications reçues : sujet validé, sujet rejeté, encadreur assigné, soutenance autorisée ou autorisation retirée
 
@@ -168,7 +172,8 @@
 ### 5.3 Enseignant
 
 - Visualisation des sujets supervisés
-- Téléchargement des fichiers TFC
+- Gestion des **jalons (milestones)** : création, définition des échéances (et SLA), validation ou rejet avec feedback obligatoire
+- Téléchargement des fichiers TFC (soumis à chaque jalon, ou version jury/finale)
 - Consultation des scores IA (similarité + score IA) avec badges colorés
 - Affichage de la date et de la salle de soutenance si planifiées
 - Autorisation de soutenance
@@ -294,6 +299,8 @@ Mot de passe pour tous : **`password`**
 | 18 | `add_structured_fields_to_subjects_table` | 10 champs structurés du wizard |
 | 19 | `create_faculties_table` | Table des facultés + rattachement aux filières |
 | 20 | `add_defense_details_to_subjects_table` | Date et salle de soutenance |
+| 21 | `create_milestones_table` | Table des jalons |
+| 22 | `add_milestone_id_to_thesis_files_table` | Lien fichier-jalon |
 
 ---
 
@@ -329,6 +336,9 @@ Mot de passe pour tous : **`password`**
 ### Routes Enseignant
 | Méthode | URI | Description |
 |---|---|---|
+| POST | `/subjects/{id}/milestones` | Créer un jalon |
+| DELETE| `/milestones/{milestone}` | Supprimer un jalon |
+| POST | `/milestones/{milestone}/review` | Valider/Rejeter un jalon (avec feedback) |
 | POST | `/subjects/{id}/authorize-defense` | Autoriser la soutenance |
 | DELETE | `/subjects/{id}/authorize-defense` | Retirer le Feu Vert (si version finale non déposée, motif obligatoire) |
 

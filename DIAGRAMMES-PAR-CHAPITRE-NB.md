@@ -28,18 +28,21 @@ graph TB
     UC10[Gerer facultes et filieres]
     UC11[Gerer annees academiques]
     UC12[Planifier soutenance]
+    UC13[Gerer jalons]
 
     Visiteur --> UC1
     Visiteur --> UC2
     Visiteur --> UC3
 
     Etudiant --> UC4
+    Etudiant --> UC13
     Etudiant --> UC5
 
     ChefDept --> UC6
     ChefDept --> UC7
     ChefDept --> UC12
 
+    Enseignant --> UC13
     Enseignant --> UC8
 
     Admin --> UC9
@@ -56,6 +59,7 @@ graph LR
     U1[S inscrire]
     U2[Se connecter]
     U3[Soumettre sujet en 5 etapes]
+    U3b[Soumettre fichiers de jalons]
     U4[Consulter etat du sujet]
     U5[Deposer version jury]
     U6[Consulter rapport IA]
@@ -66,6 +70,7 @@ graph LR
     A --> U1
     A --> U2
     A --> U3
+    A --> U3b
     A --> U4
     A --> U5
     A --> U6
@@ -106,12 +111,14 @@ graph LR
 graph LR
     A[Enseignant]
     U1[Consulter sujets encadres]
+    U1b[Gerer jalons et valider soumissions]
     U2[Telecharger fichiers]
     U3[Consulter rapport IA]
     U4[Consulter planification]
     U5[Autoriser soutenance]
 
     A --> U1
+    A --> U1b
     A --> U2
     A --> U3
     A --> U4
@@ -290,8 +297,17 @@ classDiagram
     class ThesisFile {
         +id
         +subject_id
+        +milestone_id
         +version_type
         +file_path
+    }
+
+    class Milestone {
+        +id
+        +subject_id
+        +title
+        +status
+        +due_date
     }
 
     class AiReport {
@@ -322,7 +338,9 @@ classDiagram
     AcademicYear "1" --> "*" Subject
     User "1" --> "*" Subject : soumet
     User "1" --> "*" Subject : encadre
-    Subject "1" --> "0..2" ThesisFile
+    Subject "1" --> "*" Milestone
+    Subject "1" --> "*" ThesisFile
+    Milestone "1" --> "0..1" ThesisFile
     ThesisFile "1" --> "0..1" AiReport
     User "1" --> "*" Notification
     User "1" --> "*" ActivityLog
@@ -339,7 +357,9 @@ erDiagram
     USERS ||--o{ SUBJECTS : soumet
     USERS ||--o{ SUBJECTS : encadre
     ACADEMIC_YEARS ||--o{ SUBJECTS : organise
+    SUBJECTS ||--o{ MILESTONES : contient
     SUBJECTS ||--o{ THESIS_FILES : contient
+    MILESTONES ||--o{ THESIS_FILES : contient
     THESIS_FILES ||--o{ AI_REPORTS : produit
     USERS ||--o{ NOTIFICATIONS : recoit
     USERS ||--o{ ACTIVITY_LOGS : genere
@@ -371,9 +391,17 @@ erDiagram
         datetime defense_date
         string defense_room
     }
+    MILESTONES {
+        int id PK
+        int subject_id FK
+        string title
+        datetime due_date
+        string status
+    }
     THESIS_FILES {
         int id PK
         int subject_id FK
+        int milestone_id FK
         string version_type
     }
     AI_REPORTS {
@@ -394,7 +422,8 @@ graph TD
     C -->|Non| D[Rejet avec motif]
     D --> B
     C -->|Oui| E[Assignation de l enseignant]
-    E --> F[Depot version jury]
+    E --> E2[Creation et suivi des jalons]
+    E2 --> F[Depot version jury]
     F --> G[Analyse IA automatique]
     G --> H[Autorisation de soutenance]
     H --> I[Planification soutenance]

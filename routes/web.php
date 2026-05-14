@@ -43,6 +43,18 @@ Route::middleware('auth')->group(function () {
         Route::post('/thesis/upload', [ThesisFileController::class, 'upload'])->name('thesis.upload');
     });
 
+    // === CHAPITRES & VERSIONS (Étudiant / Enseignant) ===
+    Route::middleware('auth')->group(function () {
+        Route::post('/subjects/{subject}/chapters', [\App\Http\Controllers\ChapterController::class, 'store'])
+            ->name('chapters.store')->middleware('role:Etudiant');
+
+        Route::post('/chapters/{chapter}/versions', [\App\Http\Controllers\ChapterVersionController::class, 'store'])
+            ->name('chapter_versions.store');
+
+        Route::get('/chapters/{chapter}/versions', [\App\Http\Controllers\ChapterVersionController::class, 'index'])
+            ->name('chapter_versions.index');
+    });
+
     // === VALIDATION SUJETS (Chef de département) ===
     Route::middleware('role:Chef de département')->group(function () {
         Route::post('/subjects/{subject}/validate', [SubjectController::class, 'validateSubject'])->name('subjects.validate');
@@ -57,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Enseignant')->group(function () {
         Route::post('/subjects/{subject}/authorize-defense', [SubjectController::class, 'authorizeDefense'])->name('subjects.authorize-defense');
         Route::delete('/subjects/{subject}/authorize-defense', [SubjectController::class, 'revokeDefenseAuthorization'])->name('subjects.revoke-defense');
+        Route::post('/subjects/{subject}/bat/sign', [SubjectController::class, 'signBat'])->name('subjects.bat.sign');
     });
 
     // === LISTE DES SUJETS ===

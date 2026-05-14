@@ -435,6 +435,7 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 - Disposer d'un compte créé par l'administrateur avec matricule universitaire ;
 - Soumettre un sujet de TFC via un formulaire structuré en 5 étapes ;
 - Consulter l'état de son sujet (en attente, validé, rejeté) ;
+- Suivre l'avancement par jalons (milestones) et soumettre les fichiers par étape ;
 - Déposer la version « jury » de son mémoire (PDF, max 20 Mo) ;
 - Consulter le rapport d'analyse IA de son fichier ;
 - Recevoir la notification de « Feu Vert » de son encadreur ;
@@ -454,6 +455,7 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 
 #### C. Besoins de l'Enseignant
 - Consulter la liste des sujets dont il est l'encadreur ;
+- Créer et gérer les jalons (milestones), avec délais et validation des soumissions ;
 - Télécharger les fichiers déposés par ses étudiants ;
 - Consulter les rapports d'analyse IA ;
 - Autoriser la soutenance (donner le « Feu Vert ») ;
@@ -499,6 +501,7 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 │  ┌──────────────┐    ┌──────────────────────────────────────────┐   │
 │  │              │───>│  Se connecter                            │   │
 │  │   Étudiant   │───>│  Soumettre un sujet (5 étapes)           │   │
+│  │              │───>│  Soumettre fichiers par jalon            │   │
 │  │              │───>│  Déposer fichier TFC (jury / final)      │   │
 │  │              │───>│  Consulter rapport IA                    │   │
 │  │              │───>│  Consulter notifications                 │   │
@@ -515,7 +518,8 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 │                                                                     │
 │  ┌──────────────┐    ┌──────────────────────────────────────────┐   │
 │  │              │───>│  Voir sujets encadrés                    │   │
-│  │  Enseignant  │───>│  Télécharger fichiers TFC                │   │
+│  │  Enseignant  │───>│  Gérer jalons et valider soumissions     │   │
+│  │              │───>│  Télécharger fichiers TFC                │   │
 │  │              │───>│  Consulter rapports IA                   │   │
 │  │              │───>│  Autoriser soutenance (Feu Vert)         │   │
 │  │              │───>│  Retirer Feu Vert (avant dépôt final)    │   │
@@ -551,6 +555,7 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 | CU12 | Gérer années académiques | Administrateur | Connecté, rôle Admin | Année créée/activée/clôturée | L'admin crée des années académiques, en active une comme courante, et peut clôturer les précédentes. |
 | CU13 | Planifier soutenance | Chef Département | Sujet avec `defense_validated=true` du même département | `defense_date` et `defense_room` enregistrés | Le CP renseigne la date/heure et la salle de soutenance après le Feu Vert. |
 | CU14 | Retirer autorisation de soutenance | Enseignant | Est l'encadreur, defense_validated=true, version finale non déposée | defense_validated=false, defense_date/defense_room remis à null, motif de retrait enregistré, notification de retrait envoyée | L'enseignant retire le Feu Vert lorsque des corrections supplémentaires sont nécessaires avant le dépôt final, en renseignant obligatoirement le motif du retrait. |
+| CU15 | Gérer les jalons | Enseignant | Est l'encadreur | Jalons créés ou évalués | L'enseignant définit les étapes obligatoires avec échéances et délais de correction, valide ou rejette avec commentaires. |
 
 ## Section 3 : Diagrammes de séquence
 
@@ -753,22 +758,24 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
     │              │ + thesisFiles(): HasMany           │
     │              │ + isValidated(): bool              │
     │              │ + isPending(): bool                │
-    │              └─────────────┬──────────────────────┘
-    │                            │ 1
-    │                            │
-    │                            │ *
-    │              ┌─────────────┴──────────────────────┐
-    │              │          ThesisFile                  │
-    │              ├────────────────────────────────────┤
-    │              │ - id: int {PK}                     │
-    │              │ - subject_id: int {FK}             │
-    │              │ - file_path: string                │
-    │              │ - original_name: string            │
-    │              │ - version_type: enum(jury,final)   │
-    │              ├────────────────────────────────────┤
-    │              │ + subject(): BelongsTo             │
-    │              │ + aiReport(): HasOne               │
-    │              └─────────────┬──────────────────────┘
+    │              └─────────────┬─────────┬────────────┘
+    │                            │ 1       │ 1
+    │                            │         │
+    │                            │ *       │ *
+    │              ┌─────────────┴───────┐ ┌──────────────┴──────────────┐
+    │              │          ThesisFile │ │          Milestone          │
+    │              ├─────────────────────┤ ├─────────────────────────────┤
+    │              │ - id: int {PK}      │ │ - id: int {PK}              │
+    │              │ - subject_id: int   │ │ - subject_id: int {FK}      │
+    │              │ - milestone_id: int │ │ - title: string             │
+    │              │ - file_path: string │ │ - due_date: date            │
+    │              │ - original_name     │ │ - status: enum              │
+    │              │ - version_type      │ │ - teacher_sla_hours: int    │
+    │              ├─────────────────────┤ ├─────────────────────────────┤
+    │              │ + subject()         │ │ + subject(): BelongsTo      │
+    │              │ + milestone()       │ │ + file(): HasOne            │
+    │              │ + aiReport()        │ └─────────────────────────────┘
+    │              └─────────────┬───────┘
     │                            │ 1
     │                            │
     │                            │ 0..1
@@ -811,7 +818,9 @@ Un cinquième acteur, le **visiteur public** (non authentifié), peut consulter 
 | User → Subject (student) | One-to-Many | 0..* | Un étudiant peut avoir plusieurs sujets (historique) |
 | User → Subject (teacher) | One-to-Many | 0..* | Un enseignant peut encadrer plusieurs sujets |
 | AcademicYear → Subject | One-to-Many | 0..* | Une année académique regroupe plusieurs sujets |
-| Subject → ThesisFile | One-to-Many | 0..2 | Un sujet peut avoir au maximum 2 fichiers (jury + final) |
+| Subject → Milestone | One-to-Many | 0..* | Un sujet possède plusieurs jalons de suivi |
+| Subject → ThesisFile | One-to-Many | 0..* | Un sujet peut avoir plusieurs fichiers |
+| Milestone → ThesisFile | One-to-One | 0..1 | Un jalon peut avoir un fichier soumis |
 | ThesisFile → AiReport | One-to-One | 0..1 | Un fichier peut avoir un rapport d'analyse IA |
 | User → ActivityLog | One-to-Many | 0..* | Un utilisateur génère plusieurs entrées dans le journal |
 
@@ -856,11 +865,19 @@ subjects (id, title, subject_type, description, status, rejection_reason,
     ENUM status: {pending, validated, rejected}
     ENUM subject_type: {tfc, memoire}
 
-thesis_files (id, subject_id, file_path, original_name, version_type,
+milestones (id, subject_id, title, description, due_date, student_submission_date,
+            teacher_review_date, status, feedback, teacher_sla_hours,
+            created_at, updated_at)
+    PK: id
+    FK: subject_id → subjects(id)
+    ENUM status: {pending, submitted, validated, rejected}
+
+thesis_files (id, subject_id, milestone_id, file_path, original_name, version_type,
               created_at, updated_at)
     PK: id
     FK: subject_id → subjects(id)
-    ENUM version_type: {jury, final}
+    FK: milestone_id → milestones(id) [NULLABLE]
+    ENUM version_type: {jury, final, milestone}
 
 ai_reports (id, thesis_file_id, similarity_score, ai_score, details,
             created_at, updated_at)

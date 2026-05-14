@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\ActivityLog;
 use App\Models\Department;
+use App\Models\Milestone;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -99,7 +100,23 @@ class DashboardController extends Controller
             ->with(['student', 'thesisFiles.aiReport'])
             ->get();
 
-        return view('teacher.dashboard', compact('supervisedSubjects'));
+        // Jalons en attente de correction par cet enseignant
+        $pendingMilestones = Milestone::where('status', 'submitted')
+            ->whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))
+            ->with(['subject.student', 'thesisFile'])
+            ->orderBy('submission_date', 'asc')
+            ->get();
+
+        // Stats jalons globales pour cet enseignant
+        $milestoneStats = [
+            'total'     => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->count(),
+            'pending'   => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->where('status', 'pending')->count(),
+            'submitted' => $pendingMilestones->count(),
+            'validated' => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->where('status', 'validated')->count(),
+            'rejected'  => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->where('status', 'rejected')->count(),
+        ];
+
+        return view('teacher.dashboard', compact('supervisedSubjects', 'pendingMilestones', 'milestoneStats'));
     }
 
     /**
@@ -108,9 +125,21 @@ class DashboardController extends Controller
     private function studentDashboard(User $user)
     {
         $subject = Subject::where('student_id', $user->id)
-            ->with(['teacher', 'thesisFiles.aiReport'])
+            ->with(['teacher', 'thesisFiles.aiReport', 'milestones'])
             ->first();
 
-        return view('student.dashboard', compact('subject'));
+        // Calcul de la progression des jalons
+        $milestoneProgress = null;
+        if ($subject && $subject->milestones->count() > 0) {
+            $total = $subject->milestones->count();
+            $validated = $subject->milestones->where('status', 'validated')->count();
+            $submitted = $subject->milestones->where('status', 'submitted')->count();
+            $rejected = $subject->milestones->where('status', 'rejected')->count();
+            $pending = $subject->milestones->where('status', 'pending')->count();
+            $percent = $total > 0 ? round(($validated / $total) * 100) : 0;
+            $milestoneProgress = compact('total', 'validated', 'submitted', 'rejected', 'pending', 'percent');
+        }
+
+        return view('student.dashboard', compact('subject', 'milestoneProgress'));
     }
 }
