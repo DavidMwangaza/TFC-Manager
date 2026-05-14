@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\ThesisFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\DocumentConverter;
 
 class ArchiveController extends Controller
 {
@@ -94,6 +95,21 @@ class ArchiveController extends Controller
         $path = Storage::disk('public')->path($thesisFile->file_path);
         if (!file_exists($path)) {
             abort(404);
+        }
+
+        // Si le fichier est un document bureautique, tenter une conversion serveur via LibreOffice
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $convertible = ['doc', 'docx', 'odt', 'rtf', 'ppt', 'pptx'];
+
+        if (in_array($ext, $convertible, true)) {
+            $converter = app(DocumentConverter::class);
+            $converted = $converter->convertToPdf($path);
+            if ($converted && file_exists($converted)) {
+                return response()->file($converted, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . pathinfo($thesisFile->original_name, PATHINFO_FILENAME) . '.pdf"',
+                ]);
+            }
         }
 
         $mime = @mime_content_type($path) ?: Storage::disk('public')->mimeType($thesisFile->file_path) ?? 'application/octet-stream';
