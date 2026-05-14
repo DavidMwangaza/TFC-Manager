@@ -45,14 +45,14 @@ class ActivityLog extends Model
         ?array $newValues = null
     ): self {
         return static::create([
-            'user_id' => auth()->id(),
+            'user_id' => auth()?->id(),
             'action' => $action,
             'model_type' => $model ? get_class($model) : null,
             'model_id' => $model?->id,
             'description' => $description,
             'old_values' => $oldValues,
             'new_values' => $newValues,
-            'ip_address' => request()->ip(),
+            'ip_address' => request()?->ip() ?? null,
         ]);
     }
 

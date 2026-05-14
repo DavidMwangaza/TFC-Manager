@@ -16,6 +16,7 @@ class ThesisFile extends Model
         'file_path',
         'original_name',
         'version_type',
+        'milestone_id',
     ];
 
     /**
@@ -32,5 +33,13 @@ class ThesisFile extends Model
     public function aiReport(): HasOne
     {
         return $this->hasOne(AiReport::class);
+    }
+
+    /**
+     * Le jalon auquel ce fichier est lié (optionnel).
+     */
+    public function milestone(): BelongsTo
+    {
+        return $this->belongsTo(Milestone::class);
     }
 }

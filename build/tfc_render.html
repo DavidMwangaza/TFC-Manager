@@ -1,0 +1,2695 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TFC - PDF</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css">
+<style>
+  body { box-sizing: border-box; padding: 28px; }
+  .markdown-body { max-width: 900px; margin: auto; }
+  .mermaid { text-align: center; margin: 16px 0; }
+  img { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<article class="markdown-body">
+<h1>UNIVERSITÉ DON BOSCO DE LUBUMBASHI</h1>
+<h1>INTRODUCTION GÉNÉRALE</h1>
+<h2>1. Problématique</h2>
+<p>La gestion des Travaux de Fin de Cycle (TFC) constitue un processus académique central au sein des universités congolaises en général, et à l&#39;Université Don Bosco de Lubumbashi (UDBL) en particulier. Ce processus englobe plusieurs étapes critiques : le dépôt d&#39;une fiche de sujet, la décision académique, l&#39;assignation d&#39;un directeur de mémoire, l&#39;encadrement, le dépôt du mémoire, l&#39;autorisation de soutenance et l&#39;archivage.</p>
+<p>Actuellement, ce processus repose principalement sur des mécanismes manuels et fragmentés (courriels, échanges verbaux, dossiers papier), ce qui entraîne des retards, une absence de traçabilité et un risque de perte documentaire. De plus, l&#39;irruption des outils d&#39;intelligence artificielle générative soulève la question de l&#39;intégrité scientifique des travaux soumis, alors qu&#39;aucun contrôle automatisé n&#39;est en place.</p>
+<p>Face à ces constats, la question centrale de ce mémoire est : <strong>comment concevoir et déployer une plateforme web qui automatise la gestion des TFC, garantit la traçabilité des décisions et intègre un module de détection du contenu généré par IA ?</strong></p>
+<h2>2. Hypothèse</h2>
+<p>Nous partons de l&#39;hypothèse que la conception et le déploiement d&#39;une plateforme web intégrée, associée à des modules d&#39;analyse automatisée (détection IA, extraction de texte PDF) et à un workflow de notifications, permettront :</p>
+<ul>
+<li>de réduire significativement les délais de traitement ;</li>
+<li>d&#39;assurer une traçabilité et un archivage consultable des décisions et des documents ;</li>
+<li>d&#39;alerter automatiquement en cas de suspicion de contenu généré par IA ;</li>
+<li>d&#39;améliorer la qualité de l&#39;encadrement et la transparence du processus.</li>
+</ul>
+<h2>3. État de l&#39;art</h2>
+<p>Les systèmes de gestion des mémoires et des dépôts institutionnels existent sous diverses formes : répertoires institutionnels, modules de gestion de thèses et fonctionnalités LMS (Learning Management System). De nombreux établissements combinent des solutions open-source et propriétaires pour gérer les dépôts, le suivi et l&#39;archivage.</p>
+<p>En matière de détection d&#39;originalité et de plagiat, des outils établis (par ex. Turnitin, Unicheck) analysent les similarités textuelles par rapport à des bases documentaires. Plus récemment, des services spécialisés dans la détection de contenu généré par IA (ex. GPTZero et autres) proposent des scores probabilistes basés sur des métriques linguistiques (perplexité, entropie, patterns de génération). Toutefois, ces services présentent des limites : coût, couverture linguistique variable, faux positifs/negatifs, et intégration non systématique dans les workflows universitaires.</p>
+<p>L&#39;analyse de l&#39;état de l&#39;art montre un besoin d&#39;intégration : relier la soumission, l&#39;extraction automatique de texte (PDF), l&#39;évaluation par des API de détection IA et le workflow décisionnel (validation/rejet/notification). C&#39;est précisément cette intégration end-to-end que vise notre contribution.</p>
+<h2>4. Choix et intérêt du sujet</h2>
+<h3>4.1 Choix du sujet</h3>
+<p>Le choix de porter l&#39;étude sur une plateforme de gestion des TFC s&#39;explique par trois raisons principales : la problématique locale identifiée à l&#39;UDBL (digitalisation incomplète), l&#39;importance institutionnelle d&#39;assurer l&#39;intégrité académique et la pertinence pédagogique du projet pour démontrer des pratiques d&#39;ingénierie logicielle modernes (architecture MVC, bonnes pratiques de sécurité, tests). Le sujet permet d&#39;articuler des enjeux techniques, organisationnels et éthiques.</p>
+<h3>4.2 Intérêt du sujet</h3>
+<ul>
+<li><strong>Intérêt scientifique :</strong> le projet met en application des concepts du génie logiciel (architecture, modélisation, tests) et explore l&#39;intégration de modules d&#39;intelligence artificielle pour la garantie d&#39;intégrité documentaire.</li>
+<li><strong>Intérêt pratique :</strong> il répond à un besoin opérationnel réel à l&#39;UDBL : réduction des délais, traçabilité, archivage numérisé et détection automatisée de contenus suspectés d&#39;être générés par IA.</li>
+<li><strong>Intérêt pédagogique / personnel :</strong> ce travail permet aux auteurs d&#39;appliquer et d&#39;approfondir des compétences en développement web, en gestion de bases de données, en modélisation UML et en intégration d&#39;API tierces.</li>
+</ul>
+<h2>5. Approche méthodologique</h2>
+<p>L&#39;approche adoptée combine modélisation, développement itératif et validation terrain :</p>
+<ul>
+<li><strong>Conception</strong> : modélisation des besoins par UML (cas d&#39;utilisation, diagrammes de classes et de séquence) pour formaliser les processus et les acteurs ;</li>
+<li><strong>Développement</strong> : mise en œuvre d&#39;une application web en architecture MVC (Laravel), développement itératif en méthode agile avec intégration continue des retours ;</li>
+<li><strong>Intégration d&#39;API</strong> : extraction de texte depuis les PDF (bibliothèques de parsing) puis envoi aux services de détection IA (API) pour génération de rapports automatisés ;</li>
+<li><strong>Collecte des besoins</strong> : interviews et observations auprès des acteurs (secrétariats, enseignants, étudiants) pour ajuster les fonctionnalités ;</li>
+<li><strong>Validation</strong> : tests unitaires et fonctionnels (PHPUnit), déploiement pilote et retours d&#39;usage pour mesurer l&#39;impact sur les délais et la traçabilité.</li>
+</ul>
+<h2>6. Délimitation du sujet</h2>
+<h3>Délimitation spatiale</h3>
+<p>L&#39;étude est limitée à l&#39;Université Don Bosco de Lubumbashi et à ses quatre facultés (ESIS, ECOPO, KANSEBULA, THEOLOGICUM).</p>
+<h3>Délimitation temporelle</h3>
+<p>Les données et cas pratiques considérés portent principalement sur l&#39;année académique 2025–2026. La solution reste toutefois conçue pour être extensible à d&#39;autres années.</p>
+<h3>Délimitation fonctionnelle</h3>
+<p>Le périmètre couvre : gestion des utilisateurs et rôles (RBAC), soumission/validation des sujets, dépôt des fichiers PDF, extraction et analyse automatique des documents, notifications, archivage et administration. Le projet <strong>ne couvre pas</strong> la composition du jury ni la gestion des notes ni la gestion financière.</p>
+<h2>7. Subdivision du travail</h2>
+<p>Le mémoire est structuré comme suit :</p>
+<ul>
+<li><strong>Chapitre I :</strong> Considérations théoriques et analyse du système existant ;</li>
+<li><strong>Chapitre II :</strong> Conception et modélisation (UML, modèle de données) ;</li>
+<li><strong>Chapitre III :</strong> Implémentation, tests et résultats (architecture technique, interfaces, validation) ;</li>
+<li><strong>Annexes :</strong> guides d&#39;installation, extraits de code, rapports d&#39;analyse IA, captures d&#39;écran.</li>
+</ul>
+<h2>8. Outils logiciels et équipements utilisés</h2>
+<p>Le projet a été mis en œuvre avec la pile technologique suivante (résumé) :</p>
+<ul>
+<li><strong>Langage &amp; framework :</strong> PHP 8.2+, Laravel 12 ;</li>
+<li><strong>Base de données :</strong> PostgreSQL (production), SQLite (tests) ;</li>
+<li><strong>Frontend &amp; build :</strong> Tailwind CSS, Vite, Node.js ;</li>
+<li><strong>Gestion des dépendances :</strong> Composer (PHP), npm/yarn (JS) ;</li>
+<li><strong>Packages clés :</strong> spatie/laravel-permission (RBAC), smalot/pdfparser (extraction PDF) ;</li>
+<li><strong>Détection IA :</strong> intégration d&#39;une API (ex. GPTZero) via un service (voir <code>app/Services/AiDetectionService.php</code>) ;</li>
+<li><strong>Tests &amp; qualité :</strong> PHPUnit, laravel/pint ;</li>
+<li><strong>Infrastructure &amp; outils dev :</strong> Git, Docker (optionnel), serveur PHP local pour le développement ;</li>
+<li><strong>Matériel requis :</strong> poste de développement standard (4+ CPU, 8+ GB RAM recommandé), connexion Internet pour les appels API.</li>
+</ul>
+<p>Pour un inventaire détaillé et des preuves (fichiers de configuration, composer.json, package.json), voir le document dédié : <a href="docs/OUTILS-ET-EQUIPEMENTS.md">docs/OUTILS-ET-EQUIPEMENTS.md</a>.</p>
+<hr>
+<div style="page-break-before:always"></div><h1>LISTE DES FIGURES</h1>
+<table>
+<thead>
+<tr>
+<th>N°</th>
+<th>Figure</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Organigramme de l&#39;Université Don Bosco de Lubumbashi</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Diagramme de cas d&#39;utilisation global</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Diagramme de cas d&#39;utilisation — Étudiant</td>
+<td>—</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Diagramme de cas d&#39;utilisation — Chef de Département</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Diagramme de cas d&#39;utilisation — Enseignant</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Diagramme de cas d&#39;utilisation — Administrateur</td>
+<td>—</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Diagramme de séquence — Soumission de sujet</td>
+<td>—</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Diagramme de séquence — Validation/Rejet de sujet</td>
+<td>—</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Diagramme de séquence — Dépôt de fichier TFC avec analyse IA</td>
+<td>—</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Diagramme de séquence — Autorisation de soutenance</td>
+<td>—</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Diagramme de classes</td>
+<td>—</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Modèle relationnel de la base de données</td>
+<td>—</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Diagramme d&#39;activités — Processus complet de gestion d&#39;un TFC</td>
+<td>—</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Architecture MVC de Laravel</td>
+<td>—</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Capture d&#39;écran — Page d&#39;accueil</td>
+<td>—</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Capture d&#39;écran — Formulaire de connexion</td>
+<td>—</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Capture d&#39;écran — Tableau de bord Administrateur</td>
+<td>—</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Capture d&#39;écran — Tableau de bord Étudiant</td>
+<td>—</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Capture d&#39;écran — Formulaire de soumission de sujet (5 étapes)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Capture d&#39;écran — Tableau de bord Chef de Département</td>
+<td>—</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Capture d&#39;écran — Tableau de bord Enseignant</td>
+<td>—</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Capture d&#39;écran — Rapport d&#39;analyse IA</td>
+<td>—</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Capture d&#39;écran — Archives publiques</td>
+<td>—</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Capture d&#39;écran — Gestion des utilisateurs</td>
+<td>—</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Capture d&#39;écran — Gestion des facultés et filières</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>LISTE DES TABLEAUX</h1>
+<table>
+<thead>
+<tr>
+<th>N°</th>
+<th>Tableau</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Comparaison entre le système existant et le système proposé</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Tableau des acteurs du système</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Description des cas d&#39;utilisation</td>
+<td>—</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Dictionnaire de données</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Structure de la table <code>users</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Structure de la table <code>faculties</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Structure de la table <code>departments</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Structure de la table <code>subjects</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Structure de la table <code>thesis_files</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Structure de la table <code>ai_reports</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Structure de la table <code>academic_years</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Structure de la table <code>activity_logs</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Structure de la table <code>system_settings</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Matrice rôles-permissions</td>
+<td>—</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Grille d&#39;interprétation des scores IA</td>
+<td>—</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Technologies et outils utilisés</td>
+<td>—</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Résultats des tests fonctionnels</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<div style="page-break-before:always"></div><h1>LISTE DES ABRÉVIATIONS</h1>
+<table>
+<thead>
+<tr>
+<th>Abréviation</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API</td>
+<td>Application Programming Interface</td>
+</tr>
+<tr>
+<td>CRUD</td>
+<td>Create, Read, Update, Delete</td>
+</tr>
+<tr>
+<td>CSS</td>
+<td>Cascading Style Sheets</td>
+</tr>
+<tr>
+<td>FK</td>
+<td>Foreign Key</td>
+</tr>
+<tr>
+<td>HTML</td>
+<td>HyperText Markup Language</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>HyperText Transfer Protocol</td>
+</tr>
+<tr>
+<td>IA</td>
+<td>Intelligence Artificielle</td>
+</tr>
+<tr>
+<td>JSON</td>
+<td>JavaScript Object Notation</td>
+</tr>
+<tr>
+<td>MVC</td>
+<td>Model-View-Controller</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>Object-Relational Mapping</td>
+</tr>
+<tr>
+<td>PDF</td>
+<td>Portable Document Format</td>
+</tr>
+<tr>
+<td>PHP</td>
+<td>PHP Hypertext Preprocessor</td>
+</tr>
+<tr>
+<td>PK</td>
+<td>Primary Key</td>
+</tr>
+<tr>
+<td>RBAC</td>
+<td>Role-Based Access Control</td>
+</tr>
+<tr>
+<td>SI</td>
+<td>Système d&#39;Information</td>
+</tr>
+<tr>
+<td>SQL</td>
+<td>Structured Query Language</td>
+</tr>
+<tr>
+<td>TFC</td>
+<td>Travail de Fin de Cycle</td>
+</tr>
+<tr>
+<td>UDBL</td>
+<td>Université Don Bosco de Lubumbashi</td>
+</tr>
+<tr>
+<td>UML</td>
+<td>Unified Modeling Language</td>
+</tr>
+<tr>
+<td>UUID</td>
+<td>Universally Unique Identifier</td>
+</tr>
+</tbody></table>
+<hr>
+<div style="page-break-before:always"></div><h1>INTRODUCTION GÉNÉRALE</h1>
+<h2>1. Problématique</h2>
+<p>La gestion des Travaux de Fin de Cycle (TFC) constitue un processus académique central au sein des universités congolaises en général, et à l&#39;Université Don Bosco de Lubumbashi (UDBL) en particulier. Ce processus englobe plusieurs étapes critiques : le dépôt d&#39;une fiche de sujet, la réponse académique, l&#39;assignation d&#39;un directeur de mémoire, l&#39;encadrement, le dépôt du mémoire, l&#39;autorisation de soutenance et l&#39;archivage.</p>
+<p>À l&#39;heure actuelle, l&#39;ensemble de ce processus repose sur des mécanismes majoritairement manuels, fragmentés et faiblement traçables. L&#39;étudiant remplit une fiche qu&#39;il transmet par mail, puis attend une réponse également communiquée par mail. Le directeur de mémoire est désigné par le chef de département et informé verbalement, par téléphone ou parfois par mail. La rédaction et le suivi se font principalement en présentiel. Une fois achevé, le mémoire est imprimé puis déposé à l&#39;administration pour vérification manuelle par le comité de censure, sans contrôle automatisé de plagiat ni de contenu généré par IA. Après accord verbal ou par mail du directeur pour la soutenance, les mémoires sont finalement archivés dans des armoires physiques au secrétariat, avec un accès limité et sans mécanisme de recherche structuré.</p>
+<p>Cette organisation présente de nombreuses insuffisances :</p>
+<ul>
+<li><strong>La lenteur du processus de validation</strong> : les propositions de sujet peuvent rester en attente pendant des semaines faute de mécanisme de notification automatique auprès des responsables ;</li>
+<li><strong>L&#39;absence de traçabilité</strong> : il n&#39;existe aucun historique centralisé des décisions prises (validations, rejets, motifs), ce qui rend difficile tout audit ou suivi rétrospectif ;</li>
+<li><strong>Le risque de perte de documents</strong> : les versions papier sont sujettes à la détérioration, à l&#39;égarement ou à la duplication non contrôlée ;</li>
+<li><strong>L&#39;impossibilité de détecter le plagiat et le contenu généré par IA</strong> : avec la démocratisation des outils d&#39;intelligence artificielle générative (ChatGPT, Gemini, Claude, etc.), le risque que des étudiants soumettent des travaux partiellement ou intégralement générés par ces outils est devenu une préoccupation majeure. Or, aucun mécanisme de vérification n&#39;est actuellement en place ;</li>
+<li><strong>La difficulté d&#39;accès aux archives</strong> : les travaux des promotions précédentes ne sont pas facilement consultables pour servir de référence ou éviter les doublons de sujets ;</li>
+<li><strong>L&#39;inefficacité de la communication</strong> : les échanges entre étudiants, enseignants et responsables académiques sont fragmentés et souvent non documentés.</li>
+</ul>
+<p>Face à ce constat, la question fondamentale qui guide notre recherche est la suivante : <strong>comment concevoir et implémenter une plateforme web intégrée qui automatise et sécurise l&#39;ensemble du processus de gestion des TFC, tout en intégrant un mécanisme de détection de contenu généré par intelligence artificielle ?</strong></p>
+<h2>2. Hypothèses</h2>
+<p>En réponse à la problématique énoncée, nous formulons les hypothèses suivantes :</p>
+<ol>
+<li><p><strong>La mise en place d&#39;une plateforme web centralisée</strong> permettrait de numériser et d&#39;automatiser le processus de gestion des TFC, depuis la soumission du sujet jusqu&#39;à l&#39;autorisation puis à la planification de la soutenance, en offrant à chaque acteur (étudiant, enseignant, chef de département, administrateur) un espace dédié et des fonctionnalités adaptées à son rôle.</p>
+</li>
+<li><p><strong>L&#39;intégration d&#39;un module de détection de contenu IA</strong>, basé sur des API spécialisées telles que GPTZero, permettrait d&#39;évaluer automatiquement le degré d&#39;originalité des mémoires déposés et de signaler les travaux présentant un risque élevé de contenu généré artificiellement.</p>
+</li>
+<li><p><strong>Un système de notifications automatisées</strong> (par e-mail et en temps réel dans l&#39;application) améliorerait significativement la réactivité des différents intervenants et réduirait les délais de traitement.</p>
+</li>
+<li><p><strong>La mise à disposition d&#39;archives publiques</strong> des travaux défendus favoriserait la consultation des travaux antérieurs et contribuerait à limiter la redondance des sujets de recherche.</p>
+</li>
+</ol>
+<hr>
+<div style="page-break-before:always"></div><h1>CHAPITRE PREMIER : CONSIDÉRATIONS THÉORIQUES ET ANALYSE DU SYSTÈME EXISTANT</h1>
+<h2>Section 1 : Définition des concepts fondamentaux</h2>
+<h3>1.1. Système d&#39;information</h3>
+<p>Un <strong>système d&#39;information</strong> (SI) est un ensemble organisé de ressources (matérielles, logicielles, personnelles, données, procédures) permettant de collecter, stocker, traiter et diffuser l&#39;information au sein d&#39;une organisation. Selon Robert Reix, « un système d&#39;information est un ensemble de composants inter-reliés qui recueillent, traitent, stockent et diffusent l&#39;information pour soutenir la prise de décisions, la coordination et le contrôle d&#39;une organisation » (Reix, 2004).</p>
+<p>Dans le contexte universitaire, le système d&#39;information académique englobe la gestion des inscriptions, des cours, des évaluations, et — dans notre cas — la gestion des travaux de fin de cycle.</p>
+<h3>1.2. Application web</h3>
+<p>Une <strong>application web</strong> est un logiciel applicatif hébergé sur un serveur distant et accessible via un navigateur web à travers le protocole HTTP/HTTPS. Contrairement aux applications de bureau, les applications web ne nécessitent aucune installation sur le poste client et offrent l&#39;avantage d&#39;être accessibles depuis tout appareil connecté à Internet.</p>
+<p>Les applications web modernes suivent généralement une architecture <strong>client-serveur</strong> où :</p>
+<ul>
+<li>Le <strong>client</strong> (navigateur) envoie des requêtes HTTP ;</li>
+<li>Le <strong>serveur</strong> traite ces requêtes, interagit avec la base de données et renvoie des réponses (HTML, JSON, fichiers).</li>
+</ul>
+<h3>1.3. Architecture Modèle-Vue-Contrôleur (MVC)</h3>
+<p>L&#39;architecture <strong>MVC</strong> est un patron de conception logicielle qui sépare une application en trois composants interconnectés :</p>
+<ul>
+<li><strong>Modèle (Model)</strong> : représente les données et la logique métier. Il interagit directement avec la base de données et définit les règles de validation et les relations entre les entités ;</li>
+<li><strong>Vue (View)</strong> : gère la présentation et l&#39;affichage des données à l&#39;utilisateur. Elle reçoit les données du contrôleur et les formate en interface graphique (HTML/CSS) ;</li>
+<li><strong>Contrôleur (Controller)</strong> : fait office d&#39;intermédiaire entre le modèle et la vue. Il reçoit les requêtes de l&#39;utilisateur, interroge le modèle approprié et sélectionne la vue à afficher.</li>
+</ul>
+<p>Cette séparation des responsabilités favorise la maintenabilité, la testabilité et la réutilisabilité du code.</p>
+<h3>1.4. Framework</h3>
+<p>Un <strong>framework</strong> est un cadre de travail logiciel qui fournit une structure de base, des composants réutilisables et des conventions pour accélérer le développement d&#39;applications. Il impose une organisation du code et fournit des outils prêts à l&#39;emploi pour les tâches courantes (routage, authentification, gestion de base de données, etc.).</p>
+<h3>1.5. ORM (Object-Relational Mapping)</h3>
+<p>L&#39;<strong>ORM</strong> est une technique de programmation qui permet de convertir des données entre le système de types d&#39;un langage de programmation orienté objet et celui d&#39;une base de données relationnelle. L&#39;ORM crée une couche d&#39;abstraction qui permet au développeur de manipuler les données sous forme d&#39;objets plutôt que d&#39;écrire des requêtes SQL brutes.</p>
+<p><strong>Eloquent</strong>, l&#39;ORM intégré à Laravel, permet par exemple de définir un modèle <code>Subject</code> qui correspond directement à la table <code>subjects</code> de la base de données, avec ses relations (appartient à un étudiant, possède plusieurs fichiers de thèse, etc.).</p>
+<h3>1.6. Intelligence artificielle générative</h3>
+<p>L&#39;<strong>intelligence artificielle générative</strong> désigne les systèmes d&#39;IA capables de produire du contenu original (texte, images, code, etc.) à partir de modèles de langage entraînés sur de vastes corpus de données. Les modèles les plus connus incluent GPT (OpenAI), Gemini (Google) et Claude (Anthropic).</p>
+<p>Dans le contexte académique, l&#39;émergence de ces outils pose un défi majeur en matière d&#39;intégrité scientifique, car ils permettent potentiellement de générer des textes académiques difficiles à distinguer du travail humain sans outils de détection spécialisés.</p>
+<h3>1.7. Détection de contenu IA</h3>
+<p>La <strong>détection de contenu IA</strong> consiste à analyser un texte pour déterminer la probabilité qu&#39;il ait été généré par un modèle d&#39;intelligence artificielle. Les outils de détection, tels que <strong>GPTZero</strong>, utilisent des caractéristiques statistiques du texte (perplexité, entropie, patterns de génération) pour attribuer un score de probabilité.</p>
+<h3>1.8. Contrôle d&#39;accès basé sur les rôles (RBAC)</h3>
+<p>Le <strong>RBAC</strong> (Role-Based Access Control) est un modèle de sécurité dans lequel les droits d&#39;accès sont attribués aux utilisateurs en fonction de leur rôle au sein de l&#39;organisation. Chaque rôle définit un ensemble de permissions qui déterminent les actions autorisées dans le système.</p>
+<p>Ce modèle est particulièrement adapté aux organisations hiérarchiques comme les universités, où les droits varient significativement selon le statut (étudiant, enseignant, responsable administratif).</p>
+<h3>1.9. Travail de fin de cycle (TFC)</h3>
+<p>Le <strong>Travail de Fin de Cycle</strong> est un travail de recherche personnel rédigé par l&#39;étudiant de premier cycle universitaire (licence/baccalauréat) sous la direction d&#39;un enseignant. Il sanctionne la fin de la formation et vise à démontrer la capacité de l&#39;étudiant à mener une réflexion structurée sur un sujet lié à sa discipline.</p>
+<h2>Section 2 : Présentation de l&#39;organisme d&#39;accueil</h2>
+<h3>2.1. Historique de l&#39;Université Don Bosco de Lubumbashi</h3>
+<p>L&#39;<strong>Université Don Bosco de Lubumbashi</strong> (UDBL) est un établissement d&#39;enseignement supérieur situé dans la ville de Lubumbashi, en République Démocratique du Congo. Fondée dans la tradition éducative salésienne, elle porte le nom de Saint Jean Bosco, fondateur de la congrégation des Salésiens de Don Bosco, dont la mission éducative est reconnue mondialement.</p>
+<p>L&#39;université s&#39;est progressivement développée pour couvrir plusieurs domaines de formation, allant des sciences informatiques aux sciences économiques, en passant par les sciences humaines et la théologie.</p>
+<h3>2.2. Structure organisationnelle</h3>
+<p>L&#39;UDBL est organisée en <strong>quatre facultés</strong>, chacune regroupant une ou plusieurs filières (départements) :</p>
+<p><strong>A. Faculté des Sciences Informatiques (ESIS)</strong></p>
+<ul>
+<li>Génie Logiciel (GL)</li>
+<li>Réseaux et Administration Système (AS)</li>
+<li>Design et Multimédia (DSN)</li>
+<li>Management des Systèmes d&#39;Information (MSI)</li>
+<li>Data Science (DS)</li>
+<li>DevOps et Sécurité (DEVOPS)</li>
+<li>Communication Numérique (CN)</li>
+</ul>
+<p><strong>B. Faculté des Sciences Économiques (ECOPO)</strong></p>
+<ul>
+<li>Gestion des Entreprises et Ingénierie Financière (GEIF)</li>
+<li>Management Commercial et Marketing (MCM)</li>
+<li>Gestion des Affaires Publiques (GAP)</li>
+<li>Diversification et Développement Agro-Alimentaire (DDAI)</li>
+</ul>
+<p><strong>C. Faculté des Sciences Humaines (KANSEBULA)</strong></p>
+<ul>
+<li>Sciences de l&#39;Homme et de la Société (SHS)</li>
+</ul>
+<p><strong>D. Faculté de Théologie (THEOLOGICUM)</strong></p>
+<ul>
+<li>Théologie (THEO)</li>
+</ul>
+<h3>2.3. Mission et vision</h3>
+<p>L&#39;UDBL a pour mission de former des cadres compétents, responsables et innovants, capables de contribuer au développement socio-économique de la République Démocratique du Congo et de l&#39;Afrique. Sa vision s&#39;articule autour de l&#39;excellence académique, de l&#39;innovation technologique et des valeurs humanistes héritées de la tradition salésienne.</p>
+<h2>Section 3 : Analyse du système existant</h2>
+<h3>3.1. Description du processus actuel</h3>
+<p>Le processus actuel de gestion des TFC à l&#39;Université Don Bosco de Lubumbashi se déroule de la manière suivante :</p>
+<ol>
+<li><p><strong>Dépôt de la fiche de sujet</strong> : l&#39;étudiant remplit une fiche de proposition de TFC et l&#39;envoie par mail.</p>
+</li>
+<li><p><strong>Attente de la réponse</strong> : l&#39;étudiant attend la décision académique, qui lui est généralement transmise par mail après traitement du dossier.</p>
+</li>
+<li><p><strong>Attribution du directeur</strong> : un enseignant est désigné comme directeur de mémoire par le chef de département.</p>
+</li>
+<li><p><strong>Notification de l&#39;enseignant</strong> : l&#39;enseignant désigné est informé verbalement, par téléphone ou parfois par mail.</p>
+</li>
+<li><p><strong>Rédaction et encadrement</strong> : l&#39;étudiant rédige son travail sous la supervision de son directeur, avec des échanges essentiellement en présentiel.</p>
+</li>
+<li><p><strong>Dépôt du document</strong> : le mémoire achevé est imprimé puis déposé à l&#39;administration pour vérification par le comité de censure. Aucune vérification automatisée de plagiat ou de contenu IA n&#39;est effectuée.</p>
+</li>
+<li><p><strong>Autorisation de soutenance</strong> : le directeur donne son accord pour la soutenance de manière verbale ou par mail.</p>
+</li>
+<li><p><strong>Archivage</strong> : les mémoires sont conservés dans des armoires physiques au secrétariat, avec un accès limité et aucun système de recherche.</p>
+</li>
+</ol>
+<h3>3.2. Critique du système existant</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Système actuel</th>
+<th>Problème identifié</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Support</td>
+<td>Mail, papier et communication informelle</td>
+<td>Risque de perte, lenteur, absence de traçabilité</td>
+</tr>
+<tr>
+<td>Validation des sujets</td>
+<td>Traitement manuel des fiches et réponses par mail</td>
+<td>Délais importants et faible visibilité sur l&#39;avancement</td>
+</tr>
+<tr>
+<td>Notification</td>
+<td>Mail, verbal, téléphone</td>
+<td>L&#39;information peut être tardive, incomplète ou non historisée</td>
+</tr>
+<tr>
+<td>Suivi</td>
+<td>Registres manuscrits</td>
+<td>Aucune vue d&#39;ensemble en temps réel</td>
+</tr>
+<tr>
+<td>Détection plagiat/IA</td>
+<td>Inexistante lors de la vérification par le comité de censure</td>
+<td>Risque d&#39;intégrité académique</td>
+</tr>
+<tr>
+<td>Archivage</td>
+<td>Physique (armoires)</td>
+<td>Accès difficile, risque de détérioration</td>
+</tr>
+<tr>
+<td>Communication</td>
+<td>Fragmentée</td>
+<td>Échanges non documentés</td>
+</tr>
+</tbody></table>
+<h3>3.3. Solutions proposées</h3>
+<p>Pour pallier les insuffisances identifiées, nous proposons la conception et la réalisation d&#39;une <strong>plateforme web de gestion des TFC</strong> qui offre :</p>
+<table>
+<thead>
+<tr>
+<th>Problème</th>
+<th>Solution proposée</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Lenteur de validation</td>
+<td>Workflow automatisé avec notifications instantanées</td>
+</tr>
+<tr>
+<td>Absence de traçabilité</td>
+<td>Journal d&#39;activité complet avec historique des actions</td>
+</tr>
+<tr>
+<td>Risque de perte de documents</td>
+<td>Stockage numérique sécurisé sur serveur</td>
+</tr>
+<tr>
+<td>Pas de détection plagiat/IA</td>
+<td>Module d&#39;analyse IA intégré (API GPTZero)</td>
+</tr>
+<tr>
+<td>Archives inaccessibles</td>
+<td>Archives publiques consultables en ligne avec recherche</td>
+</tr>
+<tr>
+<td>Communication fragmentée</td>
+<td>Système de notifications par e-mail et in-app</td>
+</tr>
+<tr>
+<td>Absence de contrôle d&#39;accès</td>
+<td>Système RBAC avec quatre rôles distincts</td>
+</tr>
+</tbody></table>
+<h2>Section 4 : Choix technologiques</h2>
+<h3>4.1. Technologies retenues</h3>
+<p>Le choix des technologies s&#39;est porté sur un écosystème robuste, moderne et bien documenté :</p>
+<table>
+<thead>
+<tr>
+<th>Composant</th>
+<th>Technologie</th>
+<th>Version</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Langage serveur</td>
+<td>PHP</td>
+<td>8.2+</td>
+<td>Langage mature, large communauté, performant</td>
+</tr>
+<tr>
+<td>Framework backend</td>
+<td>Laravel</td>
+<td>12.0</td>
+<td>Framework PHP le plus populaire, architecture MVC, Eloquent ORM, système d&#39;authentification intégré</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>Blade + Tailwind CSS</td>
+<td>3.x</td>
+<td>Moteur de template intégré à Laravel + framework CSS utilitaire moderne</td>
+</tr>
+<tr>
+<td>JavaScript</td>
+<td>Alpine.js</td>
+<td>3.x</td>
+<td>Framework JS léger pour l&#39;interactivité côté client</td>
+</tr>
+<tr>
+<td>Base de données</td>
+<td>PostgreSQL</td>
+<td>14+</td>
+<td>SGBD relationnel robuste, adapté aux contraintes transactionnelles et au volume de données du système</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>Eloquent</td>
+<td>—</td>
+<td>ORM intégré à Laravel, approche Active Record</td>
+</tr>
+<tr>
+<td>Gestion des rôles</td>
+<td>Spatie Laravel Permission</td>
+<td>7.0</td>
+<td>Package de référence pour le RBAC dans Laravel</td>
+</tr>
+<tr>
+<td>Analyse PDF</td>
+<td>smalot/pdfparser</td>
+<td>2.12</td>
+<td>Extraction de texte depuis les fichiers PDF</td>
+</tr>
+<tr>
+<td>Détection IA</td>
+<td>API GPTZero</td>
+<td>v2</td>
+<td>Service spécialisé dans la détection de contenu IA</td>
+</tr>
+<tr>
+<td>Authentification</td>
+<td>Laravel Breeze</td>
+<td>—</td>
+<td>Scaffolding d&#39;authentification léger et personnalisable</td>
+</tr>
+<tr>
+<td>Bundler d&#39;assets</td>
+<td>Vite</td>
+<td>7.0</td>
+<td>Build tool rapide pour CSS/JS</td>
+</tr>
+<tr>
+<td>Serveur de dev</td>
+<td>PHP Artisan Serve</td>
+<td>—</td>
+<td>Serveur intégré pour le développement local</td>
+</tr>
+</tbody></table>
+<h3>4.2. Justification du choix de Laravel</h3>
+<p>Le choix de <strong>Laravel</strong> comme framework principal se justifie par :</p>
+<ol>
+<li><p><strong>L&#39;architecture MVC native</strong> : Laravel impose une structure claire qui sépare la logique métier, la présentation et le routage, facilitant la maintenance et l&#39;évolution du code.</p>
+</li>
+<li><p><strong>Eloquent ORM</strong> : permet de définir des modèles qui reflètent directement la structure de la base de données, avec un système de relations (un-à-un, un-à-plusieurs, plusieurs-à-plusieurs) intuitif et puissant.</p>
+</li>
+<li><p><strong>Le système de migration</strong> : permet de versionner la structure de la base de données et de la reproduire de manière identique sur différents environnements.</p>
+</li>
+<li><p><strong>L&#39;écosystème riche</strong> : Laravel dispose d&#39;une large collection de packages (Spatie Permission, Breeze, etc.) qui accélèrent considérablement le développement.</p>
+</li>
+<li><p><strong>Le système de notification</strong> : Laravel intègre nativement un mécanisme de notifications multi-canaux (e-mail, base de données, SMS, etc.) qui répond parfaitement à nos besoins de communication automatisée.</p>
+</li>
+<li><p><strong>La sécurité intégrée</strong> : protection CSRF, hachage des mots de passe (bcrypt), requêtes préparées contre les injections SQL, validation des entrées.</p>
+</li>
+</ol>
+<h3>4.3. Justification du choix de GPTZero</h3>
+<p><strong>GPTZero</strong> a été retenu comme service de détection de contenu IA pour les raisons suivantes :</p>
+<ol>
+<li><strong>Spécialisation</strong> : GPTZero est l&#39;un des premiers et des plus reconnus outils de détection de contenu généré par IA ;</li>
+<li><strong>API REST accessible</strong> : l&#39;API est bien documentée et s&#39;intègre facilement dans une application web ;</li>
+<li><strong>Scores détaillés</strong> : l&#39;API fournit des scores de probabilité (contenu complètement généré, partiellement généré) qui permettent une évaluation nuancée ;</li>
+<li><strong>Mode de secours</strong> : notre implémentation prévoit un mode de simulation en cas d&#39;indisponibilité de l&#39;API, garantissant la continuité du service.</li>
+</ol>
+<hr>
+<div style="page-break-before:always"></div><h1>CHAPITRE DEUXIÈME : CONCEPTION ET MODÉLISATION DU SYSTÈME D&#39;INFORMATION</h1>
+<h2>Section 1 : Identification des acteurs et des besoins</h2>
+<h3>1.1. Acteurs du système</h3>
+<p>Notre système identifie <strong>quatre acteurs principaux</strong>, chacun disposant d&#39;un rôle et de permissions spécifiques :</p>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Rôle</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Étudiant</strong></td>
+<td>Etudiant</td>
+<td>Utilisateur inscrit pouvant soumettre un sujet de TFC, déposer ses fichiers PDF (version jury et version finale) et consulter ses notifications et rapports d&#39;analyse.</td>
+</tr>
+<tr>
+<td><strong>Chef de Département</strong></td>
+<td>Chef de département</td>
+<td>Responsable académique chargé de valider ou rejeter les sujets soumis dans sa filière, d&#39;assigner les directeurs de mémoire et de suivre l&#39;avancement des TFC.</td>
+</tr>
+<tr>
+<td><strong>Enseignant</strong></td>
+<td>Enseignant</td>
+<td>Directeur de mémoire chargé de superviser les travaux qui lui sont assignés, de consulter les rapports d&#39;analyse IA, d&#39;autoriser la soutenance (Feu Vert) et de retirer cette autorisation si nécessaire avant dépôt de la version finale.</td>
+</tr>
+<tr>
+<td><strong>Administrateur</strong></td>
+<td>Admin</td>
+<td>Super-utilisateur chargé de la gestion globale du système : utilisateurs, facultés, filières, années académiques, paramètres et journal d&#39;activité.</td>
+</tr>
+</tbody></table>
+<p>Un cinquième acteur, le <strong>visiteur public</strong> (non authentifié), peut consulter les archives des travaux défendus et télécharger les versions finales.</p>
+<h3>1.2. Besoins fonctionnels</h3>
+<h4>A. Besoins de l&#39;Étudiant</h4>
+<ul>
+<li>Disposer d&#39;un compte créé par l&#39;administrateur avec matricule universitaire ;</li>
+<li>Soumettre un sujet de TFC via un formulaire structuré en 5 étapes ;</li>
+<li>Consulter l&#39;état de son sujet (en attente, validé, rejeté) ;</li>
+<li>Déposer la version « jury » de son mémoire (PDF, max 20 Mo) ;</li>
+<li>Consulter le rapport d&#39;analyse IA de son fichier ;</li>
+<li>Recevoir la notification de « Feu Vert » de son encadreur ;</li>
+<li>Recevoir, le cas échéant, la notification de retrait du « Feu Vert » ;</li>
+<li>Consulter la date et la salle de soutenance planifiées ;</li>
+<li>Déposer la version « finale » après autorisation de soutenance ;</li>
+<li>Consulter ses notifications.</li>
+</ul>
+<h4>B. Besoins du Chef de Département</h4>
+<ul>
+<li>Visualiser les sujets en attente de validation dans son département ;</li>
+<li>Valider un sujet et assigner un enseignant encadreur ;</li>
+<li>Rejeter un sujet avec un motif détaillé ;</li>
+<li>Suivre l&#39;ensemble des TFC de son département ;</li>
+<li>Planifier la soutenance (date et salle) après le Feu Vert de l&#39;encadreur ;</li>
+<li>Consulter les rapports d&#39;analyse IA ;</li>
+<li>Exporter la liste des sujets au format CSV.</li>
+</ul>
+<h4>C. Besoins de l&#39;Enseignant</h4>
+<ul>
+<li>Consulter la liste des sujets dont il est l&#39;encadreur ;</li>
+<li>Télécharger les fichiers déposés par ses étudiants ;</li>
+<li>Consulter les rapports d&#39;analyse IA ;</li>
+<li>Autoriser la soutenance (donner le « Feu Vert ») ;</li>
+<li>Retirer le « Feu Vert » tant que la version finale n&#39;est pas encore déposée.</li>
+</ul>
+<h4>D. Besoins de l&#39;Administrateur</h4>
+<ul>
+<li>Gérer les utilisateurs (CRUD, blocage, réinitialisation de mot de passe) ;</li>
+<li>Gérer les facultés et les filières ;</li>
+<li>Gérer les années académiques (créer, activer, clôturer) ;</li>
+<li>Configurer les paramètres du système (seuils IA, dates limites) ;</li>
+<li>Consulter le journal d&#39;activité ;</li>
+<li>Accéder à toutes les fonctionnalités des autres rôles.</li>
+</ul>
+<h4>E. Besoins du visiteur public</h4>
+<ul>
+<li>Consulter les archives des travaux défendus ;</li>
+<li>Rechercher par titre, étudiant, filière, année académique ou type ;</li>
+<li>Télécharger la version finale des travaux archivés.</li>
+</ul>
+<h3>1.3. Besoins non fonctionnels</h3>
+<ul>
+<li><strong>Performance</strong> : temps de réponse inférieur à 3 secondes pour les opérations courantes ;</li>
+<li><strong>Sécurité</strong> : authentification obligatoire, protection CSRF, hachage des mots de passe, contrôle d&#39;accès RBAC ;</li>
+<li><strong>Ergonomie</strong> : interface responsive, intuitive et cohérente, compatible avec les écrans mobiles et desktop ;</li>
+<li><strong>Fiabilité</strong> : validation des entrées, gestion des erreurs, journalisation des actions ;</li>
+<li><strong>Maintenabilité</strong> : code structuré selon l&#39;architecture MVC, commenté et versionné ;</li>
+<li><strong>Extensibilité</strong> : architecture modulaire permettant l&#39;ajout futur de fonctionnalités.</li>
+</ul>
+<h2>Section 2 : Diagrammes de cas d&#39;utilisation</h2>
+<h3>2.1. Diagramme de cas d&#39;utilisation global</h3>
+<pre><code>[object Object]</code></pre><h3>2.2. Description détaillée des cas d&#39;utilisation</h3>
+<h4>Tableau 3 : Description des cas d&#39;utilisation principaux</h4>
+<table>
+<thead>
+<tr>
+<th>N°</th>
+<th>Cas d&#39;utilisation</th>
+<th>Acteur principal</th>
+<th>Précondition</th>
+<th>Postcondition</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CU01</td>
+<td>Créer un compte utilisateur</td>
+<td>Administrateur</td>
+<td>Rôle et filière définis</td>
+<td>Compte créé et actif</td>
+<td>L&#39;administrateur crée le compte utilisateur (nom, e-mail, matricule, rôle, filière) depuis l&#39;interface d&#39;administration.</td>
+</tr>
+<tr>
+<td>CU02</td>
+<td>Se connecter</td>
+<td>Tout utilisateur</td>
+<td>Compte existant et non bloqué</td>
+<td>Session authentifiée, redirection vers le tableau de bord</td>
+<td>L&#39;utilisateur saisit son e-mail et mot de passe. Le système vérifie les identifiants et redirige vers le dashboard approprié.</td>
+</tr>
+<tr>
+<td>CU03</td>
+<td>Soumettre un sujet</td>
+<td>Étudiant</td>
+<td>Connecté, pas de sujet pending/validé</td>
+<td>Sujet créé (status=pending), notification envoyée au CP</td>
+<td>L&#39;étudiant remplit le formulaire en 5 étapes : (1) Informations générales, (2) Contexte et problématique, (3) Objectifs et hypothèses, (4) Revue de littérature, (5) Méthodologie.</td>
+</tr>
+<tr>
+<td>CU04</td>
+<td>Valider un sujet</td>
+<td>Chef Département</td>
+<td>Sujet pending du même département</td>
+<td>Status=validated, enseignant assigné, notifications envoyées</td>
+<td>Le CP sélectionne un enseignant, confirme la validation. Notifications à l&#39;étudiant et à l&#39;enseignant.</td>
+</tr>
+<tr>
+<td>CU05</td>
+<td>Rejeter un sujet</td>
+<td>Chef Département</td>
+<td>Sujet pending du même département</td>
+<td>Status=rejected, motif enregistré, notification envoyée</td>
+<td>Le CP saisit le motif du rejet. L&#39;étudiant est notifié et peut resoumettre un nouveau sujet.</td>
+</tr>
+<tr>
+<td>CU06</td>
+<td>Déposer fichier TFC</td>
+<td>Étudiant</td>
+<td>Sujet validé (version jury) ou defense_validated (version finale)</td>
+<td>Fichier stocké, analyse IA lancée, notification à l&#39;encadreur</td>
+<td>L&#39;étudiant sélectionne le type de version et uploade le PDF. Le système lance automatiquement l&#39;analyse IA.</td>
+</tr>
+<tr>
+<td>CU07</td>
+<td>Autoriser soutenance</td>
+<td>Enseignant</td>
+<td>Est l&#39;encadreur, sujet validé</td>
+<td>defense_validated=true, notification « Feu Vert » à l&#39;étudiant</td>
+<td>L&#39;enseignant consulte le rapport IA et les fichiers, puis autorise la soutenance.</td>
+</tr>
+<tr>
+<td>CU08</td>
+<td>Consulter archives</td>
+<td>Visiteur / Tout utilisateur</td>
+<td>Aucune</td>
+<td>Affichage des travaux défendus</td>
+<td>Affichage paginé avec filtres (recherche, filière, année, type). Téléchargement de la version finale possible.</td>
+</tr>
+<tr>
+<td>CU09</td>
+<td>Gérer utilisateurs</td>
+<td>Administrateur</td>
+<td>Connecté, rôle Admin</td>
+<td>Utilisateur créé/modifié/bloqué</td>
+<td>L&#39;admin peut créer, modifier, bloquer/débloquer et réinitialiser les mots de passe des utilisateurs.</td>
+</tr>
+<tr>
+<td>CU10</td>
+<td>Gérer facultés</td>
+<td>Administrateur</td>
+<td>Connecté, rôle Admin</td>
+<td>Faculté créée/modifiée/supprimée</td>
+<td>L&#39;admin gère les entités Faculté (ESIS, ECOPO, etc.) auxquelles sont rattachées les filières.</td>
+</tr>
+<tr>
+<td>CU11</td>
+<td>Gérer filières</td>
+<td>Administrateur</td>
+<td>Connecté, rôle Admin</td>
+<td>Filière créée/modifiée/supprimée</td>
+<td>L&#39;admin gère les filières (Génie Logiciel, etc.) avec leur rattachement à une faculté.</td>
+</tr>
+<tr>
+<td>CU12</td>
+<td>Gérer années académiques</td>
+<td>Administrateur</td>
+<td>Connecté, rôle Admin</td>
+<td>Année créée/activée/clôturée</td>
+<td>L&#39;admin crée des années académiques, en active une comme courante, et peut clôturer les précédentes.</td>
+</tr>
+<tr>
+<td>CU13</td>
+<td>Planifier soutenance</td>
+<td>Chef Département</td>
+<td>Sujet avec <code>defense_validated=true</code> du même département</td>
+<td><code>defense_date</code> et <code>defense_room</code> enregistrés</td>
+<td>Le CP renseigne la date/heure et la salle de soutenance après le Feu Vert.</td>
+</tr>
+<tr>
+<td>CU14</td>
+<td>Retirer autorisation de soutenance</td>
+<td>Enseignant</td>
+<td>Est l&#39;encadreur, defense_validated=true, version finale non déposée</td>
+<td>defense_validated=false, defense_date/defense_room remis à null, motif de retrait enregistré, notification de retrait envoyée</td>
+<td>L&#39;enseignant retire le Feu Vert lorsque des corrections supplémentaires sont nécessaires avant le dépôt final, en renseignant obligatoirement le motif du retrait.</td>
+</tr>
+</tbody></table>
+<h2>Section 3 : Diagrammes de séquence</h2>
+<h3>3.1. Diagramme de séquence — Soumission d&#39;un sujet (CU03)</h3>
+<pre><code>[object Object]</code></pre><h3>3.2. Diagramme de séquence — Validation d&#39;un sujet (CU04)</h3>
+<pre><code>[object Object]</code></pre><h3>3.3. Diagramme de séquence — Dépôt de fichier avec analyse IA (CU06)</h3>
+<pre><code>[object Object]</code></pre><h3>3.4. Diagramme de séquence — Autorisation de soutenance (CU07)</h3>
+<pre><code>[object Object]</code></pre><h2>Section 4 : Diagramme de classes</h2>
+<h3>4.1. Diagramme de classes principal</h3>
+<pre><code>[object Object]</code></pre><h3>4.2. Relations entre les classes</h3>
+<table>
+<thead>
+<tr>
+<th>Relation</th>
+<th>Type</th>
+<th>Cardinalité</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Faculty → Department</td>
+<td>One-to-Many</td>
+<td>1..*</td>
+<td>Une faculté contient une ou plusieurs filières</td>
+</tr>
+<tr>
+<td>Department → User</td>
+<td>One-to-Many</td>
+<td>1..*</td>
+<td>Une filière contient plusieurs utilisateurs</td>
+</tr>
+<tr>
+<td>Department → Subject</td>
+<td>One-to-Many</td>
+<td>0..*</td>
+<td>Une filière peut avoir plusieurs sujets</td>
+</tr>
+<tr>
+<td>User → Subject (student)</td>
+<td>One-to-Many</td>
+<td>0..*</td>
+<td>Un étudiant peut avoir plusieurs sujets (historique)</td>
+</tr>
+<tr>
+<td>User → Subject (teacher)</td>
+<td>One-to-Many</td>
+<td>0..*</td>
+<td>Un enseignant peut encadrer plusieurs sujets</td>
+</tr>
+<tr>
+<td>AcademicYear → Subject</td>
+<td>One-to-Many</td>
+<td>0..*</td>
+<td>Une année académique regroupe plusieurs sujets</td>
+</tr>
+<tr>
+<td>Subject → ThesisFile</td>
+<td>One-to-Many</td>
+<td>0..2</td>
+<td>Un sujet peut avoir au maximum 2 fichiers (jury + final)</td>
+</tr>
+<tr>
+<td>ThesisFile → AiReport</td>
+<td>One-to-One</td>
+<td>0..1</td>
+<td>Un fichier peut avoir un rapport d&#39;analyse IA</td>
+</tr>
+<tr>
+<td>User → ActivityLog</td>
+<td>One-to-Many</td>
+<td>0..*</td>
+<td>Un utilisateur génère plusieurs entrées dans le journal</td>
+</tr>
+</tbody></table>
+<h2>Section 5 : Modèle relationnel de la base de données</h2>
+<h3>5.1. Schéma relationnel</h3>
+<p>Le passage du diagramme de classes au schéma relationnel se fait selon les règles classiques de transformation :</p>
+<pre><code>[object Object]</code></pre><h3>5.2. Dictionnaire de données</h3>
+<h4>Tableau 4 : Dictionnaire de données</h4>
+<table>
+<thead>
+<tr>
+<th>Entité</th>
+<th>Attribut</th>
+<th>Type</th>
+<th>Taille</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Faculty</td>
+<td>id</td>
+<td>INT</td>
+<td>—</td>
+<td>PK, AUTO_INCREMENT</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>Faculty</td>
+<td>name</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Nom de la faculté</td>
+</tr>
+<tr>
+<td>Faculty</td>
+<td>code</td>
+<td>VARCHAR</td>
+<td>50</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Code abrégé (ex: ESIS)</td>
+</tr>
+<tr>
+<td>Faculty</td>
+<td>description</td>
+<td>TEXT</td>
+<td>—</td>
+<td>NULLABLE</td>
+<td>Description détaillée</td>
+</tr>
+<tr>
+<td>Department</td>
+<td>id</td>
+<td>INT</td>
+<td>—</td>
+<td>PK, AUTO_INCREMENT</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>Department</td>
+<td>faculty_id</td>
+<td>INT</td>
+<td>—</td>
+<td>FK → faculties, NOT NULL</td>
+<td>Rattachement à une faculté</td>
+</tr>
+<tr>
+<td>Department</td>
+<td>name</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Nom de la filière</td>
+</tr>
+<tr>
+<td>Department</td>
+<td>code</td>
+<td>VARCHAR</td>
+<td>50</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Code abrégé (ex: GL)</td>
+</tr>
+<tr>
+<td>User</td>
+<td>id</td>
+<td>INT</td>
+<td>—</td>
+<td>PK, AUTO_INCREMENT</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>User</td>
+<td>name</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>NOT NULL</td>
+<td>Nom complet</td>
+</tr>
+<tr>
+<td>User</td>
+<td>email</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Adresse e-mail</td>
+</tr>
+<tr>
+<td>User</td>
+<td>password</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>NOT NULL</td>
+<td>Mot de passe haché (bcrypt)</td>
+</tr>
+<tr>
+<td>User</td>
+<td>matricule</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Matricule universitaire</td>
+</tr>
+<tr>
+<td>User</td>
+<td>department_id</td>
+<td>INT</td>
+<td>—</td>
+<td>FK → departments</td>
+<td>Filière d&#39;appartenance</td>
+</tr>
+<tr>
+<td>User</td>
+<td>is_blocked</td>
+<td>BOOLEAN</td>
+<td>—</td>
+<td>DEFAULT false</td>
+<td>Indicateur de blocage</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>id</td>
+<td>INT</td>
+<td>—</td>
+<td>PK, AUTO_INCREMENT</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>title</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>NOT NULL</td>
+<td>Titre du sujet</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>subject_type</td>
+<td>ENUM</td>
+<td>—</td>
+<td>tfc / memoire</td>
+<td>Type de travail</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>status</td>
+<td>ENUM</td>
+<td>—</td>
+<td>pending / validated / rejected</td>
+<td>État du sujet</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>defense_validated</td>
+<td>BOOLEAN</td>
+<td>—</td>
+<td>DEFAULT false</td>
+<td>Feu vert pour soutenance</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>defense_date</td>
+<td>DATETIME</td>
+<td>—</td>
+<td>NULLABLE</td>
+<td>Date et heure planifiées de soutenance</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>defense_room</td>
+<td>VARCHAR</td>
+<td>100</td>
+<td>NULLABLE</td>
+<td>Salle de soutenance</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>student_id</td>
+<td>INT</td>
+<td>—</td>
+<td>FK → users, NOT NULL</td>
+<td>Étudiant propriétaire</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>teacher_id</td>
+<td>INT</td>
+<td>—</td>
+<td>FK → users, NULLABLE</td>
+<td>Enseignant encadreur</td>
+</tr>
+<tr>
+<td>ThesisFile</td>
+<td>id</td>
+<td>INT</td>
+<td>—</td>
+<td>PK, AUTO_INCREMENT</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>ThesisFile</td>
+<td>subject_id</td>
+<td>INT</td>
+<td>—</td>
+<td>FK → subjects</td>
+<td>Sujet associé</td>
+</tr>
+<tr>
+<td>ThesisFile</td>
+<td>file_path</td>
+<td>VARCHAR</td>
+<td>255</td>
+<td>NOT NULL</td>
+<td>Chemin du fichier stocké</td>
+</tr>
+<tr>
+<td>ThesisFile</td>
+<td>version_type</td>
+<td>ENUM</td>
+<td>—</td>
+<td>jury / final</td>
+<td>Type de version</td>
+</tr>
+<tr>
+<td>AiReport</td>
+<td>id</td>
+<td>INT</td>
+<td>—</td>
+<td>PK, AUTO_INCREMENT</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>AiReport</td>
+<td>thesis_file_id</td>
+<td>INT</td>
+<td>—</td>
+<td>FK → thesis_files</td>
+<td>Fichier analysé</td>
+</tr>
+<tr>
+<td>AiReport</td>
+<td>similarity_score</td>
+<td>INT</td>
+<td>—</td>
+<td>0-100</td>
+<td>Score de similarité (%)</td>
+</tr>
+<tr>
+<td>AiReport</td>
+<td>ai_score</td>
+<td>INT</td>
+<td>—</td>
+<td>0-100</td>
+<td>Score de contenu IA (%)</td>
+</tr>
+<tr>
+<td>AiReport</td>
+<td>details</td>
+<td>JSON</td>
+<td>—</td>
+<td>—</td>
+<td>Détails de l&#39;analyse</td>
+</tr>
+</tbody></table>
+<h2>Section 6 : Diagramme d&#39;activités</h2>
+<h3>6.1. Processus complet de gestion d&#39;un TFC</h3>
+<pre><code>[object Object]</code></pre><hr>
+<div style="page-break-before:always"></div><h1>CHAPITRE TROISIÈME : IMPLÉMENTATION ET PRÉSENTATION DES RÉSULTATS</h1>
+<h2>Section 1 : Environnement de développement</h2>
+<h3>1.1. Outils de développement</h3>
+<table>
+<thead>
+<tr>
+<th>Outil</th>
+<th>Rôle</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Visual Studio Code</td>
+<td>Éditeur de code principal</td>
+<td>Dernière version</td>
+</tr>
+<tr>
+<td>Laragon / XAMPP + PostgreSQL</td>
+<td>Environnement de développement local (PHP, serveur web, SGBD)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Composer</td>
+<td>Gestionnaire de dépendances PHP</td>
+<td>2.x</td>
+</tr>
+<tr>
+<td>Node.js + npm</td>
+<td>Gestionnaire de paquets frontend</td>
+<td>18+</td>
+</tr>
+<tr>
+<td>Git</td>
+<td>Système de contrôle de version</td>
+<td>2.x</td>
+</tr>
+<tr>
+<td>Navigateur web</td>
+<td>Tests et validation de l&#39;interface</td>
+<td>Chrome / Edge</td>
+</tr>
+<tr>
+<td>Artisan</td>
+<td>Interface en ligne de commande de Laravel</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>1.2. Configuration requise</h3>
+<table>
+<thead>
+<tr>
+<th>Composant</th>
+<th>Exigence minimale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PHP</td>
+<td>Version 8.2 ou supérieure</td>
+</tr>
+<tr>
+<td>Serveur web</td>
+<td>Apache / Nginx (ou <code>php artisan serve</code> en développement)</td>
+</tr>
+<tr>
+<td>Base de données</td>
+<td>PostgreSQL 14+</td>
+</tr>
+<tr>
+<td>Mémoire RAM</td>
+<td>2 Go minimum</td>
+</tr>
+<tr>
+<td>Espace disque</td>
+<td>500 Mo pour l&#39;application + espace pour les fichiers PDF</td>
+</tr>
+</tbody></table>
+<h3>1.3. Installation et déploiement</h3>
+<p>L&#39;installation de l&#39;application suit les étapes standard d&#39;un projet Laravel :</p>
+<pre><code>[object Object]</code></pre><h2>Section 2 : Architecture technique de l&#39;application</h2>
+<h3>2.1. Structure des répertoires</h3>
+<p>L&#39;application suit la structure standard de Laravel, organisée selon le patron MVC :</p>
+<pre><code>[object Object]</code></pre><h3>2.2. Architecture MVC appliquée</h3>
+<p>L&#39;architecture MVC de notre application se traduit concrètement de la manière suivante :</p>
+<p><strong>Modèle (Model)</strong> — Les 9 modèles Eloquent (dans <code>app/Models/</code>) représentent les entités métier. Chaque modèle définit :</p>
+<ul>
+<li>Les attributs remplissables (<code>$fillable</code>) pour la protection contre l&#39;assignation de masse ;</li>
+<li>Les relations avec les autres modèles (<code>belongsTo</code>, <code>hasMany</code>, <code>hasOne</code>) ;</li>
+<li>Les accesseurs et mutateurs pour la transformation des données ;</li>
+<li>Les méthodes métier (ex: <code>AcademicYear::current()</code>, <code>Subject::isValidated()</code>).</li>
+</ul>
+<p><strong>Vue (View)</strong> — Les templates Blade (dans <code>resources/views/</code>) utilisent :</p>
+<ul>
+<li>Le moteur de template Blade avec ses directives (<code>@if</code>, <code>@foreach</code>, <code>@auth</code>, <code>@role</code>) ;</li>
+<li>Tailwind CSS pour le design responsive et cohérent ;</li>
+<li>Alpine.js pour les interactions dynamiques côté client (formulaires multi-étapes, modales) ;</li>
+<li>Un système de layouts pour la réutilisation des structures communes.</li>
+</ul>
+<p><strong>Contrôleur (Controller)</strong> — Les 12 contrôleurs (dans <code>app/Http/Controllers/</code>) orchestrent :</p>
+<ul>
+<li>La réception et la validation des requêtes HTTP ;</li>
+<li>L&#39;appel aux modèles pour la récupération et la manipulation des données ;</li>
+<li>La sélection et le rendu de la vue appropriée ;</li>
+<li>La gestion des autorisations via les rôles et permissions.</li>
+</ul>
+<h3>2.3. Flux de traitement d&#39;une requête</h3>
+<pre><code>[object Object]</code></pre><ol>
+<li>Le navigateur envoie une requête HTTP ;</li>
+<li>Le routeur (<code>routes/web.php</code>) identifie la route correspondante ;</li>
+<li>Les middleware s&#39;exécutent (vérification d&#39;authentification, vérification du blocage, vérification du rôle) ;</li>
+<li>Le contrôleur approprié reçoit la requête ;</li>
+<li>Le contrôleur interagit avec le(s) modèle(s) Eloquent ;</li>
+<li>Les modèles interrogent la base de données via l&#39;ORM ;</li>
+<li>Le contrôleur passe les données à la vue Blade ;</li>
+<li>La vue génère le HTML et renvoie la réponse au navigateur.</li>
+</ol>
+<h2>Section 3 : Structure de la base de données</h2>
+<h3>3.1. Tables principales</h3>
+<p>L&#39;application utilise <strong>22 tables</strong> au total : <strong>10 tables métier</strong> (users, faculties, departments, subjects, thesis_files, ai_reports, academic_years, system_settings, activity_logs, notifications) et <strong>12 tables techniques</strong> (authentification, cache, jobs et permissions RBAC).</p>
+<h4>Tableau 5 : Structure de la table <code>users</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>name</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Nom complet de l&#39;utilisateur</td>
+</tr>
+<tr>
+<td>email</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Adresse e-mail (identifiant de connexion)</td>
+</tr>
+<tr>
+<td>email_verified_at</td>
+<td>TIMESTAMP</td>
+<td>NULLABLE</td>
+<td>Date de vérification de l&#39;e-mail</td>
+</tr>
+<tr>
+<td>password</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Mot de passe haché (bcrypt)</td>
+</tr>
+<tr>
+<td>matricule</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Matricule universitaire</td>
+</tr>
+<tr>
+<td>department_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → departments</td>
+<td>Filière d&#39;appartenance</td>
+</tr>
+<tr>
+<td>is_blocked</td>
+<td>BOOLEAN</td>
+<td>DEFAULT false</td>
+<td>Indicateur de suspension du compte</td>
+</tr>
+<tr>
+<td>remember_token</td>
+<td>VARCHAR(100)</td>
+<td>NULLABLE</td>
+<td>Token « Se souvenir de moi »</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de création</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 6 : Structure de la table <code>faculties</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>name</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Nom de la faculté</td>
+</tr>
+<tr>
+<td>code</td>
+<td>VARCHAR(50)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Code abrégé (ex: ESIS)</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Description de la faculté</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de création</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 7 : Structure de la table <code>departments</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>faculty_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → faculties, NOT NULL</td>
+<td>Faculté de rattachement</td>
+</tr>
+<tr>
+<td>name</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Nom de la filière</td>
+</tr>
+<tr>
+<td>code</td>
+<td>VARCHAR(50)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Code abrégé (ex: GL)</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Description de la filière</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de création</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 8 : Structure de la table <code>subjects</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>title</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Titre du sujet de TFC</td>
+</tr>
+<tr>
+<td>subject_type</td>
+<td>VARCHAR(255)</td>
+<td>NULLABLE</td>
+<td>Type : « tfc » ou « memoire »</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>NOT NULL</td>
+<td>Description synthétique</td>
+</tr>
+<tr>
+<td>status</td>
+<td>ENUM</td>
+<td>DEFAULT &#39;pending&#39;</td>
+<td>État : pending / validated / rejected</td>
+</tr>
+<tr>
+<td>rejection_reason</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Motif de rejet (si rejeté)</td>
+</tr>
+<tr>
+<td>defense_validated</td>
+<td>BOOLEAN</td>
+<td>DEFAULT false</td>
+<td>Autorisation de soutenance</td>
+</tr>
+<tr>
+<td>defense_date</td>
+<td>DATETIME</td>
+<td>NULLABLE</td>
+<td>Date et heure de soutenance planifiées</td>
+</tr>
+<tr>
+<td>defense_room</td>
+<td>VARCHAR(100)</td>
+<td>NULLABLE</td>
+<td>Salle de soutenance planifiée</td>
+</tr>
+<tr>
+<td>context_relevance</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Contexte et pertinence du sujet</td>
+</tr>
+<tr>
+<td>challenges</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Problématique identifiée</td>
+</tr>
+<tr>
+<td>research_question</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Question de recherche</td>
+</tr>
+<tr>
+<td>hypothesis</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Hypothèses formulées</td>
+</tr>
+<tr>
+<td>general_objective</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Objectif général</td>
+</tr>
+<tr>
+<td>specific_objectives</td>
+<td>JSON</td>
+<td>NULLABLE</td>
+<td>Liste des objectifs spécifiques</td>
+</tr>
+<tr>
+<td>state_of_art</td>
+<td>JSON</td>
+<td>NULLABLE</td>
+<td>Revue de littérature structurée</td>
+</tr>
+<tr>
+<td>demarcations</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Délimitation du sujet</td>
+</tr>
+<tr>
+<td>methodologies</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Méthodologies retenues</td>
+</tr>
+<tr>
+<td>student_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → users, NOT NULL</td>
+<td>Étudiant auteur</td>
+</tr>
+<tr>
+<td>teacher_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → users, NULLABLE</td>
+<td>Enseignant encadreur</td>
+</tr>
+<tr>
+<td>department_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → departments</td>
+<td>Filière</td>
+</tr>
+<tr>
+<td>academic_year_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → academic_years, NULLABLE</td>
+<td>Année académique</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de soumission</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 9 : Structure de la table <code>thesis_files</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>subject_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → subjects</td>
+<td>Sujet associé</td>
+</tr>
+<tr>
+<td>file_path</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Chemin de stockage du fichier</td>
+</tr>
+<tr>
+<td>original_name</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Nom original du fichier uploadé</td>
+</tr>
+<tr>
+<td>version_type</td>
+<td>ENUM</td>
+<td>NOT NULL</td>
+<td>Type : « jury » ou « final »</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dépôt</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 10 : Structure de la table <code>ai_reports</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>thesis_file_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → thesis_files</td>
+<td>Fichier analysé</td>
+</tr>
+<tr>
+<td>similarity_score</td>
+<td>INTEGER</td>
+<td>NOT NULL (0-100)</td>
+<td>Score de similarité détectée (%)</td>
+</tr>
+<tr>
+<td>ai_score</td>
+<td>INTEGER</td>
+<td>NOT NULL (0-100)</td>
+<td>Score de contenu IA détecté (%)</td>
+</tr>
+<tr>
+<td>details</td>
+<td>JSON</td>
+<td>NULLABLE</td>
+<td>Détails de l&#39;analyse (pages signalées, métadonnées)</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de l&#39;analyse</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 11 : Structure de la table <code>academic_years</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>name</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Libellé (ex: « 2025-2026 »)</td>
+</tr>
+<tr>
+<td>start_date</td>
+<td>DATE</td>
+<td>NOT NULL</td>
+<td>Date de début</td>
+</tr>
+<tr>
+<td>end_date</td>
+<td>DATE</td>
+<td>NOT NULL</td>
+<td>Date de fin</td>
+</tr>
+<tr>
+<td>is_current</td>
+<td>BOOLEAN</td>
+<td>DEFAULT false</td>
+<td>Année en cours</td>
+</tr>
+<tr>
+<td>is_closed</td>
+<td>BOOLEAN</td>
+<td>DEFAULT false</td>
+<td>Année clôturée</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de création</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date de dernière modification</td>
+</tr>
+</tbody></table>
+<h4>Tableau 12 : Structure de la table <code>activity_logs</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>FK → users, NULLABLE</td>
+<td>Utilisateur ayant effectué l&#39;action</td>
+</tr>
+<tr>
+<td>action</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Type d&#39;action (created, updated, deleted, etc.)</td>
+</tr>
+<tr>
+<td>model_type</td>
+<td>VARCHAR(255)</td>
+<td>NULLABLE</td>
+<td>Classe du modèle concerné</td>
+</tr>
+<tr>
+<td>model_id</td>
+<td>BIGINT UNSIGNED</td>
+<td>NULLABLE</td>
+<td>ID de l&#39;enregistrement concerné</td>
+</tr>
+<tr>
+<td>description</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Description lisible de l&#39;action</td>
+</tr>
+<tr>
+<td>old_values</td>
+<td>JSON</td>
+<td>NULLABLE</td>
+<td>Valeurs avant modification</td>
+</tr>
+<tr>
+<td>new_values</td>
+<td>JSON</td>
+<td>NULLABLE</td>
+<td>Valeurs après modification</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>Date et heure de l&#39;action</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h4>Tableau 13 : Structure de la table <code>system_settings</code></h4>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Contrainte</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>BIGINT UNSIGNED</td>
+<td>PK, AI</td>
+<td>Identifiant unique</td>
+</tr>
+<tr>
+<td>key</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Clé du paramètre</td>
+</tr>
+<tr>
+<td>value</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Valeur du paramètre</td>
+</tr>
+<tr>
+<td>type</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Type de donnée (string, integer, boolean, date)</td>
+</tr>
+<tr>
+<td>group</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Groupe de paramètres (general, deadlines, ai)</td>
+</tr>
+<tr>
+<td>label</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Libellé lisible</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>NULLABLE</td>
+<td>Description du paramètre</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h2>Section 4 : Présentation des interfaces</h2>
+<h3>4.1. Page d&#39;accueil (welcome)</h3>
+<p>La page d&#39;accueil constitue le point d&#39;entrée public de l&#39;application. Elle présente :</p>
+<ul>
+<li>Une <strong>barre institutionnelle</strong> affichant le nom de l&#39;université et l&#39;année académique ;</li>
+<li>Un <strong>en-tête principal</strong> avec le logo de l&#39;UDBL, le titre de la plateforme et deux boutons d&#39;action (Connexion et Archives) ;</li>
+<li>Une section <strong>« Accès selon votre profil »</strong> décrivant les quatre rôles avec des icônes distinctives ;</li>
+<li>Une section <strong>« Procédure de dépôt de TFC »</strong> présentant les quatre étapes du processus ;</li>
+<li>Une section <strong>« Vérification par analyse IA »</strong> expliquant le module de détection avec une grille d&#39;interprétation des scores ;</li>
+<li>Un <strong>encadré d&#39;informations pratiques</strong> ;</li>
+<li>Un <strong>pied de page</strong> avec les coordonnées de l&#39;université et la liste des facultés.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 15 : Capture d&#39;écran — Page d&#39;accueil]</em></p>
+</blockquote>
+<h3>4.2. Page de connexion</h3>
+<p>Le formulaire de connexion demande l&#39;adresse e-mail et le mot de passe. Un lien vers la réinitialisation du mot de passe est disponible. Le système vérifie automatiquement si le compte est bloqué après authentification.</p>
+<blockquote>
+<p><em>[Figure 16 : Capture d&#39;écran — Formulaire de connexion]</em></p>
+</blockquote>
+<h3>4.3. Tableau de bord Administrateur</h3>
+<p>Le tableau de bord administrateur affiche :</p>
+<ul>
+<li>Des <strong>compteurs en temps réel</strong> : total utilisateurs, total sujets, sujets en attente/validés/rejetés, nombre de filières, nombre de facultés, comptes bloqués ;</li>
+<li>Un <strong>graphique de répartition</strong> des sujets par statut ;</li>
+<li>Un <strong>graphique par département</strong> montrant la distribution des TFC ;</li>
+<li>L&#39;<strong>année académique courante</strong> ;</li>
+<li>Les <strong>10 dernières entrées</strong> du journal d&#39;activité ;</li>
+<li>Les <strong>5 derniers utilisateurs</strong> inscrits.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 17 : Capture d&#39;écran — Tableau de bord Administrateur]</em></p>
+</blockquote>
+<h3>4.4. Tableau de bord Étudiant</h3>
+<p>Le tableau de bord étudiant présente :</p>
+<ul>
+<li>L&#39;<strong>état actuel</strong> de son sujet (en attente, validé, rejeté, ou invitation à soumettre) ;</li>
+<li>Le <strong>nom de l&#39;encadreur assigné</strong> (si le sujet est validé) ;</li>
+<li>La <strong>possibilité de déposer un fichier</strong> (version jury ou finale selon l&#39;état) ;</li>
+<li>Le <strong>rapport d&#39;analyse IA</strong> (scores et détails) si un fichier a été analysé ;</li>
+<li>Le <strong>statut du Feu Vert</strong> (autorisation de soutenance) ;</li>
+<li>La <strong>date et la salle de soutenance</strong> lorsqu&#39;elles sont planifiées.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 18 : Capture d&#39;écran — Tableau de bord Étudiant]</em></p>
+</blockquote>
+<h3>4.5. Formulaire de soumission de sujet (5 étapes)</h3>
+<p>Le formulaire est structuré en <strong>cinq étapes progressives</strong> avec Alpine.js pour la navigation :</p>
+<p><strong>Étape 1 — Informations générales</strong></p>
+<ul>
+<li>Type de travail (TFC ou Mémoire) ;</li>
+<li>Titre du sujet.</li>
+</ul>
+<p><strong>Étape 2 — Contexte et problématique</strong></p>
+<ul>
+<li>Contexte et pertinence ;</li>
+<li>Problématique identifiée ;</li>
+<li>Question de recherche.</li>
+</ul>
+<p><strong>Étape 3 — Objectifs et hypothèses</strong></p>
+<ul>
+<li>Objectif général ;</li>
+<li>Objectifs spécifiques (ajout dynamique) ;</li>
+<li>Hypothèse de recherche.</li>
+</ul>
+<p><strong>Étape 4 — Revue de littérature</strong></p>
+<ul>
+<li>Entrées structurées : auteur, année, titre, contribution (ajout dynamique).</li>
+</ul>
+<p><strong>Étape 5 — Méthodologie</strong></p>
+<ul>
+<li>Délimitation du sujet ;</li>
+<li>Méthodologies retenues.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 19 : Capture d&#39;écran — Formulaire de soumission de sujet]</em></p>
+</blockquote>
+<h3>4.6. Tableau de bord Chef de Département</h3>
+<p>Ce tableau de bord affiche :</p>
+<ul>
+<li>Le <strong>nombre de sujets en attente</strong> de validation dans son département ;</li>
+<li>La <strong>liste des sujets</strong> avec les actions possibles (valider, rejeter, assigner) ;</li>
+<li>L&#39;<strong>action de planification</strong> (date et salle) pour les sujets ayant reçu le Feu Vert ;</li>
+<li>La <strong>liste des enseignants</strong> du département comme directeurs potentiels ;</li>
+<li>Un accès aux <strong>rapports IA</strong> des fichiers déposés.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 20 : Capture d&#39;écran — Tableau de bord Chef de Département]</em></p>
+</blockquote>
+<h3>4.7. Tableau de bord Enseignant</h3>
+<p>Le tableau de bord enseignant affiche :</p>
+<ul>
+<li>La <strong>liste des sujets</strong> dont il est l&#39;encadreur ;</li>
+<li>Pour chaque sujet : l&#39;étudiant, le statut, les fichiers déposés, les rapports IA ;</li>
+<li>L&#39;<strong>affichage de la planification</strong> (date/salle) lorsqu&#39;elle est définie par le Chef de Département ;</li>
+<li>Le <strong>bouton « Autoriser la soutenance »</strong> (Feu Vert) lorsque les conditions sont remplies.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 21 : Capture d&#39;écran — Tableau de bord Enseignant]</em></p>
+</blockquote>
+<h3>4.8. Rapport d&#39;analyse IA</h3>
+<p>L&#39;interface d&#39;affichage du rapport IA présente :</p>
+<ul>
+<li>Le <strong>score de contenu IA</strong> avec une barre de progression colorée ;</li>
+<li>Le <strong>score de similarité</strong> avec une barre de progression colorée ;</li>
+<li>La <strong>grille d&#39;interprétation</strong> :<ul>
+<li>Vert (&lt; 20%) : Risque faible — contenu considéré comme original ;</li>
+<li>Jaune (20–50%) : Risque modéré — vérification recommandée ;</li>
+<li>Rouge (&gt; 50%) : Risque élevé — entretien avec l&#39;étudiant requis ;</li>
+</ul>
+</li>
+<li>Les <strong>détails de l&#39;analyse</strong> : date, nombre de pages, nombre de mots, sections signalées.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 22 : Capture d&#39;écran — Rapport d&#39;analyse IA]</em></p>
+</blockquote>
+<h3>4.9. Archives publiques</h3>
+<p>La page d&#39;archives est accessible sans authentification et présente :</p>
+<ul>
+<li>Un <strong>formulaire de recherche</strong> avec filtres (recherche textuelle, filière, année académique, type de travail) ;</li>
+<li>Un <strong>tableau paginé</strong> des travaux défendus avec les colonnes : N°, Titre, Étudiant, Directeur, Filière, Année, Type, Télécharger ;</li>
+<li>Un <strong>bouton de téléchargement PDF</strong> pour les versions finales disponibles.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 23 : Capture d&#39;écran — Archives publiques]</em></p>
+</blockquote>
+<h3>4.10. Gestion des utilisateurs (Admin)</h3>
+<p>L&#39;interface d&#39;administration des utilisateurs offre :</p>
+<ul>
+<li>Une <strong>liste paginée</strong> avec filtres (recherche, rôle, filière, statut) ;</li>
+<li>Des <strong>actions par utilisateur</strong> : modifier, bloquer/débloquer, réinitialiser le mot de passe, supprimer ;</li>
+<li>Un <strong>formulaire de création</strong> : nom, e-mail, matricule, mot de passe, rôle, filière.</li>
+</ul>
+<blockquote>
+<p><em>[Figure 24 : Capture d&#39;écran — Gestion des utilisateurs]</em></p>
+</blockquote>
+<h3>4.11. Gestion des facultés et filières (Admin)</h3>
+<p>L&#39;interface permet :</p>
+<ul>
+<li>La <strong>gestion des facultés</strong> : créer, modifier, supprimer (avec protection contre la suppression de facultés contenant des filières) ;</li>
+<li>La <strong>gestion des filières</strong> : créer avec rattachement à une faculté, modifier, supprimer (avec protection contre la suppression de filières contenant des utilisateurs ou des sujets).</li>
+</ul>
+<blockquote>
+<p><em>[Figure 25 : Capture d&#39;écran — Gestion des facultés et filières]</em></p>
+</blockquote>
+<h2>Section 5 : Sécurité et contrôle d&#39;accès</h2>
+<h3>5.1. Authentification</h3>
+<p>L&#39;authentification est gérée par <strong>Laravel Breeze</strong>, qui fournit :</p>
+<ul>
+<li>Un formulaire de connexion avec validation ;</li>
+<li>Le hachage des mots de passe via <strong>bcrypt</strong> ;</li>
+<li>La gestion des sessions avec régénération du token après connexion ;</li>
+<li>La vérification de l&#39;adresse e-mail ;</li>
+<li>La réinitialisation de mot de passe par e-mail.</li>
+</ul>
+<h3>5.2. Contrôle d&#39;accès RBAC</h3>
+<p>Le contrôle d&#39;accès repose sur le package <strong>Spatie Laravel Permission</strong> qui implémente le modèle RBAC :</p>
+<h4>Tableau 14 : Matrice rôles-permissions</h4>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th align="center">Admin</th>
+<th align="center">Chef Dept.</th>
+<th align="center">Enseignant</th>
+<th align="center">Étudiant</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>subjects.create</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>subjects.view</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>subjects.validate</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>subjects.reject</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>subjects.assign-teacher</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>thesis.upload</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>thesis.download</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>thesis.view-reports</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>thesis.final-deposit</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>thesis.validate-defense</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>users.manage</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>users.block</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>users.reset-password</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>departments.manage</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>academic-years.manage</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>settings.manage</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>logs.view</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+</tbody></table>
+<h3>5.3. Middleware de sécurité</h3>
+<p>Deux middleware personnalisés renforcent la sécurité :</p>
+<p><strong>a) CheckUserBlocked</strong> : vérifie à chaque requête si le compte de l&#39;utilisateur authentifié a été suspendu. Si oui, la session est immédiatement invalidée et l&#39;utilisateur est redirigé vers la page de connexion avec un message d&#39;erreur.</p>
+<p><strong>b) EnsureRole</strong> : vérifie que l&#39;utilisateur possède l&#39;un des rôles requis pour accéder à une route. Exemple d&#39;utilisation dans les routes :</p>
+<pre><code>[object Object]</code></pre><h3>5.4. Protections intégrées de Laravel</h3>
+<ul>
+<li><strong>Protection CSRF</strong> : chaque formulaire inclut un token CSRF vérifié automatiquement ;</li>
+<li><strong>Requêtes préparées</strong> : Eloquent ORM utilise des requêtes préparées pour prévenir les injections SQL ;</li>
+<li><strong>Validation des entrées</strong> : toutes les données utilisateur sont validées côté serveur avant traitement ;</li>
+<li><strong>Protection contre l&#39;assignation de masse</strong> : seuls les attributs listés dans <code>$fillable</code> peuvent être assignés en masse ;</li>
+<li><strong>Stockage sécurisé des fichiers</strong> : les fichiers PDF sont stockés dans le dossier <code>storage</code> et servis via un contrôleur qui vérifie les autorisations d&#39;accès.</li>
+</ul>
+<h2>Section 6 : Tests et validation</h2>
+<h3>6.1. Tests fonctionnels</h3>
+<p>Les tests fonctionnels ont couvert les scénarios suivants :</p>
+<h4>Tableau 17 : Résultats des tests fonctionnels</h4>
+<table>
+<thead>
+<tr>
+<th>N°</th>
+<th>Scénario de test</th>
+<th>Résultat attendu</th>
+<th>Résultat obtenu</th>
+<th>Statut</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>T01</td>
+<td>Création d&#39;un compte étudiant par l&#39;admin</td>
+<td>Compte créé, rôle Étudiant assigné</td>
+<td>Compte créé avec succès</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T02</td>
+<td>Connexion avec identifiants valides</td>
+<td>Redirection vers le dashboard</td>
+<td>Dashboard affiché correctement</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T03</td>
+<td>Connexion avec compte bloqué</td>
+<td>Rejet + message d&#39;erreur</td>
+<td>Session invalidée, message affiché</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T04</td>
+<td>Soumission de sujet (5 étapes)</td>
+<td>Sujet créé, notification envoyée</td>
+<td>Sujet en status « pending », CP notifié</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T05</td>
+<td>Soumission d&#39;un 2e sujet (déjà pending)</td>
+<td>Rejet avec message d&#39;erreur</td>
+<td>Message « Vous avez déjà un sujet... »</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T06</td>
+<td>Validation de sujet par le CP</td>
+<td>Status validated, enseignant assigné</td>
+<td>Notifications envoyées aux deux parties</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T07</td>
+<td>Rejet de sujet par le CP</td>
+<td>Status rejected, motif enregistré</td>
+<td>Étudiant notifié avec le motif</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T08</td>
+<td>Upload version jury (sujet validé)</td>
+<td>Fichier stocké, analyse IA lancée</td>
+<td>Rapport IA généré, enseignant notifié</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T09</td>
+<td>Upload version finale (sans Feu Vert)</td>
+<td>Rejet</td>
+<td>Message d&#39;erreur approprié</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T10</td>
+<td>Upload version finale (avec Feu Vert)</td>
+<td>Fichier stocké, analyse IA lancée</td>
+<td>Version finale déposée avec succès</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T11</td>
+<td>Autorisation de soutenance</td>
+<td>defense_validated = true</td>
+<td>Notification « Feu Vert » envoyée</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T12</td>
+<td>Planification de soutenance (CP)</td>
+<td><code>defense_date</code> + <code>defense_room</code> enregistrés (après Feu Vert)</td>
+<td>Date/salle visibles sur les dashboards concernés</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T13</td>
+<td>Consultation des archives (public)</td>
+<td>Liste des travaux défendus</td>
+<td>Tableau paginé avec filtres fonctionnels</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T14</td>
+<td>Téléchargement version finale (archives)</td>
+<td>Fichier PDF téléchargé</td>
+<td>Téléchargement effectué</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T15</td>
+<td>Accès admin sans rôle Admin</td>
+<td>Erreur 403</td>
+<td>Page « Accès non autorisé »</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T16</td>
+<td>Création d&#39;un utilisateur (Admin)</td>
+<td>Utilisateur créé, rôle assigné</td>
+<td>Log d&#39;activité enregistré</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T17</td>
+<td>Blocage d&#39;un utilisateur</td>
+<td>is_blocked = true</td>
+<td>Connexion impossible pour l&#39;utilisateur</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T18</td>
+<td>Réinitialisation de mot de passe</td>
+<td>Nouveau mot de passe généré</td>
+<td>Mot de passe affiché à l&#39;admin</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T19</td>
+<td>Clôture d&#39;une année académique</td>
+<td>is_closed = true</td>
+<td>TFC archivés, année verrouillée</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T20</td>
+<td>Export CSV des sujets</td>
+<td>Fichier CSV téléchargé</td>
+<td>Format correct avec encodage UTF-8 BOM</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T21</td>
+<td>Analyse IA avec scores élevés</td>
+<td>Alerte visuelle (rouge)</td>
+<td>Badge rouge affiché, sections signalées</td>
+<td>✓ Réussi</td>
+</tr>
+<tr>
+<td>T22</td>
+<td>Retrait du Feu Vert (sans version finale)</td>
+<td>defense_validated = false + motif obligatoire + notification de retrait</td>
+<td>Retrait effectué, motif enregistré, date/salle effacées</td>
+<td>✓ Réussi</td>
+</tr>
+</tbody></table>
+<h3>6.2. Grille d&#39;interprétation des scores IA</h3>
+<h4>Tableau 15 : Grille d&#39;interprétation des scores IA</h4>
+<table>
+<thead>
+<tr>
+<th>Score IA</th>
+<th>Niveau de risque</th>
+<th>Couleur</th>
+<th>Action recommandée</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&lt; 20%</td>
+<td>Faible</td>
+<td>🟢 Vert</td>
+<td>Contenu considéré comme original. Aucune action requise.</td>
+</tr>
+<tr>
+<td>20% – 50%</td>
+<td>Modéré</td>
+<td>🟡 Jaune</td>
+<td>Vérification recommandée. L&#39;enseignant devrait examiner les sections signalées.</td>
+</tr>
+<tr>
+<td>&gt; 50%</td>
+<td>Élevé</td>
+<td>🔴 Rouge</td>
+<td>Entretien avec l&#39;étudiant requis. Suspicion forte de contenu généré par IA.</td>
+</tr>
+</tbody></table>
+<h3>6.3. Module de détection IA — Fonctionnement technique</h3>
+<p>Le service <code>AiDetectionService</code> implémente la détection de contenu IA selon le processus suivant :</p>
+<ol>
+<li><strong>Extraction du texte</strong> : le contenu textuel est extrait du fichier PDF à l&#39;aide de la bibliothèque <code>smalot/pdfparser</code> ;</li>
+<li><strong>Appel à l&#39;API</strong> : si une clé API GPTZero est configurée, le texte (limité aux 50 000 premiers caractères) est envoyé à l&#39;API GPTZero via une requête POST ;</li>
+<li><strong>Analyse des résultats</strong> : l&#39;API retourne des probabilités (<code>completely_generated_prob</code>, <code>average_generated_prob</code>) qui sont converties en un score de 0 à 100 ;</li>
+<li><strong>Mode de secours</strong> : en l&#39;absence de clé API, le système active un mode de simulation qui génère des scores aléatoires (à des fins de démonstration et de test) ;</li>
+<li><strong>Rapport</strong> : un enregistrement <code>AiReport</code> est créé avec les scores et les détails de l&#39;analyse.</li>
+</ol>
+<hr>
+<div style="page-break-before:always"></div><h1>CONCLUSION GÉNÉRALE</h1>
+<p>Au terme de ce travail de fin de cycle, nous pouvons affirmer que les objectifs fixés ont été atteints. La plateforme <strong>TFC Manager</strong> développée pour l&#39;Université Don Bosco de Lubumbashi constitue une solution fonctionnelle et complète pour la gestion numérique des Travaux de Fin de Cycle.</p>
+<h2>Réalisations</h2>
+<p>Les principales réalisations de ce projet sont :</p>
+<ol>
+<li><p><strong>La numérisation complète du processus de gestion des TFC</strong> : depuis la soumission du sujet par l&#39;étudiant jusqu&#39;à la planification de la soutenance et l&#39;archivage du mémoire défendu, chaque étape est désormais dématérialisée et tracée.</p>
+</li>
+<li><p><strong>L&#39;implémentation d&#39;un système de rôles et permissions</strong> : quatre profils utilisateurs (Administrateur, Chef de Département, Enseignant, Étudiant) disposent chacun d&#39;un espace personnalisé et de fonctionnalités adaptées à leurs responsabilités.</p>
+</li>
+<li><p><strong>L&#39;intégration d&#39;un module de détection de contenu IA</strong> : chaque mémoire déposé est automatiquement analysé par l&#39;API GPTZero, avec génération d&#39;un rapport détaillé incluant un score de contenu généré par IA et un score de similarité.</p>
+</li>
+<li><p><strong>La mise en place d&#39;un système de notifications multi-canaux</strong> : six types de notifications (e-mail et in-app) assurent la communication fluide entre tous les acteurs du processus.</p>
+</li>
+<li><p><strong>La création d&#39;archives publiques consultables</strong> : les travaux défendus sont référencés dans un espace public avec possibilité de recherche et de téléchargement des versions finales.</p>
+</li>
+<li><p><strong>Un journal d&#39;activité complet</strong> : toutes les actions significatives sont enregistrées avec horodatage, permettant un audit complet du système.</p>
+</li>
+<li><p><strong>L&#39;ajout d&#39;un module de planification de soutenance</strong> : après autorisation de l&#39;encadreur, le Chef de Département peut définir la date/heure et la salle, visibles par les acteurs concernés.</p>
+</li>
+</ol>
+<h2>Vérification des hypothèses</h2>
+<ul>
+<li><p><strong>Hypothèse 1</strong> (plateforme centralisée) : <strong>confirmée</strong>. L&#39;application offre un point d&#39;accès unique à tous les acteurs, avec des tableaux de bord adaptés à chaque rôle et un workflow automatisé allant de la soumission à la planification de la soutenance.</p>
+</li>
+<li><p><strong>Hypothèse 2</strong> (module de détection IA) : <strong>confirmée</strong>. Le service <code>AiDetectionService</code> intégré analyse automatiquement chaque fichier déposé et produit un rapport avec des scores quantitatifs, permettant aux enseignants de prendre des décisions éclairées.</p>
+</li>
+<li><p><strong>Hypothèse 3</strong> (notifications automatisées) : <strong>confirmée</strong>. Les six classes de notifications implémentées couvrent l&#39;ensemble des étapes du workflow et sont générées automatiquement à chaque transition d&#39;état.</p>
+</li>
+<li><p><strong>Hypothèse 4</strong> (archives publiques) : <strong>confirmée</strong>. La page d&#39;archives permet à tout visiteur de consulter les travaux défendus avec un système de recherche multicritères et de télécharger les versions finales.</p>
+</li>
+</ul>
+<h2>Limites et perspectives</h2>
+<p>Malgré les résultats satisfaisants obtenus, certaines limites méritent d&#39;être relevées :</p>
+<ul>
+<li><strong>La dépendance à une API externe</strong> (GPTZero) pour la détection de contenu IA, avec un mode de simulation en cas d&#39;indisponibilité ;</li>
+<li><strong>L&#39;absence de gestion complète des sessions de soutenance</strong> (composition du jury, attribution des notes, procès-verbal) ;</li>
+<li><strong>L&#39;absence de système de messagerie intégrée</strong> entre étudiants et encadreurs pour le suivi de la rédaction.</li>
+</ul>
+<p>En termes de perspectives d&#39;amélioration, nous envisageons :</p>
+<ul>
+<li>L&#39;extension du <strong>module de soutenance</strong> vers la gestion du jury, la notation et l&#39;édition d&#39;un procès-verbal ;</li>
+<li>L&#39;intégration d&#39;un <strong>système de messagerie instantanée</strong> entre étudiants et encadreurs ;</li>
+<li>Le développement d&#39;un <strong>module de détection de plagiat</strong> comparant les travaux entre eux (au-delà de la détection IA) ;</li>
+<li>La mise en place d&#39;une <strong>application mobile</strong> complémentaire pour les notifications en temps réel ;</li>
+<li>L&#39;extension du système à d&#39;autres processus académiques (stages, rapports de recherche).</li>
+</ul>
+<p>En définitive, ce travail démontre que les technologies web modernes, conjuguées à l&#39;intelligence artificielle, offrent des solutions puissantes pour la modernisation de la gestion académique dans les universités congolaises. La plateforme TFC Manager, dans sa version actuelle, pose les bases d&#39;un outil évolutif au service de l&#39;intégrité académique et de l&#39;efficacité administrative.</p>
+<hr>
+<div style="page-break-before:always"></div><h1>BIBLIOGRAPHIE</h1>
+<h2>Ouvrages</h2>
+<ol>
+<li><p><strong>REIX, R.</strong> (2004). <em>Systèmes d&#39;information et management des organisations</em>. 5e édition. Paris : Vuibert.</p>
+</li>
+<li><p><strong>SOMMERVILLE, I.</strong> (2015). <em>Software Engineering</em>. 10th edition. Boston : Pearson.</p>
+</li>
+<li><p><strong>GAMMA, E., HELM, R., JOHNSON, R., VLISSIDES, J.</strong> (1994). <em>Design Patterns: Elements of Reusable Object-Oriented Software</em>. Reading : Addison-Wesley.</p>
+</li>
+<li><p><strong>FOWLER, M.</strong> (2003). <em>Patterns of Enterprise Application Architecture</em>. Boston : Addison-Wesley.</p>
+</li>
+<li><p><strong>PILONE, D., PITMAN, N.</strong> (2005). <em>UML 2.0 in a Nutshell</em>. Sebastopol : O&#39;Reilly Media.</p>
+</li>
+</ol>
+<h2>Documentation technique</h2>
+<ol start="6">
+<li><p><strong>LARAVEL</strong> (2025). <em>Laravel 12.x Documentation</em>. [En ligne]. Disponible sur : <a href="https://laravel.com/docs/12.x">https://laravel.com/docs/12.x</a></p>
+</li>
+<li><p><strong>SPATIE</strong> (2025). <em>Laravel Permission Documentation</em>. [En ligne]. Disponible sur : <a href="https://spatie.be/docs/laravel-permission">https://spatie.be/docs/laravel-permission</a></p>
+</li>
+<li><p><strong>TAILWIND CSS</strong> (2025). <em>Tailwind CSS Documentation</em>. [En ligne]. Disponible sur : <a href="https://tailwindcss.com/docs">https://tailwindcss.com/docs</a></p>
+</li>
+<li><p><strong>GPTZERO</strong> (2025). <em>GPTZero API Documentation</em>. [En ligne]. Disponible sur : <a href="https://gptzero.me/docs">https://gptzero.me/docs</a></p>
+</li>
+<li><p><strong>PHP</strong> (2025). <em>PHP 8.2 Manual</em>. [En ligne]. Disponible sur : <a href="https://www.php.net/manual/">https://www.php.net/manual/</a></p>
+</li>
+</ol>
+<h2>Articles et rapports</h2>
+<ol start="11">
+<li><p><strong>MITCHELL, E., LEE, Y., KHAZANCHI, A.</strong> (2023). « DetectGPT: Zero-Shot Machine-Generated Text Detection using Probability Curvature ». <em>Proceedings of the 40th International Conference on Machine Learning</em>.</p>
+</li>
+<li><p><strong>KIRCHNER, J. H., AHMAD, L., AARONSON, S., LEIKE, J.</strong> (2023). « New AI classifier for indicating AI-written text ». <em>OpenAI Blog</em>.</p>
+</li>
+</ol>
+<hr>
+<div style="page-break-before:always"></div><p><em>Ce document a été rédigé dans le cadre du Travail de Fin de Cycle présenté à la Faculté des Sciences Informatiques (ESIS) de l&#39;Université Don Bosco de Lubumbashi, pour l&#39;année académique 2025–2026.</em></p>
+<h1>ANNEXES — DIAGRAMMES (par figure)</h1>
+<h1>Diagrammes en Noir et Blanc - Version par Figure</h1>
+<p>Ce document presente les diagrammes figure par figure, dans l&#39;ordre de la liste des figures.
+Tous les diagrammes sont en noir et blanc.</p>
+<h2>Figure 2 - Diagramme de cas d&#39;utilisation global</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 3 - Cas d&#39;utilisation Etudiant</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 4 - Cas d&#39;utilisation Chef de Departement</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 5 - Cas d&#39;utilisation Enseignant</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 6 - Cas d&#39;utilisation Administrateur</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 7 - Sequence Soumission de sujet</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 8 - Sequence Validation ou rejet</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 9 - Sequence Depot de fichier avec analyse IA</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 10 - Sequence Autorisation de soutenance</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 11 - Diagramme de classes</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 12 - Modele relationnel de la base de donnees</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 13 - Diagramme d&#39;activites du processus complet</h2>
+<pre><code>[object Object]</code></pre><h2>Figure 14 - Architecture MVC de Laravel</h2>
+<pre><code>[object Object]</code></pre><hr>
+<h2>Recommendation d&#39;usage</h2>
+<ul>
+<li>Utiliser <code>DIAGRAMMES-PAR-CHAPITRE-NB.md</code> pour la redaction du memoire.</li>
+<li>Utiliser <code>DIAGRAMMES-PAR-FIGURE-NB.md</code> pour la liste des figures et annexes.</li>
+</ul>
+<h1>ANNEXES — DIAGRAMMES (par chapitre)</h1>
+<h1>Diagrammes en Noir et Blanc - Version par Chapitre</h1>
+<p>Ce document regroupe les diagrammes par chapitre du mémoire.
+Tous les diagrammes sont en style noir et blanc (fond blanc, traits noirs, texte noir).</p>
+<h2>Chapitre II - Section 2 : Diagrammes de cas d&#39;utilisation</h2>
+<h3>2.1 Diagramme de cas d&#39;utilisation global</h3>
+<pre><code>[object Object]</code></pre><h3>2.2 Diagramme de cas d&#39;utilisation - Etudiant</h3>
+<pre><code>[object Object]</code></pre><h3>2.3 Diagramme de cas d&#39;utilisation - Chef de Departement</h3>
+<pre><code>[object Object]</code></pre><h3>2.4 Diagramme de cas d&#39;utilisation - Enseignant</h3>
+<pre><code>[object Object]</code></pre><h3>2.5 Diagramme de cas d&#39;utilisation - Administrateur</h3>
+<pre><code>[object Object]</code></pre><h2>Chapitre II - Section 3 : Diagrammes de sequence</h2>
+<h3>3.1 Sequence - Soumission de sujet</h3>
+<pre><code>[object Object]</code></pre><h3>3.2 Sequence - Validation ou rejet de sujet</h3>
+<pre><code>[object Object]</code></pre><h3>3.3 Sequence - Depot de fichier TFC avec analyse IA</h3>
+<pre><code>[object Object]</code></pre><h3>3.4 Sequence - Autorisation de soutenance</h3>
+<pre><code>[object Object]</code></pre><h2>Chapitre II - Section 4 : Diagramme de classes</h2>
+<pre><code>[object Object]</code></pre><h2>Chapitre II - Section 5 : Modele relationnel de la base de donnees</h2>
+<pre><code>[object Object]</code></pre><h2>Chapitre II - Section 6 : Diagramme d&#39;activites (processus complet)</h2>
+<pre><code>[object Object]</code></pre><h2>Chapitre III - Section 2 : Architecture MVC de Laravel</h2>
+<pre><code>[object Object]</code></pre><hr>
+<h2>Notes d&#39;impression</h2>
+<ul>
+<li>Theme monochrome applique a chaque diagramme.</li>
+<li>Impression recommandee en niveaux de gris.</li>
+<li>Compatible avec export PDF depuis VS Code ou GitHub.</li>
+</ul>
+
+</article>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+    } catch (e) {
+      console.error('mermaid render error', e);
+    }
+  });
+</script>
+</body>
+</html>

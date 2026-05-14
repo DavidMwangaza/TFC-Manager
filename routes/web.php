@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ThesisFileController;
+use App\Http\Controllers\MilestoneController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,8 @@ Route::get('/', function () {
 // Archives des travaux défendus (accès public)
 Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
 Route::get('/archives/{thesisFile}/download', [ArchiveController::class, 'download'])->name('archives.download');
+Route::get('/archives/{thesisFile}/view', [ArchiveController::class, 'view'])->name('archives.view');
+Route::get('/archives/{thesisFile}/file', [ArchiveController::class, 'file'])->name('archives.file');
 
 // Dashboard dynamique selon le rôle
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -42,6 +45,18 @@ Route::middleware('auth')->group(function () {
         Route::post('/thesis/upload', [ThesisFileController::class, 'upload'])->name('thesis.upload');
     });
 
+    // === CHAPITRES & VERSIONS (Étudiant / Enseignant) ===
+    Route::middleware('auth')->group(function () {
+        Route::post('/subjects/{subject}/chapters', [\App\Http\Controllers\ChapterController::class, 'store'])
+            ->name('chapters.store')->middleware('role:Etudiant');
+
+        Route::post('/chapters/{chapter}/versions', [\App\Http\Controllers\ChapterVersionController::class, 'store'])
+            ->name('chapter_versions.store');
+
+        Route::get('/chapters/{chapter}/versions', [\App\Http\Controllers\ChapterVersionController::class, 'index'])
+            ->name('chapter_versions.index');
+    });
+
     // === VALIDATION SUJETS (Chef de département) ===
     Route::middleware('role:Chef de département')->group(function () {
         Route::post('/subjects/{subject}/validate', [SubjectController::class, 'validateSubject'])->name('subjects.validate');
@@ -56,12 +71,26 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Enseignant')->group(function () {
         Route::post('/subjects/{subject}/authorize-defense', [SubjectController::class, 'authorizeDefense'])->name('subjects.authorize-defense');
         Route::delete('/subjects/{subject}/authorize-defense', [SubjectController::class, 'revokeDefenseAuthorization'])->name('subjects.revoke-defense');
+        Route::post('/subjects/{subject}/bat/sign', [SubjectController::class, 'signBat'])->name('subjects.bat.sign');
     });
 
     // === LISTE DES SUJETS ===
     Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
     Route::get('/subjects/export', [SubjectController::class, 'export'])->name('subjects.export')->middleware('role:Admin|Chef de département');
     Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
+
+    // === JALONS / MILESTONES (Enseignant / Chef de département) ===
+    Route::middleware('role:Enseignant|Chef de département')->group(function () {
+        Route::post('/subjects/{subject}/milestones', [MilestoneController::class, 'store'])->name('milestones.store');
+        Route::post('/milestones/{milestone}/validate', [MilestoneController::class, 'validateMilestone'])->name('milestones.validate');
+        Route::post('/milestones/{milestone}/reject', [MilestoneController::class, 'reject'])->name('milestones.reject');
+    });
+
+    // === SOUMISSION DE JALON (Étudiant) ===
+    Route::middleware('role:Etudiant')->group(function () {
+        Route::post('/milestones/{milestone}/submit', [MilestoneController::class, 'submit'])->name('milestones.submit');
+        Route::post('/milestones/{milestone}/upload', [ThesisFileController::class, 'uploadForMilestone'])->name('milestones.upload');
+    });
 
     // === NOTIFICATIONS ===
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

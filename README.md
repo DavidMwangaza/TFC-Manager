@@ -15,6 +15,7 @@ Le systeme couvre tout le cycle de vie d un TFC:
 ## Fonctionnalites principales
 
 - Gestion des sujets avec workflow metier complet (pending, validated, rejected).
+- Suivi par jalons (milestones) avec échéances, délais de correction (SLA) et validation par l'encadreur.
 - Wizard de soumission etudiant en 5 etapes.
 - Upload PDF (20 Mo max) pour version jury et version finale.
 - Analyse IA via GPTZero (ou mode simulation si la cle API est absente).

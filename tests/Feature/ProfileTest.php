@@ -10,7 +10,7 @@ class ProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_profile_page_is_displayed(): void
+    public function test_page_profil_est_affichee(): void
     {
         $user = User::factory()->create();
 
@@ -21,7 +21,7 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_profile_information_cannot_be_updated_by_user_when_feature_is_disabled(): void
+    public function test_informations_profil_non_modifiables_si_feature_desactivee(): void
     {
         $user = User::factory()->create();
         $initialName = $user->name;
@@ -42,7 +42,7 @@ class ProfileTest extends TestCase
         $this->assertSame($initialEmail, $user->email);
     }
 
-    public function test_email_verification_status_is_unchanged_when_profile_update_is_disabled(): void
+    public function test_statut_verification_email_inchange_si_mise_a_jour_profil_desactivee(): void
     {
         $user = User::factory()->create();
 
@@ -58,7 +58,7 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_cannot_delete_their_account_when_feature_is_disabled(): void
+    public function test_utilisateur_ne_peut_pas_supprimer_compte_si_feature_desactivee(): void
     {
         $user = User::factory()->create();
 
@@ -74,7 +74,7 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->fresh());
     }
 
-    public function test_delete_account_password_validation_is_not_reachable_when_feature_is_disabled(): void
+    public function test_validation_mot_de_passe_suppression_non_disponible_si_feature_desactivee(): void
     {
         $user = User::factory()->create();
 

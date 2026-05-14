@@ -40,6 +40,7 @@ graph TB
         E1["Se connecter"]
         E2["Soumettre sujet<br/>5 étapes"]
         E3["Consulter état sujet"]
+        E3b["Soumettre fichiers par jalon"]
         E4["Déposer fichier jury"]
         E5["Consulter rapport d'analyse IA"]
         E6["Recevoir l'autorisation de soutenance"]
@@ -59,6 +60,7 @@ graph TB
     
     subgraph Enseignant["Enseignant"]
         T1["Voir sujets encadrés"]
+        T1b["Gérer jalons et valider soumissions"]
         T2["Télécharger fichiers"]
         T3["Consulter rapports IA"]
         T4["Autoriser la soutenance"]
@@ -84,6 +86,7 @@ graph TB
     E1 --> APP
     E2 --> APP
     E3 --> APP
+    E3b --> APP
     E4 --> APP
     E5 --> APP
     E6 --> APP
@@ -97,6 +100,7 @@ graph TB
     C6 --> APP
     C7 --> APP
     T1 --> APP
+    T1b --> APP
     T2 --> APP
     T3 --> APP
     T4 --> APP
@@ -133,6 +137,7 @@ graph TB
         
         subgraph Etudiant_CU["Cas d'utilisation Étudiant"]
             CU03["Soumettre un sujet"]
+            CU_Jalon_E["Soumettre fichiers par jalon"]
             CU06["Déposer fichier TFC"]
             CU_Consult1["Consulter notifications"]
         end
@@ -145,6 +150,7 @@ graph TB
         end
         
         subgraph Enseignant_CU["Cas d'utilisation Enseignant"]
+            CU_Jalon_T["Gérer jalons et valider soumissions"]
             CU07["Autoriser soutenance"]
             CU14["Retirer Feu Vert"]
             CU_EnseignInfo["Consulter planification"]
@@ -180,6 +186,7 @@ graph LR
     
     Actor -->|CU02| Connexion["Se connecter"]
     Actor -->|CU03| Soumettre["Soumettre un sujet<br/>5 étapes"]
+    Actor -->|CU_Jalon| Jalon["Soumettre fichiers<br/>par jalon"]
     Actor -->|CU06| Depot["Déposer fichier TFC<br/>jury ou final"]
     Actor -->|CU_Consult| EtatSujet["Consulter état du sujet"]
     Actor -->|CU_Consult| RapportIA["Consulter rapport IA"]
@@ -210,6 +217,7 @@ graph LR
 | **Compte créé par l'admin** | Rôle et filière définis | Compte étudiant actif |
 | **Se connecter** | Compte validé | Accès au tableau de bord étudiant |
 | **Soumettre sujet** | Connecté, pas de sujet en attente | Sujet créé, notification au Chef de Département |
+| **Soumettre fichiers par jalon** | Sujet validé, jalon en attente | Fichier soumis pour le jalon, attente de validation |
 | **Déposer fichier** | Sujet validé (jury) ou autorisation de soutenance accordée (final) | Analyse IA lancée, encadreur notifié |
 | **Consulter notifications** | Connecté | Affichage de tous les événements |
 
@@ -271,6 +279,7 @@ graph LR
     
     Actor -->|CU02| Connexion["Se connecter"]
     Actor -->|CU_SujetsE| Sujets["Consulter sujets<br/>encadrés"]
+    Actor -->|CU_Jalon| Jalons["Gérer jalons et<br/>valider soumissions"]
     Actor -->|CU_TelechargerE| Telecharger["Télécharger fichiers<br/>TFC"]
     Actor -->|CU_RapportE| RapportIA["Consulter rapport IA"]
     Actor -->|CU07| Autoriser["Autoriser la soutenance"]
@@ -305,6 +314,7 @@ graph LR
 | Action | Précondition | Résultat |
 |--------|---|---|
 | **Consulter sujets encadrés** | Connecté, au moins 1 sujet assigné | Liste paginée des sujets |
+| **Gérer jalons** | Sujet encadré | Création de jalons, définition échéances, validation/rejet |
 | **Télécharger fichiers** | Sujet avec fichier déposé | Fichier PDF en local |
 | **Consulter rapport IA** | Fichier analysé | Affichage des scores et détails |
 | **Autoriser soutenance** | Sujet validé, contenu satisfaisant | `defense_validated=true`, notification d'autorisation |

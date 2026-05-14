@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\ThesisFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\DocumentConverter;
 
 class ArchiveController extends Controller
 {
@@ -60,5 +61,62 @@ class ArchiveController extends Controller
             $thesisFile->file_path,
             $thesisFile->original_name
         );
+    }
+
+    /**
+     * Afficher une page d'aperçu (embed) pour un fichier d'archive.
+     */
+    public function view(ThesisFile $thesisFile)
+    {
+        if (!$thesisFile->subject || !$thesisFile->subject->defense_validated || $thesisFile->version_type !== 'final') {
+            abort(403, 'Ce fichier n\'est pas disponible pour visualisation.');
+        }
+
+        $path = Storage::disk('public')->path($thesisFile->file_path);
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        $mime = @mime_content_type($path) ?: Storage::disk('public')->mimeType($thesisFile->file_path) ?? 'application/octet-stream';
+
+        // Pour les PDF et images, on affiche directement une page contenant un iframe vers la ressource
+        return view('archives.view', compact('thesisFile', 'mime'));
+    }
+
+    /**
+     * Retourne le fichier en inline (Content-Disposition: inline) pour embedding.
+     */
+    public function file(ThesisFile $thesisFile)
+    {
+        if (!$thesisFile->subject || !$thesisFile->subject->defense_validated || $thesisFile->version_type !== 'final') {
+            abort(403, 'Ce fichier n\'est pas disponible pour visualisation.');
+        }
+
+        $path = Storage::disk('public')->path($thesisFile->file_path);
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        // Si le fichier est un document bureautique, tenter une conversion serveur via LibreOffice
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $convertible = ['doc', 'docx', 'odt', 'rtf', 'ppt', 'pptx'];
+
+        if (in_array($ext, $convertible, true)) {
+            $converter = app(DocumentConverter::class);
+            $converted = $converter->convertToPdf($path);
+            if ($converted && file_exists($converted)) {
+                return response()->file($converted, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . pathinfo($thesisFile->original_name, PATHINFO_FILENAME) . '.pdf"',
+                ]);
+            }
+        }
+
+        $mime = @mime_content_type($path) ?: Storage::disk('public')->mimeType($thesisFile->file_path) ?? 'application/octet-stream';
+
+        return response()->file($path, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . $thesisFile->original_name . '"',
+        ]);
     }
 }

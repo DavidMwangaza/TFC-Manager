@@ -286,6 +286,127 @@
                     @endif
                 </div>
             </div>
+            {{-- ================================================================= --}}
+            {{-- SECTION JALONS — Suivi de l'encadrement --}}
+            {{-- ================================================================= --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <x-icon name="flag" class="w-5 h-5 text-indigo-600" /> Suivi par Jalons — Encadrement
+                    </h3>
+
+                    {{-- Stats jalons --}}
+                    @if($milestoneStats['total'] > 0)
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+                            <div class="text-center rounded-lg bg-gray-50 border px-3 py-3">
+                                <p class="text-2xl font-bold text-gray-800">{{ $milestoneStats['total'] }}</p>
+                                <p class="text-xs text-gray-500">Total jalons</p>
+                            </div>
+                            <div class="text-center rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-3">
+                                <p class="text-2xl font-bold text-yellow-700">{{ $milestoneStats['pending'] }}</p>
+                                <p class="text-xs text-yellow-600">En attente</p>
+                            </div>
+                            <div class="text-center rounded-lg bg-blue-50 border border-blue-200 px-3 py-3">
+                                <p class="text-2xl font-bold text-blue-700">{{ $milestoneStats['submitted'] }}</p>
+                                <p class="text-xs text-blue-600">À corriger</p>
+                            </div>
+                            <div class="text-center rounded-lg bg-green-50 border border-green-200 px-3 py-3">
+                                <p class="text-2xl font-bold text-green-700">{{ $milestoneStats['validated'] }}</p>
+                                <p class="text-xs text-green-600">Validés</p>
+                            </div>
+                            <div class="text-center rounded-lg bg-red-50 border border-red-200 px-3 py-3">
+                                <p class="text-2xl font-bold text-red-700">{{ $milestoneStats['rejected'] }}</p>
+                                <p class="text-xs text-red-600">Rejetés</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Jalons en attente de correction --}}
+                    @if($pendingMilestones->count() > 0)
+                        <div class="mb-4">
+                            <h4 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <x-icon name="exclamation-circle" class="w-5 h-5 text-amber-500" />
+                                Action requise : {{ $pendingMilestones->count() }} jalon(s) en attente de correction
+                            </h4>
+
+                            <div class="space-y-3">
+                                @foreach($pendingMilestones as $milestone)
+                                    @php
+                                        $isOverdue = $milestone->correction_deadline && $milestone->correction_deadline->isPast();
+                                    @endphp
+                                    <div class="border rounded-lg overflow-hidden {{ $isOverdue ? 'border-red-300 bg-red-50/40' : 'border-blue-200 bg-blue-50/30' }}">
+                                        <div class="flex flex-wrap items-center gap-3 px-4 py-3">
+                                            {{-- Indicateur urgent --}}
+                                            <div class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center {{ $isOverdue ? 'bg-red-500' : 'bg-blue-500' }} text-white">
+                                                @if($isOverdue)
+                                                    <x-icon name="exclamation-triangle" class="w-5 h-5" />
+                                                @else
+                                                    <x-icon name="pencil-square" class="w-5 h-5" />
+                                                @endif
+                                            </div>
+
+                                            {{-- Infos --}}
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <p class="font-semibold text-sm text-gray-900">{{ $milestone->title }}</p>
+                                                    @if($isOverdue)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800 animate-pulse">
+                                                            SLA dépassé !
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
+                                                    <span class="font-medium text-gray-700">
+                                                        {{ $milestone->subject->student->name ?? '—' }}
+                                                    </span>
+                                                    <span class="text-gray-400">·</span>
+                                                    <span>{{ Str::limit($milestone->subject->title, 35) }}</span>
+                                                </div>
+                                                <div class="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
+                                                    <span class="flex items-center gap-1">
+                                                        <x-icon name="arrow-up-tray" class="w-3.5 h-3.5" />
+                                                        Soumis le {{ $milestone->submission_date?->format('d/m/Y H:i') ?? '—' }}
+                                                    </span>
+                                                    @if($milestone->correction_deadline)
+                                                        <span class="flex items-center gap-1 {{ $isOverdue ? 'text-red-600 font-semibold' : '' }}">
+                                                            <x-icon name="clock" class="w-3.5 h-3.5" />
+                                                            SLA : {{ $milestone->correction_deadline->format('d/m/Y H:i') }}
+                                                            @if($isOverdue)
+                                                                ({{ $milestone->correction_deadline->diffForHumans() }})
+                                                            @endif
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            {{-- Boutons d'action --}}
+                                            <div class="shrink-0 flex items-center gap-2 flex-wrap">
+                                                @if($milestone->thesisFile)
+                                                    <a href="{{ route('thesis.download', $milestone->thesisFile) }}"
+                                                       class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition">
+                                                        <x-icon name="arrow-down-tray" class="w-3.5 h-3.5" /> PDF
+                                                    </a>
+                                                @endif
+                                                <a href="{{ route('subjects.show', $milestone->subject) }}"
+                                                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded transition">
+                                                    <x-icon name="eye" class="w-3.5 h-3.5" /> Corriger
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @elseif($milestoneStats['total'] > 0)
+                        <div class="text-center py-6 text-gray-500">
+                            <x-icon name="check-circle" class="w-8 h-8 mx-auto text-green-400 mb-2" />
+                            <p class="text-sm">Aucun jalon en attente de correction. Tout est à jour !</p>
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-500 italic py-4 text-center">Aucun jalon n'a encore été défini. Créez-en depuis la fiche d'un sujet.</p>
+                    @endif
+                </div>
+            </div>
 
             {{-- Rappel du rôle Enseignant --}}
             <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">

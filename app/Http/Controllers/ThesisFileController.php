@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use App\Models\ThesisFile;
+use App\Models\Milestone;
+use App\Models\ActivityLog;
 use App\Notifications\ThesisFileUploaded;
+use App\Notifications\MilestoneSubmitted as MilestoneSubmittedNotification;
 use App\Services\AiDetectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -110,5 +113,66 @@ class ThesisFileController extends Controller
             $thesisFile->file_path,
             $thesisFile->original_name
         );
+    }
+
+    /**
+     * Upload d'un fichier TFC lié à un jalon.
+     */
+    public function uploadForMilestone(Request $request, Milestone $milestone)
+    {
+        $request->validate([
+            'pdf' => 'required|file|mimes:pdf|mimetypes:application/pdf|max:20480',
+        ]);
+
+        $user = Auth::user();
+
+        // Sécurité: seul l'étudiant lié au sujet peut déposer pour ce jalon
+        if (! $user->hasRole('Etudiant') || $milestone->subject->student_id !== $user->id) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        // Supprimer l'ancienne version pour ce jalon s'il y en a une
+        $existing = ThesisFile::where('milestone_id', $milestone->id)->first();
+        if ($existing) {
+            Storage::disk('public')->delete($existing->file_path);
+            if ($existing->aiReport) {
+                $existing->aiReport->delete();
+            }
+            $existing->delete();
+        }
+
+        $file = $request->file('pdf');
+        $path = $file->store('tfc_files', 'public');
+
+        // version_type: on réutilise l'enum existant pour compatibilité
+        $thesisFile = ThesisFile::create([
+            'subject_id' => $milestone->subject_id,
+            'file_path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'version_type' => 'jury',
+            'milestone_id' => $milestone->id,
+        ]);
+
+        // Lancer l'analyse IA sans bloquer l'utilisateur
+        try {
+            $this->aiDetectionService->analyze($thesisFile);
+        } catch (\Exception $e) {
+            \Log::error('Erreur analyse IA (milestone upload): ' . $e->getMessage());
+        }
+
+        // Mettre à jour le jalon
+        $milestone->update([
+            'submission_date' => now(),
+            'status' => 'submitted',
+        ]);
+
+        // Notifier l'enseignant encadreur
+        if ($milestone->subject->teacher) {
+            $milestone->subject->teacher->notify(new MilestoneSubmittedNotification($milestone));
+        }
+
+        ActivityLog::log('file_uploaded_for_milestone', 'Fichier déposé pour jalon', $thesisFile);
+
+        return redirect()->back()->with('success', 'Fichier soumis pour le jalon.');
     }
 }

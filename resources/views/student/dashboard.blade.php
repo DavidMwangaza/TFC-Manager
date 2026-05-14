@@ -331,6 +331,147 @@
                 </div>
             </div>
 
+            {{-- Section Jalons / Milestones --}}
+            @if($milestoneProgress)
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <x-icon name="flag" class="w-5 h-5 text-indigo-600" /> Suivi par Jalons — Progression de Rédaction
+                        </h3>
+
+                        {{-- Barre de progression des jalons --}}
+                        <div class="flex flex-col sm:flex-row items-center gap-6 mb-6">
+                            {{-- Cercle de progression --}}
+                            <div class="relative w-24 h-24 shrink-0">
+                                <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                                    <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="{{ $milestoneProgress['percent'] >= 80 ? 'text-green-500' : ($milestoneProgress['percent'] >= 40 ? 'text-blue-500' : 'text-amber-500') }}"
+                                          stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"
+                                          stroke-dasharray="{{ $milestoneProgress['percent'] }}, 100"
+                                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="absolute inset-0 flex items-center justify-center text-xl font-bold {{ $milestoneProgress['percent'] >= 80 ? 'text-green-700' : ($milestoneProgress['percent'] >= 40 ? 'text-blue-700' : 'text-amber-700') }}">
+                                    {{ $milestoneProgress['percent'] }}%
+                                </span>
+                            </div>
+
+                            {{-- Statistiques en ligne --}}
+                            <div class="flex-1 w-full">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                                    <div class="text-center rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                                        <p class="text-xl font-bold text-green-700">{{ $milestoneProgress['validated'] }}</p>
+                                        <p class="text-xs text-green-600">Validés</p>
+                                    </div>
+                                    <div class="text-center rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
+                                        <p class="text-xl font-bold text-blue-700">{{ $milestoneProgress['submitted'] }}</p>
+                                        <p class="text-xs text-blue-600">En correction</p>
+                                    </div>
+                                    <div class="text-center rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+                                        <p class="text-xl font-bold text-red-700">{{ $milestoneProgress['rejected'] }}</p>
+                                        <p class="text-xs text-red-600">À refaire</p>
+                                    </div>
+                                    <div class="text-center rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2">
+                                        <p class="text-xl font-bold text-yellow-700">{{ $milestoneProgress['pending'] }}</p>
+                                        <p class="text-xs text-yellow-600">En attente</p>
+                                    </div>
+                                </div>
+
+                                {{-- Barre segmentée --}}
+                                <div class="w-full bg-gray-200 rounded-full h-3 flex overflow-hidden">
+                                    @if($milestoneProgress['validated'] > 0)
+                                        <div class="bg-green-500 h-3 transition-all" style="width: {{ ($milestoneProgress['validated'] / $milestoneProgress['total']) * 100 }}%"></div>
+                                    @endif
+                                    @if($milestoneProgress['submitted'] > 0)
+                                        <div class="bg-blue-500 h-3 transition-all" style="width: {{ ($milestoneProgress['submitted'] / $milestoneProgress['total']) * 100 }}%"></div>
+                                    @endif
+                                    @if($milestoneProgress['rejected'] > 0)
+                                        <div class="bg-red-500 h-3 transition-all" style="width: {{ ($milestoneProgress['rejected'] / $milestoneProgress['total']) * 100 }}%"></div>
+                                    @endif
+                                    @if($milestoneProgress['pending'] > 0)
+                                        <div class="bg-yellow-400 h-3 transition-all" style="width: {{ ($milestoneProgress['pending'] / $milestoneProgress['total']) * 100 }}%"></div>
+                                    @endif
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500 text-right">
+                                    {{ $milestoneProgress['validated'] }}/{{ $milestoneProgress['total'] }} étapes validées
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Liste des jalons individuels --}}
+                        <div class="space-y-3">
+                            @foreach($subject->milestones->sortBy('due_date') as $index => $milestone)
+                                <div class="border rounded-lg overflow-hidden {{ $milestone->status === 'validated' ? 'border-green-200 bg-green-50/50' : ($milestone->status === 'rejected' ? 'border-red-200 bg-red-50/50' : ($milestone->status === 'submitted' ? 'border-blue-200 bg-blue-50/50' : 'border-gray-200')) }}">
+                                    <div class="flex items-center gap-3 px-4 py-3">
+                                        {{-- Numéro d'étape --}}
+                                        <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                                            {{ $milestone->status === 'validated' ? 'bg-green-500 text-white' : '' }}
+                                            {{ $milestone->status === 'submitted' ? 'bg-blue-500 text-white' : '' }}
+                                            {{ $milestone->status === 'rejected' ? 'bg-red-500 text-white' : '' }}
+                                            {{ $milestone->status === 'pending' ? 'bg-gray-300 text-gray-600' : '' }}">
+                                            @if($milestone->status === 'validated')
+                                                ✓
+                                            @else
+                                                {{ $index + 1 }}
+                                            @endif
+                                        </div>
+
+                                        {{-- Infos --}}
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <p class="font-semibold text-sm text-gray-900">{{ $milestone->title }}</p>
+                                                @if($milestone->status === 'pending')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">En attente</span>
+                                                @elseif($milestone->status === 'submitted')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">En correction</span>
+                                                @elseif($milestone->status === 'validated')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">✓ Validé</span>
+                                                @elseif($milestone->status === 'rejected')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">À refaire</span>
+                                                @endif
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
+                                                <span class="flex items-center gap-1">
+                                                    <x-icon name="clock" class="w-3.5 h-3.5" />
+                                                    Échéance : {{ $milestone->due_date?->format('d/m/Y H:i') ?? '—' }}
+                                                </span>
+                                                @if($milestone->submission_date)
+                                                    <span class="flex items-center gap-1">
+                                                        <x-icon name="arrow-up-tray" class="w-3.5 h-3.5" />
+                                                        Soumis : {{ $milestone->submission_date->format('d/m/Y H:i') }}
+                                                    </span>
+                                                @endif
+                                                @if($milestone->due_date && $milestone->status === 'pending' && $milestone->due_date->isPast())
+                                                    <span class="text-red-600 font-semibold flex items-center gap-1">
+                                                        <x-icon name="exclamation-triangle" class="w-3.5 h-3.5" /> En retard !
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- Action --}}
+                                        @if(in_array($milestone->status, ['pending', 'rejected']))
+                                            <a href="{{ route('subjects.show', $subject) }}"
+                                               class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition">
+                                                <x-icon name="arrow-up-tray" class="w-3.5 h-3.5" /> Soumettre
+                                            </a>
+                                        @endif
+                                    </div>
+
+                                    {{-- Commentaires du professeur --}}
+                                    @if($milestone->comments && in_array($milestone->status, ['validated', 'rejected']))
+                                        <div class="px-4 py-2 border-t {{ $milestone->status === 'rejected' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200' }}">
+                                            <p class="text-xs {{ $milestone->status === 'rejected' ? 'text-red-700' : 'text-green-700' }}">
+                                                <strong>Commentaire du professeur :</strong> {{ $milestone->comments }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Rappel des règles pour l'étudiant --}}
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-1.5"><x-icon name="information-circle" class="w-5 h-5" /> Rappel — Votre rôle</h4>

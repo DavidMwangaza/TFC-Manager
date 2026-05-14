@@ -171,12 +171,21 @@
                                         <td class="px-4 py-3 text-center whitespace-nowrap">
                                             @php $finalFile = $subject->thesisFiles->firstWhere('version_type', 'final'); @endphp
                                             @if($finalFile)
-                                                <a href="{{ route('archives.download', $finalFile) }}"
-                                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 transition"
-                                                   title="T&eacute;l&eacute;charger la version finale">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                                                    PDF
-                                                </a>
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <a href="{{ route('archives.view', $finalFile) }}"
+                                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-md hover:bg-green-700 transition"
+                                                       title="Visualiser la version finale">
+                                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 12s3.5-7.5 9.5-7.5S21.5 12 21.5 12s-3.5 7.5-9.5 7.5S2.5 12 2.5 12z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5"/></svg>
+                                                        Voir
+                                                    </a>
+
+                                                    <a href="{{ route('archives.download', $finalFile) }}"
+                                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 transition"
+                                                       title="T&eacute;l&eacute;charger la version finale">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                                        PDF
+                                                    </a>
+                                                </div>
                                             @else
                                                 <span class="text-gray-300 text-xs">&mdash;</span>
                                             @endif

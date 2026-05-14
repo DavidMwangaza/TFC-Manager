@@ -15,7 +15,7 @@ class NotificationManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_mark_only_their_own_notification_as_read(): void
+    public function test_utilisateur_peut_marquer_seulement_ses_notifications_comme_lues(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
@@ -36,7 +36,7 @@ class NotificationManagementTest extends TestCase
         $this->assertNotNull($owner->notifications()->findOrFail($ownerNotificationId)->read_at);
     }
 
-    public function test_mark_all_as_read_marks_only_current_user_notifications(): void
+    public function test_marquer_tout_lu_ne_marque_que_notifications_utilisateur_courant(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
@@ -54,7 +54,7 @@ class NotificationManagementTest extends TestCase
         $this->assertNull($other->notifications()->findOrFail($otherNotification)->read_at);
     }
 
-    public function test_user_can_delete_only_their_own_notification(): void
+    public function test_utilisateur_peut_supprimer_seulement_ses_notifications(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
@@ -83,7 +83,7 @@ class NotificationManagementTest extends TestCase
         ]);
     }
 
-    public function test_delete_all_notifications_deletes_only_current_user_notifications(): void
+    public function test_supprimer_toutes_notifications_supprime_que_celles_utilisateur_courant(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
@@ -101,7 +101,7 @@ class NotificationManagementTest extends TestCase
         $this->assertDatabaseHas('notifications', ['id' => $otherNotification]);
     }
 
-    public function test_cp_assigns_only_teacher_of_same_department_and_notifications_target_correct_users(): void
+    public function test_cp_assigne_seulement_enseignant_meme_departement_et_notifications_ciblent_utilisateurs_corrects(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 

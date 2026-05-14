@@ -15,7 +15,9 @@ graph TB
     C[Chef de Departement] --> U5[Valider ou rejeter]
     C --> U6[Assigner enseignant]
     C --> U10[Planifier soutenance]
-    D[Enseignant] --> U7[Autoriser soutenance]
+    D[Enseignant] --> U11[Gerer jalons]
+    D --> U7[Autoriser soutenance]
+    B --> U11
     E[Administrateur] --> U8[Gerer utilisateurs]
     E --> U9[Gerer structure academique]
 ```
@@ -28,6 +30,7 @@ graph LR
     E[Etudiant] --> A[S inscrire]
     E --> B[Se connecter]
     E --> C[Soumettre sujet]
+    E --> C2[Soumettre fichiers jalons]
     E --> D[Deposer version jury]
     E --> F[Consulter rapport IA]
     E --> G[Deposer version finale]
@@ -55,6 +58,7 @@ graph LR
 %%{init: {'theme':'base','themeVariables': {'background':'#ffffff','primaryColor':'#ffffff','primaryBorderColor':'#000000','lineColor':'#000000','textColor':'#000000'}}}%%
 graph LR
     T[Enseignant] --> A[Consulter sujets encadres]
+    T --> A2[Gerer jalons]
     T --> B[Telecharger fichiers]
     T --> C[Consulter rapport IA]
     T --> D[Consulter planification]
@@ -166,7 +170,9 @@ classDiagram
     Department --> Subject
     AcademicYear --> Subject
     User --> Subject
+    Subject --> Milestone
     Subject --> ThesisFile
+    Milestone --> ThesisFile
     ThesisFile --> AiReport
     User --> Notification
     User --> ActivityLog
@@ -183,7 +189,9 @@ erDiagram
     USERS ||--o{ SUBJECTS : soumet
     USERS ||--o{ SUBJECTS : encadre
     ACADEMIC_YEARS ||--o{ SUBJECTS : organise
+    SUBJECTS ||--o{ MILESTONES : contient
     SUBJECTS ||--o{ THESIS_FILES : contient
+    MILESTONES ||--o{ THESIS_FILES : contient
     THESIS_FILES ||--o{ AI_REPORTS : produit
 ```
 
@@ -196,7 +204,8 @@ graph TD
     B -->|Non| C[Rejet et motif]
     C --> A
     B -->|Oui| D[Assignation enseignant]
-    D --> E[Depot version jury]
+    D --> D2[Creation et suivi des jalons]
+    D2 --> E[Depot version jury]
     E --> F[Analyse IA]
     F --> G[Autorisation soutenance]
     G --> H[Planification soutenance]
@@ -221,6 +230,12 @@ graph LR
 ```
 
 ---
+
+## Note technique — Serveur utilisé
+
+- En développement : `php artisan serve` (serveur PHP intégré de Laravel).
+- En production : Apache ou Nginx avec PHP-FPM (préconisé pour les performances et la sécurité).
+- Front-end (développement) : `npm run dev` (Vite) pour le rechargement et la compilation des assets.
 
 ## Recommendation d'usage
 
