@@ -189,7 +189,6 @@ class ThesisFileController extends Controller
         $milestone->update([
             'submission_date'      => now(),
             'status'               => 'submitted',
-            'submission_type'      => 'pdf',
         ]);
 
         // Notifier l'enseignant encadreur
