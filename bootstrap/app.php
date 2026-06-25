@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckUserBlocked::class,
+            \App\Http\Middleware\PreventArchivedSubjectModification::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

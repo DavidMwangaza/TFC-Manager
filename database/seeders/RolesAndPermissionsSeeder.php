@@ -37,18 +37,24 @@ class RolesAndPermissionsSeeder extends Seeder
             // Dépôt final
             'thesis.final-deposit',
             'thesis.validate-defense',
+
+            // Doyen — statistiques faculté
+            'statistics.faculty',
+
+            // Appariteur — validation financière
+            'students.validate-financial',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Créer les rôles et assigner les permissions
-        $admin = Role::create(['name' => 'Admin']);
+        $admin = Role::firstOrCreate(['name' => 'Admin']);
         $admin->givePermissionTo(Permission::all());
 
-        $cp = Role::create(['name' => 'Chef de département']);
-        $cp->givePermissionTo([
+        $cp = Role::firstOrCreate(['name' => 'Chef de département']);
+        $cp->syncPermissions([
             'subjects.view',
             'subjects.validate',
             'subjects.reject',
@@ -57,20 +63,36 @@ class RolesAndPermissionsSeeder extends Seeder
             'thesis.view-reports',
         ]);
 
-        $enseignant = Role::create(['name' => 'Enseignant']);
-        $enseignant->givePermissionTo([
+        $enseignant = Role::firstOrCreate(['name' => 'Enseignant']);
+        $enseignant->syncPermissions([
             'subjects.view',
             'thesis.download',
             'thesis.view-reports',
             'thesis.validate-defense',
         ]);
 
-        $etudiant = Role::create(['name' => 'Etudiant']);
-        $etudiant->givePermissionTo([
+
+        $etudiant = Role::firstOrCreate(['name' => 'Etudiant']);
+        $etudiant->syncPermissions([
             'subjects.create',
             'subjects.view',
             'thesis.upload',
             'thesis.final-deposit',
+        ]);
+
+        // Doyen de Faculté (Superviseur)
+        $doyen = Role::firstOrCreate(['name' => 'Doyen']);
+        $doyen->syncPermissions([
+            'subjects.view',
+            'statistics.faculty',
+            'thesis.view-reports',
+        ]);
+
+        // Appariteur (Vérificateur administratif et financier)
+        $appariteur = Role::firstOrCreate(['name' => 'Appariteur']);
+        $appariteur->syncPermissions([
+            'subjects.view',
+            'students.validate-financial',
         ]);
     }
 }

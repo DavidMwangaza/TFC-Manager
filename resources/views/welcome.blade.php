@@ -1,244 +1,324 @@
-﻿<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>UDBL &mdash; Plateforme de Gestion des TFC</title>
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    
+    <!-- Google Font: Inter & Lora -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|lora:400,500,600,700,800&display=swap" rel="stylesheet" />
+    
+    <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-zinc-50 text-zinc-800 antialiased font-sans">
 
     {{-- BARRE INSTITUTIONNELLE --}}
-    <div class="bg-blue-900 text-blue-100 text-xs py-1.5">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <span>Universit&eacute; Don Bosco de Lubumbashi &mdash; Ann&eacute;e acad&eacute;mique {{ date('Y') }}-{{ date('Y') + 1 }}</span>
-            <span>Plateforme r&eacute;serv&eacute;e aux membres de l'universit&eacute;</span>
+    <div class="bg-gradient-to-r from-slate-900 via-primary-dark to-slate-900 text-slate-300 text-[10px] sm:text-xs py-2 shadow-sm relative z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span class="font-medium tracking-wide">Université Don Bosco de Lubumbashi &mdash; Année Académique {{ date('Y') }}-{{ date('Y') + 1 }}</span>
+            <span class="flex items-center gap-1.5 uppercase tracking-wider font-bold text-accent text-[9px]">
+                <span class="w-1.5 h-1.5 bg-accent rounded-full animate-ping"></span>
+                <span>Portail académique sécurisé</span>
+            </span>
         </div>
     </div>
 
     {{-- NAVBAR --}}
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-40 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
+            <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center gap-3">
-                    <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-10 w-10 object-contain">
+                    <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-12 w-12 object-contain bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
                     <div>
-                        <span class="text-lg font-bold text-gray-800 block leading-tight">TFC Manager</span>
-                        <span class="text-xs text-gray-400 leading-tight">Gestion des Travaux de Fin de Cycle</span>
+                        <span class="text-lg font-extrabold text-slate-900 tracking-tight block leading-tight">TFC Manager</span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none">Gestion des Cycles Académiques</span>
                     </div>
                 </div>
+                
                 <div class="flex items-center gap-3">
                     @auth
                         <a href="{{ url('/dashboard') }}"
-                           class="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-5 rounded-lg text-sm transition">
+                           class="bg-primary hover:bg-primary-light text-white text-xs font-bold py-2.5 px-5 rounded-xl hover-lift shadow-md shadow-primary/10 transition-all">
                             Mon espace
                         </a>
                     @else
                         <a href="{{ route('login') }}"
-                           class="text-gray-600 hover:text-gray-900 font-medium py-2 px-4 text-sm transition">
+                           class="text-slate-650 hover:text-slate-950 font-bold py-2.5 px-4 text-xs transition-colors">
                             Connexion
                         </a>
-
+                        <a href="{{ route('archives.index') }}"
+                           class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2.5 px-5 rounded-xl border border-slate-200/60 shadow-sm transition-all hidden sm:inline-flex items-center gap-1">
+                            <x-icon name="archive" class="h-4 w-4" />
+                            <span>Archives</span>
+                        </a>
                     @endauth
                 </div>
             </div>
         </div>
     </nav>
 
-    {{-- EN-TETE INSTITUTIONNEL --}}
-    <section class="bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-            <div class="flex flex-col lg:flex-row items-center gap-10">
-                <div class="flex-shrink-0">
-                    <div class="bg-white rounded-2xl p-4 shadow-lg">
-                        <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-28 w-28 object-contain">
+    {{-- HERO SECTION --}}
+    <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-dark to-slate-950 py-16 lg:py-24 text-white">
+        <!-- Abstract glowing circles -->
+        <div class="absolute -right-24 -top-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-24 -bottom-24 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+                
+                <!-- Left Content -->
+                <div class="flex-1 text-center lg:text-left space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-md rounded-full text-xs font-semibold text-accent border border-white/10 tracking-wide">
+                        <x-icon name="sparkles" class="h-4 w-4" />
+                        <span>Propulsé par l'Intégrité IA</span>
                     </div>
-                </div>
-                <div class="text-center lg:text-left">
-                    <p class="text-blue-200 text-sm font-medium tracking-wide uppercase mb-2">Universit&eacute; Don Bosco de Lubumbashi</p>
-                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">
-                        Plateforme de Gestion des <span class="text-yellow-300">Travaux de Fin de Cycle</span>
+                    
+                    <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black leading-relaxed tracking-tight text-white">
+                        Plateforme de Gestion des <br class="hidden lg:block" />
+                        <span class="text-accent bg-clip-text">Travaux de Fin de Cycle</span>
                     </h1>
-                    <p class="text-lg text-blue-100 max-w-2xl leading-relaxed mb-8">
-                        Espace de soumission des sujets, de suivi des validations, de d&eacute;p&ocirc;t des m&eacute;moires
-                        et de v&eacute;rification par analyse IA, destin&eacute; aux &eacute;tudiants, enseignants et responsables acad&eacute;miques.
+                    
+                    <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed mx-auto lg:mx-0">
+                        Soumettez vos fiches de sujet, planifiez vos livrables de rédaction avec suivi par jalons et validez vos manuscrits grâce à notre module d'analyse d'intégrité IA.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                         @auth
                             <a href="{{ url('/dashboard') }}"
-                               class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold py-3 px-8 rounded-lg text-base transition shadow">
-                                Acc&eacute;der &agrave; mon espace
+                               class="bg-accent hover:bg-amber-400 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl text-sm transition-all shadow-md shadow-accent/20 hover-lift flex items-center justify-center gap-2">
+                                <span>Accéder à mon espace</span>
+                                <x-icon name="home" class="h-4 w-4 text-slate-950" />
                             </a>
                         @else
                             <a href="{{ route('login') }}"
-                               class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold py-3 px-8 rounded-lg text-base transition shadow">
-                                Se connecter
+                               class="bg-accent hover:bg-amber-400 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl text-sm transition-all shadow-md shadow-accent/20 hover-lift flex items-center justify-center gap-2">
+                                <span>Se connecter</span>
+                                <x-icon name="lock-closed" class="h-4 w-4 text-slate-950" />
                             </a>
                         @endauth
                         <a href="{{ route('archives.index') }}"
-                           class="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-8 rounded-lg text-base transition shadow border border-white/30">
-                            <svg class="w-5 h-5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-                            Consulter les archives
+                           class="bg-white/5 hover:bg-white/10 text-white font-bold py-3.5 px-8 rounded-xl text-sm border border-white/20 hover-lift transition-all flex items-center justify-center gap-2">
+                            <x-icon name="archive" class="h-4 w-4 text-slate-350" />
+                            <span>Consulter les archives publiques</span>
                         </a>
                     </div>
                 </div>
+
+                <!-- Right Visual: Logo box -->
+                <div class="shrink-0 animate-fade-in-up">
+                    <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/15 shadow-2xl relative overflow-hidden group">
+                        <div class="absolute -right-8 -top-8 w-24 h-24 bg-accent/20 rounded-full blur-xl"></div>
+                        <div class="bg-white rounded-2xl p-6 shadow-inner relative z-10 transition-transform duration-500 group-hover:scale-105">
+                            <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-32 w-32 object-contain bg-white">
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
 
     {{-- ACCES PAR ROLE --}}
-    <section class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h2 class="text-center text-lg font-semibold text-gray-500 uppercase tracking-wide mb-8">Acc&egrave;s selon votre profil</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
-                    <div class="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" /></svg>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">&Eacute;tudiant</h3>
-                    <p class="text-sm text-gray-500">Soumettre un sujet, d&eacute;poser le m&eacute;moire, consulter les rapports d'analyse.</p>
-                </div>
-                <div class="bg-green-50 rounded-xl p-5 border border-green-100">
-                    <div class="w-10 h-10 bg-green-600 text-white rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Chef de Fili&egrave;re</h3>
-                    <p class="text-sm text-gray-500">Valider ou rejeter les sujets, assigner les directeurs de m&eacute;moire.</p>
-                </div>
-                <div class="bg-purple-50 rounded-xl p-5 border border-purple-100">
-                    <div class="w-10 h-10 bg-purple-600 text-white rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" /></svg>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Enseignant</h3>
-                    <p class="text-sm text-gray-500">Suivre les travaux encadr&eacute;s, consulter les analyses IA, autoriser la soutenance.</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                    <div class="w-10 h-10 bg-gray-700 text-white rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Administrateur</h3>
-                    <p class="text-sm text-gray-500">G&eacute;rer les utilisateurs, les fili&egrave;res, les ann&eacute;es acad&eacute;miques et les param&egrave;tres.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- PROCEDURE --}}
-    <section class="py-16 bg-gray-50">
+    <section class="py-16 bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Proc&eacute;dure de d&eacute;p&ocirc;t de TFC</h2>
-                <p class="text-gray-500 max-w-2xl mx-auto">Le processus se d&eacute;roule en quatre &eacute;tapes successives, chacune impliquant un acteur diff&eacute;rent.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="relative bg-white rounded-xl p-6 border border-gray-200 text-center">
-                    <div class="w-10 h-10 bg-blue-700 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">1</div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Soumission du sujet</h3>
-                    <p class="text-sm text-gray-500">L'&eacute;tudiant remplit le formulaire structur&eacute; (5 &eacute;tapes) et soumet son sujet.</p>
-                    <span class="text-xs text-blue-600 font-medium mt-2 inline-block">&Eacute;tudiant</span>
-                </div>
-                <div class="relative bg-white rounded-xl p-6 border border-gray-200 text-center">
-                    <div class="w-10 h-10 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">2</div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Validation acad&eacute;mique</h3>
-                    <p class="text-sm text-gray-500">Le Chef de Fili&egrave;re examine le sujet, le valide ou le rejette avec motif.</p>
-                    <span class="text-xs text-green-600 font-medium mt-2 inline-block">Chef de Fili&egrave;re</span>
-                </div>
-                <div class="relative bg-white rounded-xl p-6 border border-gray-200 text-center">
-                    <div class="w-10 h-10 bg-purple-700 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">3</div>
-                    <h3 class="font-semibold text-gray-900 mb-1">D&eacute;p&ocirc;t et analyse</h3>
-                    <p class="text-sm text-gray-500">L'&eacute;tudiant d&eacute;pose son m&eacute;moire (PDF). Le syst&egrave;me effectue une analyse IA automatique.</p>
-                    <span class="text-xs text-purple-600 font-medium mt-2 inline-block">&Eacute;tudiant &rarr; Syst&egrave;me</span>
-                </div>
-                <div class="relative bg-white rounded-xl p-6 border border-gray-200 text-center">
-                    <div class="w-10 h-10 bg-yellow-600 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">4</div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Autorisation de soutenance</h3>
-                    <p class="text-sm text-gray-500">L'enseignant directeur v&eacute;rifie le rapport d'analyse et autorise la soutenance.</p>
-                    <span class="text-xs text-yellow-600 font-medium mt-2 inline-block">Enseignant</span>
-                </div>
+            <h2 class="text-center text-xs font-bold text-slate-450 uppercase tracking-widest mb-10">Accès Personnalisés par Profil</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <a href="{{ url('/dashboard') }}" class="glass-card hover-lift rounded-2xl p-6 border border-slate-150 flex flex-col justify-between group">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 bg-primary/10 text-primary border border-primary/20 rounded-xl flex items-center justify-center mb-4 shrink-0 transition-transform duration-300 group-hover:scale-110">
+                            <x-icon name="user" class="h-5 w-5" />
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-base leading-snug">Espace Étudiant</h3>
+                        <p class="text-xs text-slate-450 leading-relaxed">Soumission de proposition de sujet en 5 étapes, dépôt de livrables et consultation des diagnostics d'analyse IA.</p>
+                    </div>
+                    <span class="text-xs font-bold text-primary inline-flex items-center gap-1 mt-4 group-hover:underline">Se connecter →</span>
+                </a>
+
+                <a href="{{ url('/dashboard') }}" class="glass-card hover-lift rounded-2xl p-6 border border-slate-150 flex flex-col justify-between group">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 bg-green-50 text-green-700 border border-green-100 rounded-xl flex items-center justify-center mb-4 shrink-0 transition-transform duration-300 group-hover:scale-110">
+                            <x-icon name="check-badge" class="h-5 w-5" />
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-base leading-snug">Espace Directeur</h3>
+                        <p class="text-xs text-slate-450 leading-relaxed">Suivi des étudiants sous direction, vérification des SLA d'échéances et validation finale ("Feu Vert") avant la soutenance.</p>
+                    </div>
+                    <span class="text-xs font-bold text-green-600 inline-flex items-center gap-1 mt-4 group-hover:underline">Se connecter →</span>
+                </a>
+
+                <a href="{{ url('/dashboard') }}" class="glass-card hover-lift rounded-2xl p-6 border border-slate-150 flex flex-col justify-between group">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl flex items-center justify-center mb-4 shrink-0 transition-transform duration-300 group-hover:scale-110">
+                            <x-icon name="building-library" class="h-5 w-5" />
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-base leading-snug">Chef de Département</h3>
+                        <p class="text-xs text-slate-450 leading-relaxed">Examen des fiches de proposition, validation ou rejet de sujet, affectation de directeurs et régulation des charges d'encadrement.</p>
+                    </div>
+                    <span class="text-xs font-bold text-blue-600 inline-flex items-center gap-1 mt-4 group-hover:underline">Se connecter →</span>
+                </a>
+
+                <a href="{{ url('/dashboard') }}" class="glass-card hover-lift rounded-2xl p-6 border border-slate-150 flex flex-col justify-between group">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl flex items-center justify-center mb-4 shrink-0 transition-transform duration-300 group-hover:scale-110">
+                            <x-icon name="cog-6-tooth" class="h-5 w-5" />
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-base leading-snug">Administration</h3>
+                        <p class="text-xs text-slate-450 leading-relaxed">Création de comptes utilisateurs, paramétrages système du module IA, gestion des facultés et filières académiques.</p>
+                    </div>
+                    <span class="text-xs font-bold text-slate-600 inline-flex items-center gap-1 mt-4 group-hover:underline">Se connecter →</span>
+                </a>
+
             </div>
         </div>
     </section>
 
-    {{-- ANALYSE IA --}}
+    {{-- STEPS TIMELINE PROCEDURE --}}
+    <section class="py-16 bg-slate-50 border-b border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 space-y-2">
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">Le Parcours Académique en 4 Étapes</h2>
+                <p class="text-slate-400 max-w-xl mx-auto text-xs font-medium">Un processus connecté, collaboratif et transparent géré du début à la fin de votre cycle de recherche.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+                
+                {{-- Step 1 --}}
+                <div class="glass-card bg-white rounded-2xl p-6 border border-slate-150 text-center relative group">
+                    <div class="w-10 h-10 bg-primary/10 text-primary border border-primary/20 font-black rounded-full flex items-center justify-center text-sm mx-auto mb-4 shrink-0">1</div>
+                    <h3 class="font-extrabold text-slate-800 text-sm mb-1.5">Soumission du Sujet</h3>
+                    <p class="text-xs text-slate-450 leading-relaxed">L'étudiant renseigne sa fiche de proposition structurée (contextes, question de recherche, objectifs, références) et valide.</p>
+                    <span class="inline-flex items-center mt-3 text-[10px] font-bold uppercase tracking-wider text-primary">Étudiant</span>
+                </div>
+
+                {{-- Step 2 --}}
+                <div class="glass-card bg-white rounded-2xl p-6 border border-slate-150 text-center relative group">
+                    <div class="w-10 h-10 bg-green-50 text-green-700 border border-green-100 font-black rounded-full flex items-center justify-center text-sm mx-auto mb-4 shrink-0">2</div>
+                    <h3 class="font-extrabold text-slate-800 text-sm mb-1.5">Arbitrage Académique</h3>
+                    <p class="text-xs text-slate-450 leading-relaxed">La direction du département examine la recevabilité, valide le sujet et assigne officiellement le directeur principal.</p>
+                    <span class="inline-flex items-center mt-3 text-[10px] font-bold uppercase tracking-wider text-green-600">Chef de Filière</span>
+                </div>
+
+                {{-- Step 3 --}}
+                <div class="glass-card bg-white rounded-2xl p-6 border border-slate-150 text-center relative group">
+                    <div class="w-10 h-10 bg-blue-50 text-blue-700 border border-blue-100 font-black rounded-full flex items-center justify-center text-sm mx-auto mb-4 shrink-0">3</div>
+                    <h3 class="font-extrabold text-slate-800 text-sm mb-1.5">Livrables & Analyse IA</h3>
+                    <p class="text-xs text-slate-450 leading-relaxed">Dépôt du PDF par jalons de rédaction. Chaque fichier fait l'objet d'un rapport de détection d'intégrité IA et de plagiat.</p>
+                    <span class="inline-flex items-center mt-3 text-[10px] font-bold uppercase tracking-wider text-blue-600">Système TFC Manager</span>
+                </div>
+
+                {{-- Step 4 --}}
+                <div class="glass-card bg-white rounded-2xl p-6 border border-slate-150 text-center relative group">
+                    <div class="w-10 h-10 bg-amber-50 text-amber-700 border border-amber-100 font-black rounded-full flex items-center justify-center text-sm mx-auto mb-4 shrink-0">4</div>
+                    <h3 class="font-extrabold text-slate-800 text-sm mb-1.5">Autorisation de Défense</h3>
+                    <p class="text-xs text-slate-450 leading-relaxed">L'encadreur valide le manuscrit final en accordant le "Feu Vert" administratif pour planifier l'examen de soutenance devant le jury.</p>
+                    <span class="inline-flex items-center mt-3 text-[10px] font-bold uppercase tracking-wider text-amber-600">Directeur d'Études</span>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    {{-- INTEGRITY IA SECTION --}}
     <section class="py-16 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">V&eacute;rification par analyse IA</h2>
-                    <p class="text-gray-500 mb-6 leading-relaxed">
-                        Chaque m&eacute;moire d&eacute;pos&eacute; est automatiquement soumis &agrave; un module de d&eacute;tection de contenu
-                        g&eacute;n&eacute;r&eacute; par intelligence artificielle. Le rapport d'analyse est mis &agrave; disposition
-                        de l'enseignant directeur et du Chef de Fili&egrave;re.
+                
+                <!-- Info Left -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-tight">Module d'Analyse d'Intégrité IA</h2>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Pour garantir l'excellence et l'authenticité des recherches de l'Université Don Bosco, chaque manuscrit déposé est analysé par nos algorithmes afin d'évaluer le taux d'utilisation de l'intelligence artificielle générative et de similarité textuelle.
                     </p>
-                    <div class="space-y-3">
-                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Grille d'interpr&eacute;tation</h3>
+                    
+                    <div class="space-y-3.5 pt-2">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Classification de Risque</h3>
+                        
                         <div class="flex items-center gap-3">
-                            <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full w-16 text-center">&lt; 20%</span>
-                            <span class="text-sm text-gray-600">Risque faible &mdash; Contenu consid&eacute;r&eacute; comme original</span>
+                            <span class="bg-green-50 text-green-700 text-xs font-extrabold px-3 py-1.5 rounded-lg border border-green-200 shrink-0 w-20 text-center">&lt; 20%</span>
+                            <span class="text-xs text-slate-500 font-medium">Conforme : Taux de rédaction humaine original élevé.</span>
                         </div>
+                        
                         <div class="flex items-center gap-3">
-                            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1.5 rounded-full w-16 text-center">20-50%</span>
-                            <span class="text-sm text-gray-600">Risque mod&eacute;r&eacute; &mdash; V&eacute;rification recommand&eacute;e</span>
+                            <span class="bg-amber-50 text-amber-700 text-xs font-extrabold px-3 py-1.5 rounded-lg border border-amber-200 shrink-0 w-20 text-center">20% - 50%</span>
+                            <span class="text-xs text-slate-500 font-medium">Risque modéré : Vérification et révision de style recommandées.</span>
                         </div>
+                        
                         <div class="flex items-center gap-3">
-                            <span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-full w-16 text-center">&gt; 50%</span>
-                            <span class="text-sm text-gray-600">Risque &eacute;lev&eacute; &mdash; Entretien avec l'&eacute;tudiant requis</span>
+                            <span class="bg-red-50 text-red-700 text-xs font-extrabold px-3 py-1.5 rounded-lg border border-red-200 shrink-0 w-20 text-center">&gt; 50%</span>
+                            <span class="text-xs text-slate-500 font-medium">Alerte critique : Entretien pédagogique avec le Directeur requis.</span>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                    <h3 class="font-semibold text-gray-700 text-sm uppercase tracking-wide mb-4">Exemple de rapport d'analyse</h3>
+
+                <!-- Graphic Mockup Right -->
+                <div class="bg-slate-50 border border-slate-200/60 rounded-3xl p-6 lg:p-8 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-primary-light/5 rounded-full blur-xl"></div>
+                    <h3 class="font-extrabold text-slate-700 text-xs uppercase tracking-wider mb-5 flex items-center gap-1.5">
+                        <x-icon name="cpu-chip" class="h-5 w-5 text-blue-500" />
+                        <span>Aperçu du Rapport de Conformité</span>
+                    </h3>
+                    
                     <div class="space-y-4">
-                        <div class="bg-white rounded-lg p-4 border">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-700">Score de contenu IA</span>
-                                <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">12%</span>
+                        <!-- Stat 1 -->
+                        <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-sm space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-700">Contenu Généré par IA (GPT/Claude)</span>
+                                <span class="bg-green-50 text-green-700 text-xs font-black px-2.5 py-0.5 rounded-lg border border-green-100">12%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 12%"></div>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg p-4 border">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-700">Score de similarit&eacute;</span>
-                                <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full">23%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 23%"></div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full transition-all duration-1000" style="width: 12%"></div>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 text-center mt-2">Analyse effectu&eacute;e automatiquement lors du d&eacute;p&ocirc;t</p>
+
+                        <!-- Stat 2 -->
+                        <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-sm space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-700">Taux de Similarité Académique (Plagiat)</span>
+                                <span class="bg-amber-50 text-amber-700 text-xs font-black px-2.5 py-0.5 rounded-lg border border-amber-100">23%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-amber-500 h-2 rounded-full transition-all duration-1000" style="width: 23%"></div>
+                            </div>
+                        </div>
+                        
+                        <p class="text-[10px] text-slate-400 text-center font-semibold uppercase tracking-wider pt-2">
+                            Analyse instantanée générée lors du dépôt du livrable PDF
+                        </p>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
-    {{-- INFORMATIONS PRATIQUES --}}
-    <section class="bg-blue-800 py-12">
+    {{-- INFORMATION GUIDELINES --}}
+    <section class="bg-gradient-to-r from-slate-900 via-primary-dark to-slate-900 py-12 text-slate-300">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white/10 rounded-xl p-6 border border-white/10">
-                <h2 class="text-lg font-semibold text-white mb-3">Informations pratiques</h2>
-                <ul class="space-y-2 text-blue-100 text-sm">
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+                <h3 class="text-sm font-extrabold text-accent uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                    <x-icon name="information-circle" class="h-5 w-5 text-accent" />
+                    <span>Informations Générales & Instructions</span>
+                </h3>
+                
+                <ul class="space-y-3 text-xs leading-relaxed text-slate-350">
                     <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-yellow-300 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
-                        <span>Les &eacute;tudiants doivent s'inscrire avec leur <strong class="text-white">matricule universitaire</strong> pour acc&eacute;der &agrave; la plateforme.</span>
+                        <span class="text-accent shrink-0 font-bold">•</span>
+                        <span><strong>Étudiants :</strong> Assurez-vous de disposer de vos identifiants d'inscription et de votre matricule UDBL pour activer votre accès personnel.</span>
                     </li>
                     <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-yellow-300 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
-                        <span>Les comptes enseignants et chefs de fili&egrave;re sont cr&eacute;&eacute;s par l'administration. Contactez votre facult&eacute; si n&eacute;cessaire.</span>
+                        <span class="text-accent shrink-0 font-bold">•</span>
+                        <span><strong>Directeurs :</strong> Les habilitations d'accès enseignant sont configurées par le département informatique de votre faculté.</span>
                     </li>
                     <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-yellow-300 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
-                        <span>Les fichiers accept&eacute;s sont au format <strong class="text-white">PDF uniquement</strong>.</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-yellow-300 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
-                        <span>En cas de probl&egrave;me technique, contactez l'administration &agrave; <strong class="text-white">info@udbl.ac.cd</strong>.</span>
+                        <span class="text-accent shrink-0 font-bold">•</span>
+                        <span><strong>Formats Requis :</strong> Seuls les documents en format <strong class="text-white">PDF</strong> structurés de manière académique sont pris en charge.</span>
                     </li>
                 </ul>
             </div>
@@ -246,39 +326,43 @@
     </section>
 
     {{-- FOOTER --}}
-    <footer class="bg-gray-900 text-gray-400 py-10">
+    <footer class="bg-slate-950 text-slate-400 py-12 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-9 w-9 object-contain">
-                        <span class="text-base font-bold text-white">UDBL TFC Manager</span>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-10 w-10 object-contain bg-white rounded-full p-0.5">
+                        <span class="text-base font-extrabold text-white tracking-wide">UDBL TFC Manager</span>
                     </div>
-                    <p class="text-sm leading-relaxed">
-                        Plateforme interne de gestion des Travaux de Fin de Cycle &mdash;
-                        Universit&eacute; Don Bosco de Lubumbashi.
+                    <p class="text-xs leading-relaxed max-w-sm">
+                        Système intégré de régulation, d'audit d'intégrité et d'archivage des Travaux de Fin de Cycle de l'Université Don Bosco de Lubumbashi.
                     </p>
                 </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-3 text-sm">Facult&eacute;s</h4>
-                    <ul class="space-y-1.5 text-sm">
+                
+                <div class="space-y-3">
+                    <h4 class="text-white font-extrabold text-xs uppercase tracking-wider">Facultés de rattachement</h4>
+                    <ul class="space-y-1.5 text-xs">
                         <li>ESIS &mdash; Sciences Informatiques</li>
-                        <li>ECOPO &mdash; &Eacute;conomie &amp; Finance</li>
+                        <li>ECOPO &mdash; Économie &amp; Finance</li>
                         <li>KANSEBULA &mdash; Sciences Humaines</li>
-                        <li>THEOLOGICUM &mdash; Th&eacute;ologie</li>
+                        <li>THEOLOGICUM &mdash; Théologie</li>
                     </ul>
                 </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-3 text-sm">Contact</h4>
-                    <ul class="space-y-1.5 text-sm">
-                        <li>Lubumbashi, R&eacute;publique D&eacute;mocratique du Congo</li>
-                        <li>Universit&eacute; Don Bosco</li>
-                        <li>info@udbl.ac.cd</li>
+                
+                <div class="space-y-3">
+                    <h4 class="text-white font-extrabold text-xs uppercase tracking-wider">Contact & Support</h4>
+                    <ul class="space-y-1.5 text-xs">
+                        <li>Lubumbashi, République Démocratique du Congo</li>
+                        <li>Université Don Bosco</li>
+                        <li class="font-bold text-accent">info@udbl.ac.cd</li>
                     </ul>
                 </div>
+
             </div>
-            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-xs text-gray-500">
-                &copy; {{ date('Y') }} Universit&eacute; Don Bosco de Lubumbashi &mdash; Plateforme TFC Manager. Usage interne.
+            
+            <div class="border-t border-slate-900 mt-10 pt-6 text-center text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+                &copy; {{ date('Y') }} Université Don Bosco de Lubumbashi &mdash; Tous droits réservés. Usage interne et exclusif.
             </div>
         </div>
     </footer>

@@ -11,7 +11,9 @@ use App\Notifications\MilestoneSubmitted as MilestoneSubmittedNotification;
 use App\Services\AiDetectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ThesisFileController extends Controller
 {
@@ -20,12 +22,13 @@ class ThesisFileController extends Controller
     ) {}
 
     /**
-     * L'étudiant dépose son PDF.
+     * L'étudiant dépose son PDF (version jury ou finale).
+     * Les fichiers sont stockés dans le disk privé secure_thesis.
      */
     public function upload(Request $request)
     {
         $request->validate([
-            'pdf' => 'required|file|mimes:pdf|mimetypes:application/pdf|max:20480', // Max 20 MB
+            'pdf'          => 'required|file|mimes:pdf|mimetypes:application/pdf|max:20480', // Max 20 MB
             'version_type' => 'required|in:jury,final',
         ]);
 
@@ -38,44 +41,50 @@ class ThesisFileController extends Controller
 
         // Vérifier si un dépôt final est autorisé
         if ($request->version_type === 'final') {
-            $hasDefenseValidation = $subject->defense_validated ?? false;
-            if (!$hasDefenseValidation) {
+            if (!($subject->defense_validated ?? false)) {
                 return back()->with('error', 'Le dépôt final n\'est possible qu\'après validation de la soutenance.');
+            }
+
+            if ($subject->financial_status !== 'validated') {
+                return back()->with('error', 'Le dépôt final est bloqué : votre situation financière n\'a pas encore été validée par l\'Appariteur.');
             }
         }
 
         // Supprimer l'ancienne version du même type (1 seul fichier par type autorisé)
         $existingFile = ThesisFile::where('subject_id', $subject->id)
             ->where('version_type', $request->version_type)
+            ->whereNull('milestone_id')
             ->first();
 
         if ($existingFile) {
-            Storage::disk('public')->delete($existingFile->file_path);
-            // Supprimer le rapport IA associé s'il existe
+            Storage::disk('secure_thesis')->delete($existingFile->file_path);
             if ($existingFile->aiReport) {
                 $existingFile->aiReport->delete();
             }
             $existingFile->delete();
         }
 
-        // Stocker le fichier
-        $file = $request->file('pdf');
-        $path = $file->store('tfc_files', 'public');
+        // Stocker le fichier dans le disk PRIVÉ (jamais exposé directement via HTTP)
+        $file      = $request->file('pdf');
+        $filename  = 'thesis_' . $subject->id . '_' . $request->version_type . '_' . time() . '.pdf';
+        $path      = $file->storeAs('', $filename, 'secure_thesis');
 
         $thesisFile = ThesisFile::create([
-            'subject_id' => $subject->id,
-            'file_path' => $path,
+            'subject_id'    => $subject->id,
+            'file_path'     => $filename,
             'original_name' => $file->getClientOriginalName(),
-            'version_type' => $request->version_type,
+            'version_type'  => $request->version_type,
         ]);
 
-        // Lancer l'analyse IA pour toutes les versions (jury et finale)
-        try {
-            $this->aiDetectionService->analyze($thesisFile);
-        } catch (\Exception $e) {
-            // Log l'erreur mais ne bloque pas l'upload
-            \Log::error('Erreur analyse IA: ' . $e->getMessage());
-        }
+        // Audit log — TELEVERSEMENT_PDF (obligatoire selon section 4 du cahier des charges)
+        ActivityLog::log(
+            'TELEVERSEMENT_PDF',
+            'L\'étudiant ' . $user->name . ' a déposé la version "' . strtoupper($request->version_type) . '" du sujet #' . $subject->id . ' ("' . $subject->title . '")',
+            $thesisFile
+        );
+
+        // NOTE: L'analyse IA n'est PAS lancée automatiquement.
+        // Le directeur (Enseignant) doit la demander explicitement via requestAiAnalysis().
 
         // Notifier l'enseignant encadreur
         $thesisFile->load('subject.student', 'subject.teacher');
@@ -91,13 +100,12 @@ class ThesisFileController extends Controller
     }
 
     /**
-     * Télécharger un fichier TFC.
+     * Télécharger / streamer un fichier TFC depuis le disk privé.
+     * Contrôle d'accès : étudiant propriétaire, directeur, CP du département, Admin.
      */
-    public function download(ThesisFile $thesisFile)
+    public function download(ThesisFile $thesisFile): StreamedResponse
     {
-        $user = Auth::user();
-
-        // Vérifier les droits d'accès
+        $user    = Auth::user();
         $subject = $thesisFile->subject;
 
         $canDownload = $user->hasRole('Admin')
@@ -106,17 +114,19 @@ class ThesisFileController extends Controller
             || ($user->hasRole('Chef de département') && $subject->department_id === $user->department_id);
 
         if (!$canDownload) {
-            abort(403, 'Accès non autorisé.');
+            abort(403, 'Accès non autorisé au document.');
         }
 
-        return Storage::disk('public')->download(
+        // Streamer depuis le disk privé
+        return Storage::disk('secure_thesis')->download(
             $thesisFile->file_path,
-            $thesisFile->original_name
+            $thesisFile->original_name ?? 'document.pdf'
         );
     }
 
     /**
      * Upload d'un fichier TFC lié à un jalon.
+     * Stockage dans le disk privé secure_thesis.
      */
     public function uploadForMilestone(Request $request, Milestone $milestone)
     {
@@ -131,39 +141,55 @@ class ThesisFileController extends Controller
             abort(403, 'Accès non autorisé.');
         }
 
-        // Supprimer l'ancienne version pour ce jalon s'il y en a une
-        $existing = ThesisFile::where('milestone_id', $milestone->id)->first();
-        if ($existing) {
-            Storage::disk('public')->delete($existing->file_path);
+        // Vérification séquentielle stricte des jalons
+        if ($milestone->sequence_number !== null) {
+            $previousMilestone = $milestone->subject->milestones()
+                ->where('sequence_number', '<', $milestone->sequence_number)
+                ->orderBy('sequence_number', 'desc')
+                ->first();
+
+            if ($previousMilestone && $previousMilestone->status !== 'validated') {
+                return back()->with('error', 'Vous devez d\'abord faire valider le jalon précédent (' . $previousMilestone->title . ').');
+            }
+        }
+
+        // Supprimer toutes les anciennes versions pour ce jalon (soumission + annotations)
+        $existingFiles = ThesisFile::where('milestone_id', $milestone->id)->get();
+        foreach ($existingFiles as $existing) {
+            Storage::disk('secure_thesis')->delete($existing->file_path);
             if ($existing->aiReport) {
                 $existing->aiReport->delete();
             }
             $existing->delete();
         }
 
-        $file = $request->file('pdf');
-        $path = $file->store('tfc_files', 'public');
+        $file     = $request->file('pdf');
+        $filename = 'jalon_' . $milestone->id . '_' . time() . '.pdf';
+        $path     = $file->storeAs('', $filename, 'secure_thesis');
 
-        // version_type: on réutilise l'enum existant pour compatibilité
         $thesisFile = ThesisFile::create([
-            'subject_id' => $milestone->subject_id,
-            'file_path' => $path,
+            'subject_id'    => $milestone->subject_id,
+            'file_path'     => $filename,
             'original_name' => $file->getClientOriginalName(),
-            'version_type' => 'jury',
-            'milestone_id' => $milestone->id,
+            'version_type'  => 'jury',
+            'milestone_id'  => $milestone->id,
         ]);
 
-        // Lancer l'analyse IA sans bloquer l'utilisateur
-        try {
-            $this->aiDetectionService->analyze($thesisFile);
-        } catch (\Exception $e) {
-            \Log::error('Erreur analyse IA (milestone upload): ' . $e->getMessage());
-        }
+        // Audit log — TELEVERSEMENT_PDF pour jalon
+        ActivityLog::log(
+            'TELEVERSEMENT_PDF',
+            'L\'étudiant ' . $user->name . ' a soumis un PDF pour le jalon "' . $milestone->title . '" (Sujet #' . $milestone->subject_id . ')',
+            $thesisFile
+        );
+
+        // NOTE: L'analyse IA n'est PAS lancée automatiquement.
+        // Le directeur (Enseignant) doit la demander explicitement.
 
         // Mettre à jour le jalon
         $milestone->update([
-            'submission_date' => now(),
-            'status' => 'submitted',
+            'submission_date'      => now(),
+            'status'               => 'submitted',
+            'submission_type'      => 'pdf',
         ]);
 
         // Notifier l'enseignant encadreur
@@ -171,8 +197,37 @@ class ThesisFileController extends Controller
             $milestone->subject->teacher->notify(new MilestoneSubmittedNotification($milestone));
         }
 
-        ActivityLog::log('file_uploaded_for_milestone', 'Fichier déposé pour jalon', $thesisFile);
-
         return redirect()->back()->with('success', 'Fichier soumis pour le jalon.');
+    }
+
+    /**
+     * Le directeur (Enseignant) demande l'analyse IA d'un fichier TFC.
+     * Seul le directeur du sujet peut déclencher cette analyse.
+     */
+    public function requestAiAnalysis(ThesisFile $thesisFile)
+    {
+        $user = Auth::user();
+        $subject = $thesisFile->subject;
+
+        // Seul le directeur (enseignant encadreur) du sujet peut demander l'analyse
+        if (!$user->hasRole('Enseignant') || $subject->teacher_id !== $user->id) {
+            abort(403, 'Seul le directeur de ce sujet peut demander l\'analyse IA.');
+        }
+
+        // Si un rapport existe déjà, le supprimer pour relancer l'analyse
+        if ($thesisFile->aiReport) {
+            $thesisFile->aiReport->delete();
+        }
+
+        // Lancer l'analyse IA de façon asynchrone
+        \App\Jobs\AnalyzeThesisFileAi::dispatch($thesisFile);
+
+        ActivityLog::log(
+            'DEMANDE_ANALYSE_IA',
+            'Le directeur ' . $user->name . ' a demandé l\'analyse IA du fichier "' . $thesisFile->original_name . '" (Sujet #' . $subject->id . ')',
+            $thesisFile
+        );
+
+        return back()->with('success', 'Analyse IA lancée. Les résultats seront disponibles sous peu.');
     }
 }

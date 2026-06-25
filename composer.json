@@ -7,8 +7,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "doctrine/dbal": "^4.4",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "php-ai/php-ml": "^0.10.0",
         "smalot/pdfparser": "^2.12",
         "spatie/laravel-permission": "^7.0"
     },
@@ -42,6 +44,22 @@
             "@php artisan migrate --force",
             "npm install",
             "npm run build"
+        ],
+        "local-setup": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate --ansi",
+            "@php artisan migrate:fresh --seed --force",
+            "@php artisan storage:link",
+            "npm install --no-audit --no-fund",
+            "@dev"
+        ],
+        "init-and-serve": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate --ansi",
+            "@php artisan migrate:fresh --seed --force",
+            "@php artisan storage:link",
+            "@php artisan serve --host=127.0.0.1 --port=8000"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Milestone;
 use App\Models\Subject;
+use App\Models\ThesisFile;
 use App\Notifications\MilestoneAssigned;
-use App\Notifications\MilestoneSubmitted as MilestoneSubmittedNotif;
 use App\Notifications\MilestoneValidated as MilestoneValidatedNotif;
 use App\Notifications\MilestoneRejected as MilestoneRejectedNotif;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class MilestoneController extends Controller
 {
@@ -21,7 +23,6 @@ class MilestoneController extends Controller
     {
         $user = Auth::user();
 
-        // Vérifier droits: enseignant responsable ou Chef de département de la filière
         $allowed = ($user->hasRole('Enseignant') && $subject->teacher_id === $user->id)
             || ($user->hasRole('Chef de département') && $subject->department_id === $user->department_id);
 
@@ -42,7 +43,6 @@ class MilestoneController extends Controller
             'status' => 'pending',
         ]);
 
-        // Notifier l'étudiant
         if ($subject->student) {
             $subject->student->notify(new MilestoneAssigned($milestone));
         }
@@ -50,36 +50,6 @@ class MilestoneController extends Controller
         ActivityLog::log('created', 'Jalon créé', $milestone);
 
         return back()->with('success', 'Jalon créé et l\'étudiant en a été informé.');
-    }
-
-    /**
-     * L'étudiant soumet la partie demandée pour un jalon.
-     */
-    public function submit(Request $request, Milestone $milestone)
-    {
-        $user = Auth::user();
-
-        if (!$user->hasRole('Etudiant') || $milestone->subject->student_id !== $user->id) {
-            abort(403, 'Droits insuffisants pour soumettre ce jalon.');
-        }
-
-        if (!in_array($milestone->status, ['pending', 'rejected'])) {
-            return back()->with('info', 'Cette étape n\'est pas ouverte pour soumission.');
-        }
-
-        $milestone->update([
-            'submission_date' => now(),
-            'status' => 'submitted',
-        ]);
-
-        // Notifier l'enseignant encadreur
-        if ($milestone->subject->teacher) {
-            $milestone->subject->teacher->notify(new MilestoneSubmittedNotif($milestone));
-        }
-
-        ActivityLog::log('milestone_submitted', 'Jalon soumis par l\'étudiant', $milestone);
-
-        return back()->with('success', 'Partie déposée. Le professeur en sera informé.');
     }
 
     /**

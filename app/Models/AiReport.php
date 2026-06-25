@@ -12,6 +12,7 @@ class AiReport extends Model
 
     protected $fillable = [
         'thesis_file_id',
+        'milestone_id',
         'similarity_score',
         'ai_score',
         'details',
@@ -32,6 +33,14 @@ class AiReport extends Model
     public function thesisFile(): BelongsTo
     {
         return $this->belongsTo(ThesisFile::class);
+    }
+
+    /**
+     * Le jalon analysé (pour soumission texte).
+     */
+    public function milestone(): BelongsTo
+    {
+        return $this->belongsTo(Milestone::class);
     }
 
     /**

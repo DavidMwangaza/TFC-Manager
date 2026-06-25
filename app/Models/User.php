@@ -18,8 +18,11 @@ class User extends Authenticatable
         'email',
         'password',
         'matricule',
+        'faculty_id',
         'department_id',
         'is_blocked',
+        'avatar',
+        'biographie',
     ];
 
     protected $attributes = [
@@ -65,10 +68,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Sujets encadrés par l'enseignant.
+     * Sujets encadrés par l'enseignant (directeur principal).
      */
     public function supervisedSubjects(): HasMany
     {
         return $this->hasMany(Subject::class, 'teacher_id');
+    }
+
+
+    /**
+     * Faculté de l'utilisateur (pour le Doyen).
+     */
+    public function faculty(): BelongsTo
+    {
+        return $this->belongsTo(Faculty::class);
     }
 }

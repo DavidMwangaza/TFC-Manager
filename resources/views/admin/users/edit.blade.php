@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ route('admin.users.index') }}" class="text-gray-500 hover:text-gray-700">
+            <a href="{{ route('admin.users.index') }}" class="text-slate-500 hover:text-slate-700">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
             </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 Modifier — {{ $user->name }}
             </h2>
         </div>
@@ -35,33 +35,33 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {{-- Nom --}}
                                 <div>
-                                    <label for="name" class="block text-sm font-medium text-gray-700">Nom complet <span class="text-red-500">*</span></label>
+                                    <label for="name" class="block text-sm font-medium text-slate-700">Nom complet <span class="text-red-500">*</span></label>
                                     <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
-                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                           class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                     @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
 
                                 {{-- Email --}}
                                 <div>
-                                    <label for="email" class="block text-sm font-medium text-gray-700">Adresse email <span class="text-red-500">*</span></label>
+                                    <label for="email" class="block text-sm font-medium text-slate-700">Adresse email <span class="text-red-500">*</span></label>
                                     <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
-                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                           class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                     @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
 
                                 {{-- Matricule --}}
                                 <div>
-                                    <label for="matricule" class="block text-sm font-medium text-gray-700">Matricule</label>
+                                    <label for="matricule" class="block text-sm font-medium text-slate-700">Matricule</label>
                                     <input type="text" name="matricule" id="matricule" value="{{ old('matricule', $user->matricule) }}"
-                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                           class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                     @error('matricule') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
 
                                 {{-- Rôle --}}
                                 <div>
-                                    <label for="role" class="block text-sm font-medium text-gray-700">Rôle <span class="text-red-500">*</span></label>
+                                    <label for="role" class="block text-sm font-medium text-slate-700">Rôle <span class="text-red-500">*</span></label>
                                     <select name="role" id="role" required
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                            class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                         @foreach($roles as $role)
                                             <option value="{{ $role->name }}" {{ $user->hasRole($role->name) ? 'selected' : '' }}>{{ $role->name }}</option>
                                         @endforeach
@@ -71,9 +71,9 @@
 
                                 {{-- Département --}}
                                 <div class="md:col-span-2">
-                                    <label for="department_id" class="block text-sm font-medium text-gray-700">Filière</label>
+                                    <label for="department_id" class="block text-sm font-medium text-slate-700">Filière</label>
                                     <select name="department_id" id="department_id"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                            class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                         <option value="">— Aucun —</option>
                                         @foreach($departments->groupBy(fn($d) => $d->faculty?->name ?? 'Sans faculté') as $faculty => $depts)
                                             <optgroup label="{{ $faculty }}">
@@ -90,7 +90,7 @@
                             </div>
 
                             {{-- Infos complémentaires --}}
-                            <div class="bg-gray-50 rounded-md p-4 text-sm text-gray-600">
+                            <div class="bg-slate-50 rounded-md p-4 text-sm text-slate-600">
                                 <p><strong>Inscrit le :</strong> {{ $user->created_at->format('d/m/Y à H:i') }}</p>
                                 <p><strong>Dernière modification :</strong> {{ $user->updated_at->format('d/m/Y à H:i') }}</p>
                                 <p><strong>Statut :</strong>
@@ -103,7 +103,7 @@
                             </div>
 
                             <div class="flex justify-end gap-3 pt-4 border-t">
-                                <a href="{{ route('admin.users.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition">
+                                <a href="{{ route('admin.users.index') }}" class="px-4 py-2 bg-slate-200 text-slate-700 text-sm rounded-md hover:bg-slate-300 transition">
                                     Annuler
                                 </a>
                                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition">

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight inline-flex items-center gap-2">
+            <h2 class="font-semibold text-xl text-slate-800 leading-tight inline-flex items-center gap-2">
                 <x-icon name="calendar" class="w-6 h-6" /> Années Académiques
             </h2>
             <a href="{{ route('admin.academic-years.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition">
@@ -31,36 +31,36 @@
 
                     <div class="bg-white shadow-sm rounded-lg overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Année</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Début</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fin</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sujets</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Année</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Début</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Fin</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Sujets</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Statut</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-200">
+                                <tbody class="divide-y divide-slate-200">
                                     @forelse($years as $year)
-                                        <tr class="hover:bg-gray-50 {{ $year->is_current ? 'bg-blue-50' : '' }}">
-                                            <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                        <tr class="hover:bg-slate-50 {{ $year->is_current ? 'bg-blue-50' : '' }}">
+                                            <td class="px-4 py-3 text-sm font-medium text-slate-900">
                                                 {{ $year->name }}
                                                 @if($year->is_current)
                                                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">En cours</span>
                                                 @endif
                                             </td>
-                                            <td class="px-4 py-3 text-sm text-gray-600">{{ $year->start_date->format('d/m/Y') }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-600">{{ $year->end_date->format('d/m/Y') }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-600">{{ $year->subjects_count }}</td>
+                                            <td class="px-4 py-3 text-sm text-slate-600">{{ $year->start_date->format('d/m/Y') }}</td>
+                                            <td class="px-4 py-3 text-sm text-slate-600">{{ $year->end_date->format('d/m/Y') }}</td>
+                                            <td class="px-4 py-3 text-sm text-slate-600">{{ $year->subjects_count }}</td>
                                             <td class="px-4 py-3 text-sm">
                                                 @if($year->is_closed)
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"><x-icon name="lock-closed" class="w-3.5 h-3.5" /> Clôturée</span>
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800"><x-icon name="lock-closed" class="w-3.5 h-3.5" /> Clôturée</span>
                                                 @elseif($year->is_current)
                                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><x-icon name="check-circle" class="w-3.5 h-3.5" /> Active</span>
                                                 @else
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><x-icon name="clock" class="w-3.5 h-3.5" /> Inactive</span>
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800"><x-icon name="clock" class="w-3.5 h-3.5" /> Inactive</span>
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-sm text-right">
@@ -101,7 +101,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                                            <td colspan="6" class="px-4 py-8 text-center text-slate-500">
                                                 Aucune année académique configurée.
                                                 <a href="{{ route('admin.academic-years.create') }}" class="text-blue-600 hover:underline">Créer la première</a>
                                             </td>
