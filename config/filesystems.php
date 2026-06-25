@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Disk sécurisé pour les PDF des mémoires — JAMAIS exposé via HTTP
+        // Accès uniquement via streaming contrôlé (ThesisFileController::stream)
+        'secure_thesis' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/secure_thesis'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

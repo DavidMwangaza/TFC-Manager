@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight inline-flex items-center gap-2">
+            <h2 class="font-semibold text-xl text-slate-800 leading-tight inline-flex items-center gap-2">
                 <x-icon name="building-library" class="w-6 h-6" /> Facultés & Filières
             </h2>
             <a href="{{ route('admin.departments.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition">
@@ -36,27 +36,27 @@
                                 <p class="text-blue-200 text-sm">{{ $depts->count() }} filière(s)</p>
                             </div>
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
+                                <table class="min-w-full divide-y divide-slate-200">
+                                    <thead class="bg-slate-50">
                                         <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisateurs</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sujets</th>
-                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Code</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Nom</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Utilisateurs</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Sujets</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200">
+                                    <tbody class="divide-y divide-slate-200">
                                         @foreach($depts as $dept)
-                                            <tr class="hover:bg-gray-50">
+                                            <tr class="hover:bg-slate-50">
                                                 <td class="px-4 py-3 text-sm">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-gray-100 text-gray-800">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-slate-100 text-slate-800">
                                                         {{ $dept->code }}
                                                     </span>
                                                 </td>
-                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $dept->name }}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">{{ $dept->users_count }}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">{{ $dept->subjects_count }}</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $dept->name }}</td>
+                                                <td class="px-4 py-3 text-sm text-slate-600">{{ $dept->users_count }}</td>
+                                                <td class="px-4 py-3 text-sm text-slate-600">{{ $dept->subjects_count }}</td>
                                                 <td class="px-4 py-3 text-sm text-right">
                                                     <div class="flex justify-end gap-1">
                                                         <a href="{{ route('admin.departments.edit', $dept) }}" class="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 inline-flex items-center gap-1">
@@ -83,7 +83,7 @@
                     @endforeach
 
                     @if($faculties->isEmpty())
-                        <div class="bg-white shadow-sm rounded-lg p-8 text-center text-gray-500">
+                        <div class="bg-white shadow-sm rounded-lg p-8 text-center text-slate-500">
                             Aucune filière configurée.
                             <a href="{{ route('admin.departments.create') }}" class="text-blue-600 hover:underline">Créer la première</a>
                         </div>

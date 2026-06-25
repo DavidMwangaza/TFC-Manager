@@ -10,4 +10,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/chapters/{chapter}/versions', [ChapterVersionApiController::class, 'store']);
     Route::get('/chapters/{chapter}/versions', [ChapterVersionApiController::class, 'index']);
+
+    // Async List for TFCs
+    Route::get('/subjects', [\App\Http\Controllers\Api\SubjectApiController::class, 'index']);
 });

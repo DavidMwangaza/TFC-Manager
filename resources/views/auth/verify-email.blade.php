@@ -1,7 +1,7 @@
 <x-guest-layout>
-    <h2 class="text-center text-lg font-semibold text-gray-700 mb-4">V&eacute;rification de l'e-mail</h2>
+    <h2 class="text-center text-lg font-semibold text-slate-700 mb-4">V&eacute;rification de l'e-mail</h2>
 
-    <div class="mb-4 text-sm text-gray-600">
+    <div class="mb-4 text-sm text-slate-600">
         Merci pour votre inscription ! Avant de commencer, veuillez v&eacute;rifier votre adresse e-mail en cliquant sur le lien que nous venons de vous envoyer. Si vous n'avez pas re&ccedil;u l'e-mail, nous vous en enverrons un autre avec plaisir.
     </div>
 

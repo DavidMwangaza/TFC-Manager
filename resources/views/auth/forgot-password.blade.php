@@ -1,7 +1,7 @@
 <x-guest-layout>
-    <h2 class="text-center text-lg font-semibold text-gray-700 mb-4">Mot de passe oubli&eacute;</h2>
+    <h2 class="text-center text-lg font-semibold text-slate-700 mb-4">Mot de passe oubli&eacute;</h2>
 
-    <div class="mb-4 text-sm text-gray-600">
+    <div class="mb-4 text-sm text-slate-600">
         Vous avez oubli&eacute; votre mot de passe ? Aucun probl&egrave;me. Indiquez-nous votre adresse e-mail et nous vous enverrons un lien de r&eacute;initialisation.
     </div>
 

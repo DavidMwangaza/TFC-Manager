@@ -83,7 +83,10 @@ class MilestoneTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $response = $this->actingAs($student)->post(route('milestones.submit', $milestone));
+        $file = \Illuminate\Http\UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
+        $response = $this->actingAs($student)->post(route('milestones.upload', $milestone), [
+            'pdf' => $file,
+        ]);
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('milestones', [

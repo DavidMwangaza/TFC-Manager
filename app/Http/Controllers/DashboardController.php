@@ -22,10 +22,14 @@ class DashboardController extends Controller
 
         if ($user->hasRole('Admin')) {
             return $this->adminDashboard();
+        } elseif ($user->hasRole('Doyen')) {
+            return $this->doyenDashboard($user);
         } elseif ($user->hasRole('Chef de département')) {
             return $this->cpDashboard($user);
         } elseif ($user->hasRole('Enseignant')) {
             return $this->teacherDashboard($user);
+        } elseif ($user->hasRole('Appariteur')) {
+            return $this->appariteurDashboard($user);
         } else {
             return $this->studentDashboard($user);
         }
@@ -79,7 +83,7 @@ class DashboardController extends Controller
             ->get();
 
         $allSubjects = Subject::where('department_id', $user->department_id)
-            ->with(['student', 'teacher', 'thesisFiles'])
+            ->with(['student', 'teacher', 'thesisFiles', 'defenseSchedule'])
             ->latest()
             ->get();
 
@@ -102,18 +106,24 @@ class DashboardController extends Controller
 
         // Jalons en attente de correction par cet enseignant
         $pendingMilestones = Milestone::where('status', 'submitted')
-            ->whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))
+            ->whereHas('subject', function($q) use ($user) {
+                $q->where('teacher_id', $user->id);
+            })
             ->with(['subject.student', 'thesisFile'])
             ->orderBy('submission_date', 'asc')
             ->get();
 
         // Stats jalons globales pour cet enseignant
+        $subjectFilter = function($q) use ($user) {
+            $q->where('teacher_id', $user->id);
+        };
+
         $milestoneStats = [
-            'total'     => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->count(),
-            'pending'   => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->where('status', 'pending')->count(),
+            'total'     => Milestone::whereHas('subject', $subjectFilter)->count(),
+            'pending'   => Milestone::whereHas('subject', $subjectFilter)->where('status', 'pending')->count(),
             'submitted' => $pendingMilestones->count(),
-            'validated' => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->where('status', 'validated')->count(),
-            'rejected'  => Milestone::whereHas('subject', fn($q) => $q->where('teacher_id', $user->id))->where('status', 'rejected')->count(),
+            'validated' => Milestone::whereHas('subject', $subjectFilter)->where('status', 'validated')->count(),
+            'rejected'  => Milestone::whereHas('subject', $subjectFilter)->where('status', 'rejected')->count(),
         ];
 
         return view('teacher.dashboard', compact('supervisedSubjects', 'pendingMilestones', 'milestoneStats'));
@@ -125,7 +135,7 @@ class DashboardController extends Controller
     private function studentDashboard(User $user)
     {
         $subject = Subject::where('student_id', $user->id)
-            ->with(['teacher', 'thesisFiles.aiReport', 'milestones'])
+            ->with(['teacher', 'thesisFiles.aiReport', 'milestones', 'defenseSchedule'])
             ->first();
 
         // Calcul de la progression des jalons
@@ -141,5 +151,79 @@ class DashboardController extends Controller
         }
 
         return view('student.dashboard', compact('subject', 'milestoneProgress'));
+    }
+
+    /**
+     * Dashboard Doyen.
+     */
+    private function doyenDashboard(User $user)
+    {
+        // On récupère la faculté du Doyen
+        $facultyId = $user->faculty_id;
+
+        if (!$facultyId) {
+            abort(403, 'Vous n\'êtes rattaché à aucune faculté.');
+        }
+
+        $departments = Department::where('faculty_id', $facultyId)->pluck('id');
+
+        $stats = [
+            'total_subjects' => Subject::whereIn('department_id', $departments)->count(),
+            'pending_subjects' => Subject::whereIn('department_id', $departments)->where('status', 'pending')->count(),
+            'validated_subjects' => Subject::whereIn('department_id', $departments)->where('status', 'validated')->count(),
+            'total_students' => User::role('Etudiant')->whereIn('department_id', $departments)->count(),
+            'total_teachers' => User::role('Enseignant')->whereIn('department_id', $departments)->count(),
+        ];
+
+        // Sujets en retard (jalons dont la due_date est dépassée et status != 'validated')
+        $delayedSubjects = Subject::whereIn('department_id', $departments)
+            ->whereHas('milestones', function ($query) {
+                $query->where('due_date', '<', now())
+                      ->where('status', '!=', 'validated');
+            })
+            ->with(['student', 'department', 'teacher'])
+            ->get();
+
+        // Charge par enseignant (top 10)
+        $teachersWorkload = User::role('Enseignant')
+            ->whereIn('department_id', $departments)
+            ->withCount('supervisedSubjects')
+            ->orderByDesc('supervised_subjects_count')
+            ->take(10)
+            ->get();
+
+        // Stats par département pour le graphique
+        $departmentsData = Department::where('faculty_id', $facultyId)
+            ->withCount([
+                'subjects as validated_count' => fn($q) => $q->where('status', 'validated'),
+                'subjects as pending_count' => fn($q) => $q->where('status', 'pending'),
+                'subjects as rejected_count' => fn($q) => $q->where('status', 'rejected'),
+            ])
+            ->get();
+
+        return view('doyen.dashboard', compact('stats', 'delayedSubjects', 'teachersWorkload', 'departmentsData'));
+    }
+
+    /**
+     * Dashboard Appariteur.
+     */
+    private function appariteurDashboard(User $user)
+    {
+        // L'appariteur voit les sujets des étudiants (qui ont déposé un sujet).
+        // On filtre par la faculté si l'appariteur a une faculty_id, sinon tout (cas admin-like)
+        $query = Subject::with(['student', 'department']);
+
+        if ($user->faculty_id) {
+            $query->whereHas('department', function($q) use ($user) {
+                $q->where('faculty_id', $user->faculty_id);
+            });
+        }
+
+        // On peut séparer en listes : en attente de validation financière, et déjà validés.
+        $pendingFinancial = (clone $query)->where('financial_status', 'pending')->latest()->get();
+        $validatedFinancial = (clone $query)->where('financial_status', 'validated')->latest()->take(50)->get();
+        $rejectedFinancial = (clone $query)->where('financial_status', 'rejected')->latest()->take(50)->get();
+
+        return view('appariteur.dashboard', compact('pendingFinancial', 'validatedFinancial', 'rejectedFinancial'));
     }
 }

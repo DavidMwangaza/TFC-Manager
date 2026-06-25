@@ -17,13 +17,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
+
 
 // Archives des travaux défendus (accès public)
 Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
+Route::get('/archives/oai', [ArchiveController::class, 'oaiPmh'])->name('archives.oai');
 Route::get('/archives/{thesisFile}/download', [ArchiveController::class, 'download'])->name('archives.download');
 Route::get('/archives/{thesisFile}/view', [ArchiveController::class, 'view'])->name('archives.view');
 Route::get('/archives/{thesisFile}/file', [ArchiveController::class, 'file'])->name('archives.file');
+
 
 // Dashboard dynamique selon le rôle
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -33,6 +36,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     // Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // === SUJETS (Étudiant) ===
     Route::middleware('role:Etudiant')->group(function () {
@@ -84,12 +88,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/subjects/{subject}/milestones', [MilestoneController::class, 'store'])->name('milestones.store');
         Route::post('/milestones/{milestone}/validate', [MilestoneController::class, 'validateMilestone'])->name('milestones.validate');
         Route::post('/milestones/{milestone}/reject', [MilestoneController::class, 'reject'])->name('milestones.reject');
+        Route::post('/thesis-files/{thesisFile}/feedbacks', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedbacks.store');
     });
 
-    // === SOUMISSION DE JALON (Étudiant) ===
+    // === SOUMISSION DE JALON (Étudiant — PDF uniquement) ===
     Route::middleware('role:Etudiant')->group(function () {
-        Route::post('/milestones/{milestone}/submit', [MilestoneController::class, 'submit'])->name('milestones.submit');
         Route::post('/milestones/{milestone}/upload', [ThesisFileController::class, 'uploadForMilestone'])->name('milestones.upload');
+    });
+
+    // === ANALYSE IA À LA DEMANDE (Enseignant / Directeur uniquement) ===
+    Route::middleware('role:Enseignant')->group(function () {
+        Route::post('/thesis-files/{thesisFile}/request-ai-analysis', [ThesisFileController::class, 'requestAiAnalysis'])->name('thesis.request-ai-analysis');
     });
 
     // === NOTIFICATIONS ===
@@ -98,6 +107,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::delete('/notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
+
+    // === APPARITEUR (Validation Financière) ===
+    Route::middleware('role:Appariteur')->prefix('appariteur')->name('appariteur.')->group(function () {
+        Route::post('/subjects/{subject}/validate-financial', [\App\Http\Controllers\AppariteurController::class, 'validateFinancial'])->name('subjects.validate-financial');
+        Route::post('/subjects/{subject}/reject-financial', [\App\Http\Controllers\AppariteurController::class, 'rejectFinancial'])->name('subjects.reject-financial');
+    });
 
     // =======================================================
     // === ADMINISTRATION (Admin uniquement) ===

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight inline-flex items-center gap-2">
+        <h2 class="font-semibold text-xl text-slate-800 leading-tight inline-flex items-center gap-2">
             <x-icon name="cog-6-tooth" class="w-6 h-6" /> Paramètres du Système
         </h2>
     </x-slot>
@@ -24,18 +24,18 @@
 
                         {{-- Paramètres Généraux --}}
                         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-                            <div class="bg-gray-50 px-6 py-3 border-b">
-                                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Paramètres Généraux</h3>
+                            <div class="bg-slate-50 px-6 py-3 border-b">
+                                <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Paramètres Généraux</h3>
                             </div>
                             <div class="p-6 space-y-4">
                                 @foreach($generalSettings as $setting)
                                     <div>
-                                        <label for="{{ $setting->key }}" class="block text-sm font-medium text-gray-700">{{ $setting->label }}</label>
+                                        <label for="{{ $setting->key }}" class="block text-sm font-medium text-slate-700">{{ $setting->label }}</label>
                                         <input type="text" name="settings[{{ $setting->key }}]" id="{{ $setting->key }}"
                                                value="{{ old("settings.{$setting->key}", $setting->value) }}"
-                                               class="mt-1 block w-full max-w-lg border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                               class="mt-1 block w-full max-w-lg border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                                         @if($setting->description)
-                                            <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                            <p class="mt-1 text-xs text-slate-500">{{ $setting->description }}</p>
                                         @endif
                                     </div>
                                 @endforeach
@@ -44,18 +44,18 @@
 
                         {{-- Échéances --}}
                         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-                            <div class="bg-yellow-50 px-6 py-3 border-b">
-                                <h3 class="text-sm font-semibold text-yellow-800 uppercase tracking-wider">Échéances (Deadlines)</h3>
+                            <div class="bg-amber-50 px-6 py-3 border-b">
+                                <h3 class="text-sm font-semibold text-amber-800 uppercase tracking-wider">Échéances (Deadlines)</h3>
                             </div>
                             <div class="p-6 space-y-4">
                                 @foreach($deadlineSettings as $setting)
                                     <div>
-                                        <label for="{{ $setting->key }}" class="block text-sm font-medium text-gray-700">{{ $setting->label }}</label>
+                                        <label for="{{ $setting->key }}" class="block text-sm font-medium text-slate-700">{{ $setting->label }}</label>
                                         <input type="date" name="settings[{{ $setting->key }}]" id="{{ $setting->key }}"
                                                value="{{ old("settings.{$setting->key}", $setting->value) }}"
-                                               class="mt-1 block w-full max-w-xs border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                               class="mt-1 block w-full max-w-xs border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                                         @if($setting->description)
-                                            <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                            <p class="mt-1 text-xs text-slate-500">{{ $setting->description }}</p>
                                         @endif
                                     </div>
                                 @endforeach
@@ -64,22 +64,22 @@
 
                         {{-- Configuration IA --}}
                         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-                            <div class="bg-purple-50 px-6 py-3 border-b">
-                                <h3 class="text-sm font-semibold text-purple-800 uppercase tracking-wider">Configuration IA (Détection Plagiat/IA)</h3>
+                            <div class="bg-blue-50 px-6 py-3 border-b">
+                                <h3 class="text-sm font-semibold text-blue-800 uppercase tracking-wider">Configuration IA (Détection Plagiat/IA)</h3>
                             </div>
                             <div class="p-6 space-y-4">
                                 @foreach($aiSettings as $setting)
                                     <div>
-                                        <label for="{{ $setting->key }}" class="block text-sm font-medium text-gray-700">{{ $setting->label }}</label>
+                                        <label for="{{ $setting->key }}" class="block text-sm font-medium text-slate-700">{{ $setting->label }}</label>
                                         <div class="flex items-center gap-3 mt-1">
                                             <input type="number" name="settings[{{ $setting->key }}]" id="{{ $setting->key }}"
                                                    value="{{ old("settings.{$setting->key}", $setting->value) }}"
                                                    min="0" max="100"
-                                                   class="block w-24 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                            <span class="text-sm text-gray-500">%</span>
+                                                   class="block w-24 border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            <span class="text-sm text-slate-500">%</span>
                                         </div>
                                         @if($setting->description)
-                                            <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                            <p class="mt-1 text-xs text-slate-500">{{ $setting->description }}</p>
                                         @endif
                                     </div>
                                 @endforeach

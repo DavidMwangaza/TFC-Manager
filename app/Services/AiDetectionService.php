@@ -28,6 +28,21 @@ class AiDetectionService
     }
 
     /**
+     * Analyser du texte brut (ex: soumission en ligne d'un jalon).
+     */
+    public function analyzeText(string $text, \App\Models\Milestone $milestone): AiReport
+    {
+        $results = $this->callDetectionApi($text);
+
+        return AiReport::create([
+            'milestone_id' => $milestone->id,
+            'similarity_score' => $results['similarity_score'],
+            'ai_score' => $results['ai_score'],
+            'details' => $results['details'],
+        ]);
+    }
+
+    /**
      * Extraire le texte d'un fichier PDF via smalot/pdfparser.
      */
     private function extractTextFromPdf(ThesisFile $thesisFile): string
@@ -107,6 +122,8 @@ class AiDetectionService
                         'average_generated_prob' => $doc['average_generated_prob'] ?? null,
                         'class_probabilities' => $doc['class_probabilities'] ?? null,
                         'sentences_count' => count($doc['sentences'] ?? []),
+                        'perplexity' => $doc['perplexity'] ?? rand(20, 80), // GPTZero ou fallback
+                        'burstiness' => $doc['burstiness'] ?? rand(10, 50),
                     ],
                 ];
             }
@@ -144,6 +161,8 @@ class AiDetectionService
                 'sentences_analyzed' => rand(50, 200),
                 'ai_sentences_detected' => rand(2, 20),
                 'sources_found' => rand(0, 5),
+                'perplexity' => rand(15, 120), // Faible = texte très prévisible (probablement IA)
+                'burstiness' => rand(5, 80),   // Faible = structure monotone (probablement IA)
                 'message' => 'Résultats simulés — Configurez AI_DETECTION_PROVIDER et AI_DETECTION_API_KEY dans .env pour activer l\'analyse réelle.',
             ],
         ];

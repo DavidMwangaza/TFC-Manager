@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Response;
+use App\Models\ActivityLog;
 
 class SubjectController extends Controller
 {
@@ -79,8 +80,10 @@ class SubjectController extends Controller
         if ($user->hasRole('Chef de département') && $subject->department_id !== $user->department_id) {
             abort(403, 'Ce sujet ne fait pas partie de votre filière.');
         }
-        if ($user->hasRole('Enseignant') && $subject->teacher_id !== $user->id) {
-            abort(403, 'Vous n\'êtes pas l\'encadreur de ce sujet.');
+        if ($user->hasRole('Enseignant')) {
+            if ($subject->teacher_id !== $user->id) {
+                abort(403, 'Vous n\'êtes pas assigné à ce sujet.');
+            }
         }
 
         $subject->load(['student', 'teacher', 'department', 'academicYear', 'thesisFiles.aiReport']);
@@ -225,6 +228,9 @@ class SubjectController extends Controller
             'academic_year_id'    => AcademicYear::current()?->id,
         ]);
 
+        // Calcul asynchrone de la Similarité Cosinus (Anti-Plagiat TF-IDF)
+        \App\Jobs\AnalyzeSubjectSimilarity::dispatch($subject);
+
         // Notifier le(s) Chef(s) de Département
         $subject->load('student');
         $chefsDept = User::role('Chef de département')
@@ -262,9 +268,28 @@ class SubjectController extends Controller
                 ->withInput();
         }
 
+        // --- Vérification du Quota Enseignant ---
+        $maxStudents = \App\Models\SystemSetting::get('max_students_per_teacher', 5);
+        $currentWorkload = $teacher->supervisedSubjects()->whereIn('status', ['validated'])->count();
+
+        if ($currentWorkload >= $maxStudents) {
+            return back()
+                ->withErrors(['teacher_id' => 'Cet enseignant a atteint le quota maximum d\'étudiants encadrés (' . $maxStudents . '). Veuillez en choisir un autre.'])
+                ->withInput();
+        }
+        // ----------------------------------------
+
         $subject->update([
             'status' => 'validated',
             'teacher_id' => $teacher->id,
+        ]);
+
+        // Audit log obligatoire — VALIDATION_SUJET (prompt §4.1)
+        \App\Models\ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'VALIDATION_SUJET',
+            'description' => 'Le sujet "' . $subject->title . '" (ID #' . $subject->id . ') a été validé et assigné à ' . $teacher->name . ' par le CP ' . Auth::user()->name . '.',
+            'ip_address'  => request()->ip(),
         ]);
 
         // Notifier l'étudiant
@@ -323,12 +348,25 @@ class SubjectController extends Controller
         $request->validate([
             'defense_date' => 'required|date|after:today',
             'defense_room' => 'required|string|max:100',
+            'jury_president' => 'required|string|max:255',
+            'jury_secretary' => 'required|string|max:255',
+            'jury_members' => 'nullable|string|max:1000',
         ]);
 
-        $subject->update([
-            'defense_date' => $request->defense_date,
-            'defense_room' => $request->defense_room,
-        ]);
+        $jury = [
+            'president' => $request->jury_president,
+            'secretary' => $request->jury_secretary,
+            'members'   => $request->jury_members ? array_map('trim', explode(',', $request->jury_members)) : [],
+        ];
+
+        \App\Models\DefenseSchedule::updateOrCreate(
+            ['subject_id' => $subject->id],
+            [
+                'defense_date' => $request->defense_date,
+                'room'         => $request->defense_room,
+                'jury_members' => $jury,
+            ]
+        );
 
         return back()->with('success', 'Date et salle de soutenance enregistrées avec succès.');
     }
@@ -355,10 +393,24 @@ class SubjectController extends Controller
             return back()->with('info', 'La soutenance est déjà autorisée pour ce sujet.');
         }
 
+        // Vérifier que tous les jalons sont validés
+        $totalMilestones = $subject->milestones()->count();
+        $validatedMilestones = $subject->milestones()->where('status', 'validated')->count();
+
+        if ($totalMilestones === 0) {
+            return back()->with('error', 'Aucun jalon n\'a été créé pour ce sujet. Créez au moins un jalon avant d\'autoriser la soutenance.');
+        }
+
+        if ($validatedMilestones < $totalMilestones) {
+            return back()->with('error', 'Tous les jalons doivent être validés avant d\'autoriser la soutenance (' . $validatedMilestones . '/' . $totalMilestones . ' validés).');
+        }
+
         $subject->update([
             'defense_validated' => true,
             'defense_revocation_reason' => null,
         ]);
+
+        ActivityLog::log('OCTROI_FEU_VERT', 'Autorisation de soutenance accordée (Feu Vert) par le directeur', $subject);
 
         // Notifier l'étudiant du Feu Vert
         $subject->load('teacher');
@@ -400,6 +452,8 @@ class SubjectController extends Controller
             'bat_signed_at' => now(),
             'bat_signature_hash' => $signature,
         ]);
+
+        ActivityLog::log('ARCHIVAGE_VERROUILLE', 'Signature du BAT et verrouillage du sujet', $subject);
 
         // Notifier l'étudiant
         if ($subject->student) {

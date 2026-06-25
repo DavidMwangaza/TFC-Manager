@@ -1,3 +1,112 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    /* Palette UDBL en HSL pour compatibilité avec l'opacité */
+    --primary: 220 65% 28%;      /* Bleu UDBL */
+    --primary-light: 220 55% 45%;/* Bleu clair pour le survol */
+    --primary-dark: 220 70% 18%; /* Bleu très sombre */
+    --accent: 45 95% 55%;        /* Or prestigieux */
+    --accent-warm: 15 80% 55%;   /* Orange cuivré */
+    
+    /* Sémantique */
+    --success: 152 60% 40%;
+    --warning: 38 92% 50%;
+    --danger: 0 72% 51%;
+    --info: 200 80% 50%;
+    
+    /* Surfaces */
+    --bg-primary: 220 20% 97%;
+    --bg-card: 0 0% 100%;
+    --bg-elevated: 220 25% 95%;
+}
+
+.dark {
+    --primary: 220 60% 35%;
+    --primary-light: 220 50% 50%;
+    --primary-dark: 220 70% 15%;
+    --bg-primary: 220 20% 10%;
+    --bg-card: 220 15% 15%;
+    --bg-elevated: 220 18% 18%;
+}
+
+@layer components {
+    /* Premium UI Utilities */
+    .hover-lift {
+        @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50;
+    }
+    
+    .glass-card {
+        @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm transition-all duration-300;
+    }
+    
+    .glass-card-dark {
+        @apply bg-slate-900/80 backdrop-blur-md border border-slate-800/50 shadow-md text-white transition-all duration-300;
+    }
+
+    /* Active navigation state */
+    .active-nav-link {
+        @apply bg-primary/10 text-primary font-semibold border-l-4 border-primary;
+    }
+
+    /* Custom scrollbars */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+        @apply bg-slate-100/50 rounded-full;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-slate-300/80 rounded-full hover:bg-slate-400;
+    }
+
+    /* Keyframe classes */
+    .animate-fade-in-up {
+        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-shimmer {
+        background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite linear;
+    }
+
+    .animate-urgent-pulse {
+        animation: urgentPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    @keyframes urgentPulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            transform: scale(1.02);
+        }
+    }
+}

@@ -23,4 +23,13 @@ class Faculty extends Model
     {
         return $this->hasMany(Department::class);
     }
+
+    /**
+     * Les doyens de cette faculté.
+     */
+    public function deans(): HasMany
+    {
+        return $this->hasMany(User::class, 'faculty_id')
+            ->whereHas('roles', fn($q) => $q->where('name', 'Doyen'));
+    }
 }

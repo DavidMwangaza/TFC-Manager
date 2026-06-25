@@ -24,7 +24,26 @@ class ProfileController extends Controller
         ]);
     }
 
-    // Mise à jour du profil désactivée — seul l'admin peut modifier les informations utilisateur
+    /**
+     * Mettre à jour le profil (avatar, bio).
+     */
+    public function update(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'biographie' => 'nullable|string|max:1000',
+            'avatar' => 'nullable|image|max:2048',
+        ]);
 
-    // Suppression de compte désactivée
+        $user = $request->user();
+        $user->biographie = $request->biographie;
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('success', 'Profil mis à jour avec succès.');
+    }
 }

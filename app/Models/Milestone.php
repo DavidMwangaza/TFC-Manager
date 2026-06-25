@@ -14,9 +14,14 @@ class Milestone extends Model
 
     protected $fillable = [
         'subject_id',
+        'sequence_number',
         'title',
         'due_date',
         'submission_date',
+        'submission_type',
+        'submitted_text',
+        'corrected_text',
+        'annotated_file_id',
         'correction_deadline',
         'status',
         'comments',
@@ -42,5 +47,20 @@ class Milestone extends Model
     public function thesisFile(): HasOne
     {
         return $this->hasOne(ThesisFile::class);
+    }
+
+    /**
+     * Le fichier PDF annoté par le professeur.
+     */
+    public function annotatedFile(): BelongsTo
+    {
+        return $this->belongsTo(ThesisFile::class, 'annotated_file_id');
+    }
+    /**
+     * Le rapport d'analyse IA associé à ce jalon (soumission texte).
+     */
+    public function aiReport(): HasOne
+    {
+        return $this->hasOne(AiReport::class);
     }
 }

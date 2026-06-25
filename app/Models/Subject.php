@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Subject extends Model
 {
@@ -37,6 +38,10 @@ class Subject extends Model
         'bat_signed_by',
         'bat_signed_at',
         'bat_signature_hash',
+        'financial_status',
+        'financial_validated_by',
+        'financial_validated_at',
+        'financial_notes',
     ];
 
     protected function casts(): array
@@ -45,6 +50,7 @@ class Subject extends Model
             'defense_validated' => 'boolean',
             'defense_date' => 'datetime',
             'bat_signed_at' => 'datetime',
+            'financial_validated_at' => 'datetime',
             'specific_objectives' => 'array',
             'state_of_art' => 'array',
         ];
@@ -65,6 +71,7 @@ class Subject extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+
 
     /**
      * Le département.
@@ -103,6 +110,11 @@ class Subject extends Model
         return $this->hasMany(\App\Models\Chapter::class);
     }
 
+    public function defenseSchedule(): HasOne
+    {
+        return $this->hasOne(DefenseSchedule::class);
+    }
+
     /**
      * L'utilisateur qui a signé le BAT.
      */
@@ -124,5 +136,21 @@ class Subject extends Model
     public function isPending(): bool
     {
         return $this->status === 'pending';
+    }
+
+    /**
+     * L'utilisateur qui a validé la conformité financière (Appariteur).
+     */
+    public function financialValidator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'financial_validated_by');
+    }
+
+    /**
+     * Vérifie si la conformité financière est validée.
+     */
+    public function isFinanciallyValidated(): bool
+    {
+        return $this->financial_status === 'validated';
     }
 }

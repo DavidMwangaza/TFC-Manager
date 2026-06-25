@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ThesisFile extends Model
@@ -13,10 +14,12 @@ class ThesisFile extends Model
 
     protected $fillable = [
         'subject_id',
+        'milestone_id',
         'file_path',
         'original_name',
         'version_type',
-        'milestone_id',
+        'type',
+        'uploaded_by',
     ];
 
     /**
@@ -33,6 +36,19 @@ class ThesisFile extends Model
     public function aiReport(): HasOne
     {
         return $this->hasOne(AiReport::class);
+    }
+
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
+    /**
+     * L'utilisateur qui a uploader ce fichier.
+     */
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     /**
