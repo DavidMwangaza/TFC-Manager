@@ -2,7 +2,12 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <h2 class="text-center text-lg font-semibold text-slate-700 mb-6">Connexion</h2>
+    <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Bienvenue sur TFC Manager</h2>
+        <p class="text-sm text-slate-500">
+            La plateforme centralisée pour la gestion, le suivi et l'archivage des Travaux de Fin de Cycle. Connectez-vous pour accéder à votre espace.
+        </p>
+    </div>
 
     <form method="POST" action="{{ route('login') }}">
         @csrf

@@ -48,7 +48,7 @@ class SubjectController extends Controller
         if ($request->filled('status')) {
             $baseQuery->where('status', $request->status);
         }
-        if ($request->filled('department_id') && $user->hasRole('Admin')) {
+        if ($request->filled('department_id') && $user->hasAnyRole(['Admin', 'Doyen', 'Appariteur'])) {
             $baseQuery->where('department_id', $request->department_id);
         }
 
@@ -60,8 +60,7 @@ class SubjectController extends Controller
             'validated' => (clone $countQuery)->where('status', 'validated')->count(),
             'rejected' => (clone $countQuery)->where('status', 'rejected')->count(),
         ];
-
-        $departments = $user->hasRole('Admin') ? Department::orderBy('name')->get() : collect();
+        $departments = $user->hasAnyRole(['Admin', 'Doyen', 'Appariteur']) ? Department::orderBy('name')->get() : collect();
 
         return view('subjects.index', compact('subjects', 'counts', 'departments'));
     }
@@ -86,7 +85,13 @@ class SubjectController extends Controller
             }
         }
 
-        $subject->load(['student', 'teacher', 'department', 'academicYear', 'thesisFiles.aiReport']);
+        $subject->load(['student', 'teacher', 'department', 'academicYear', 'thesisFiles.aiReport', 'messages.sender']);
+
+        // Compter les messages non lus reçus (envoyés par l'autre participant)
+        $unreadCount = $subject->messages
+            ->where('sender_id', '!=', Auth::id())
+            ->whereNull('read_at')
+            ->count();
 
         $milestonesQuery = $subject->milestones();
         if ($request->filled('sort')) {
@@ -104,7 +109,8 @@ class SubjectController extends Controller
 
         $milestones = $milestonesQuery->paginate(6)->withQueryString();
 
-        return view('subjects.show', compact('subject', 'milestones'));
+        return view('subjects.show', compact('subject', 'milestones', 'unreadCount'));
+
     }
 
     /**
@@ -190,13 +196,13 @@ class SubjectController extends Controller
             return back()->with('error', 'Vous avez déjà un sujet validé.');
         }
 
-        // Vérifier qu'il n'a pas déjà un sujet en attente
-        $existingPending = Subject::where('student_id', $user->id)
+        // Vérifier qu'il n'a pas déjà atteint la limite de 2 sujets en attente
+        $pendingCount = Subject::where('student_id', $user->id)
             ->where('status', 'pending')
-            ->first();
+            ->count();
 
-        if ($existingPending) {
-            return back()->with('error', 'Vous avez déjà un sujet en attente de validation.');
+        if ($pendingCount >= 2) {
+            return back()->with('error', 'Vous avez déjà atteint la limite de 2 propositions de sujet en attente de validation.');
         }
 
         // Filtrer les objectifs vides et les références vides
@@ -397,12 +403,8 @@ class SubjectController extends Controller
         $totalMilestones = $subject->milestones()->count();
         $validatedMilestones = $subject->milestones()->where('status', 'validated')->count();
 
-        if ($totalMilestones === 0) {
-            return back()->with('error', 'Aucun jalon n\'a été créé pour ce sujet. Créez au moins un jalon avant d\'autoriser la soutenance.');
-        }
-
-        if ($validatedMilestones < $totalMilestones) {
-            return back()->with('error', 'Tous les jalons doivent être validés avant d\'autoriser la soutenance (' . $validatedMilestones . '/' . $totalMilestones . ' validés).');
+        if ($totalMilestones > 0 && $validatedMilestones < $totalMilestones) {
+            return back()->with('error', 'Tous les jalons créés doivent être validés avant d\'autoriser la soutenance (' . $validatedMilestones . '/' . $totalMilestones . ' validés).');
         }
 
         $subject->update([

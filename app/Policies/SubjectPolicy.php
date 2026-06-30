@@ -30,4 +30,9 @@ class SubjectPolicy
     {
         return $user->hasRole('Enseignant') && $subject->teacher_id === $user->id;
     }
+
+    public function viewOrUpdate(User $user, Subject $subject): bool
+    {
+        return $user->hasRole('Chef de département') && $user->department_id === $subject->department_id;
+    }
 }

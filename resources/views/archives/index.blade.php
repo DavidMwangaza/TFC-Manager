@@ -1,64 +1,10 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Archives des Travaux D&eacute;fendus &mdash; UDBL TFC Manager</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    {{-- Découverte automatique OAI-PMH par les moissonneurs de répertoires institutionnels --}}
-    <link rel="alternate" type="application/xml" title="OAI-PMH &mdash; UDBL TFC Manager" href="{{ route('archives.oai') }}">
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-zinc-50 text-zinc-800 antialiased">
-
-    {{-- BARRE INSTITUTIONNELLE --}}
-    <div class="bg-gradient-to-r from-slate-900 via-primary-dark to-slate-900 text-slate-300 text-[10px] sm:text-xs py-2 shadow-sm relative z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <span class="font-medium tracking-wide">Université Don Bosco de Lubumbashi &mdash; Année Académique {{ date('Y') }}-{{ date('Y') + 1 }}</span>
-            <span class="flex items-center gap-1.5 uppercase tracking-wider font-bold text-accent text-[9px]">
-                <span class="w-1.5 h-1.5 bg-accent rounded-full animate-ping"></span>
-                <span>Portail académique sécurisé</span>
-            </span>
-        </div>
-    </div>
-
-    {{-- NAVBAR --}}
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-40 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20 items-center">
-                <a href="{{ url('/') }}" class="flex items-center gap-3 hover:opacity-80 transition">
-                    <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-12 w-12 object-contain bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
-                    <div>
-                        <span class="text-lg font-extrabold text-slate-900 tracking-tight block leading-tight">TFC Manager</span>
-                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none">Archives des Travaux</span>
-                    </div>
-                </a>
-                
-                <div class="flex items-center gap-3">
-                    <a href="{{ url('/') }}" class="text-slate-650 hover:text-slate-950 font-bold py-2.5 px-4 text-xs transition-colors">
-                        &larr; Accueil
-                    </a>
-                    @auth
-                        <a href="{{ url('/dashboard') }}"
-                           class="bg-primary hover:bg-primary-light text-white text-xs font-bold py-2.5 px-5 rounded-xl hover-lift shadow-md shadow-primary/10 transition-all">
-                            Mon espace
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}"
-                           class="bg-primary hover:bg-primary-light text-white text-xs font-bold py-2.5 px-5 rounded-xl hover-lift shadow-md shadow-primary/10 transition-all">
-                            Connexion
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </div>
-    </nav>
+<x-app-layout>
+    <x-slot name="header">
+        Archives Publiques
+    </x-slot>
 
     {{-- EN-TETE --}}
-    <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-dark to-slate-950 py-16 lg:py-24 text-white">
+    <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-dark to-slate-950 py-10 lg:py-16 text-white rounded-2xl mb-6 shadow-sm">
         <!-- Abstract glowing circles -->
         <div class="absolute -right-24 -top-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -left-24 -bottom-24 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -75,8 +21,8 @@
     </section>
 
     {{-- FILTRES --}}
-    <section class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <section class="bg-white border border-slate-200 shadow-sm rounded-2xl mb-6">
+        <div class="p-6">
             <form method="GET" action="{{ route('archives.index') }}">
                 <div class="flex flex-wrap items-end gap-3">
                     <div class="flex-1 min-w-[200px]">
@@ -136,8 +82,8 @@
     </section>
 
     {{-- RESULTATS --}}
-    <section class="py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section>
+        <div>
 
             <div class="mb-6 flex items-center justify-between flex-wrap gap-3">
                 <p class="text-sm text-slate-500">
@@ -243,55 +189,4 @@
             @endif
         </div>
     </section>
-
-    {{-- FOOTER --}}
-    <footer class="bg-slate-950 text-slate-400 py-12 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <img src="{{ asset('images/logos/logo_1.webp') }}" alt="UDBL" class="h-10 w-10 object-contain bg-white rounded-full p-0.5">
-                        <span class="text-base font-extrabold text-white tracking-wide">UDBL TFC Manager</span>
-                    </div>
-                    <p class="text-xs leading-relaxed max-w-sm">
-                        Système intégré de régulation, d'audit d'intégrité et d'archivage des Travaux de Fin de Cycle de l'Université Don Bosco de Lubumbashi.
-                    </p>
-                </div>
-                
-                <div class="space-y-3">
-                    <h4 class="text-white font-extrabold text-xs uppercase tracking-wider">Facultés de rattachement</h4>
-                    <ul class="space-y-1.5 text-xs">
-                        <li>ESIS &mdash; Sciences Informatiques</li>
-                        <li>ECOPO &mdash; Économie &amp; Finance</li>
-                        <li>KANSEBULA &mdash; Sciences Humaines</li>
-                        <li>THEOLOGICUM &mdash; Théologie</li>
-                    </ul>
-                </div>
-                
-                <div class="space-y-3">
-                    <h4 class="text-white font-extrabold text-xs uppercase tracking-wider">Contact & Support</h4>
-                    <ul class="space-y-1.5 text-xs">
-                        <li>Lubumbashi, République Démocratique du Congo</li>
-                        <li>Université Don Bosco</li>
-                        <li class="font-bold text-accent">info@udbl.ac.cd</li>
-                    </ul>
-                </div>
-
-            </div>
-            
-            <div class="border-t border-slate-900 mt-10 pt-6 text-center text-[10px] text-slate-500 font-semibold uppercase tracking-wider space-y-1.5">
-                <p>&copy; {{ date('Y') }} Université Don Bosco de Lubumbashi &mdash; Tous droits réservés. Usage interne et exclusif.</p>
-                <p>
-                    Archivage interopérable :
-                    <a href="{{ route('archives.oai') }}" target="_blank"
-                       class="underline hover:text-slate-300 transition">
-                        Export OAI-PMH (XML Dublin Core)
-                    </a>
-                </p>
-            </div>
-        </div>
-    </footer>
-
-</body>
-</html>
+</x-app-layout>

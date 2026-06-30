@@ -27,20 +27,6 @@ class AiDetectionService
         ]);
     }
 
-    /**
-     * Analyser du texte brut (ex: soumission en ligne d'un jalon).
-     */
-    public function analyzeText(string $text, \App\Models\Milestone $milestone): AiReport
-    {
-        $results = $this->callDetectionApi($text);
-
-        return AiReport::create([
-            'milestone_id' => $milestone->id,
-            'similarity_score' => $results['similarity_score'],
-            'ai_score' => $results['ai_score'],
-            'details' => $results['details'],
-        ]);
-    }
 
     /**
      * Extraire le texte d'un fichier PDF via smalot/pdfparser.

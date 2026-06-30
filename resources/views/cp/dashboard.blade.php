@@ -79,20 +79,46 @@
                     />
                 @else
                     <div class="space-y-6">
-                        @foreach($pendingSubjects as $subject)
-                            <div x-data="{ activeTab: null, valModal: false, rejModal: false }" class="bg-white rounded-2xl shadow-sm border border-slate-150 overflow-hidden hover:shadow-md transition-all duration-300">
+                        @foreach($pendingSubjects as $studentId => $subjects)
+                            @php $student = $subjects->first()->student; @endphp
+                            <div class="mb-8 p-4 border-l-4 border-[#1e3a8a] bg-slate-50/20 rounded-r-2xl shadow-sm">
+                                <h4 class="font-serif font-extrabold text-[#1e3a8a] text-lg mb-4 flex items-center gap-2">
+                                    <x-icon name="user" class="h-5 w-5" />
+                                    Propositions de {{ $student->name }} (Matricule: {{ $student->matricule ?? '—' }})
+                                </h4>
+                                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                @foreach($subjects as $index => $subject)
+                                    <div x-data="{ activeTab: null, valModal: false, rejModal: false }" class="bg-white rounded-2xl shadow-sm border border-slate-150 overflow-hidden hover:shadow-md transition-all duration-300">
                                 
                                 {{-- Subject Header --}}
                                 <div class="bg-slate-50/70 px-4 py-3 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
                                     <div class="space-y-1 min-w-0">
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <h4 class="font-serif font-extrabold text-slate-800 leading-relaxed tracking-tight text-sm">{{ $subject->title }}</h4>
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
-                                                {{ $subject->subject_type === 'tfc' ? 'TFC' : 'Mémoire' }}
-                                            </span>
+                                        <div class="flex items-center justify-between w-full flex-wrap gap-2 mb-2">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black bg-[#1e3a8a] text-white tracking-wider">
+                                                    PROPOSITION {{ ['A', 'B', 'C'][$loop->index] ?? $loop->iteration }}
+                                                </span>
+                                                <h4 class="font-serif font-extrabold text-slate-800 leading-relaxed tracking-tight text-sm">{{ $subject->title }}</h4>
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
+                                                    {{ $subject->subject_type === 'tfc' ? 'TFC' : 'Mémoire' }}
+                                                </span>
+                                            </div>
+                                            
+                                            <!-- Jauge de similarité -->
+                                            @php 
+                                                $score = $subject->similarity_score ?? 0; 
+                                                $colorClass = $score < 30 ? 'bg-green-500' : ($score < 60 ? 'bg-orange-500' : 'bg-red-600');
+                                                $textColor = $score < 30 ? 'text-green-700' : ($score < 60 ? 'text-orange-700' : 'text-red-700');
+                                            @endphp
+                                            <div class="flex items-center space-x-2 bg-white px-2 py-1 rounded shadow-sm border border-slate-100" title="Score de ressemblance sémantique avec l'historique">
+                                                <div class="text-[10px] font-bold {{ $textColor }}">Similarité: {{ $score }}%</div>
+                                                <div class="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div class="h-full {{ $colorClass }}" style="width: {{ $score }}%"></div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <p class="text-xs text-slate-400 font-medium">
-                                            Proposé par <strong>{{ $subject->student->name }}</strong> (Matricule : {{ $subject->student->matricule ?? '—' }}) · Soumis le {{ $subject->created_at->format('d/m/Y à H:i') }}
+                                            Soumis le {{ $subject->created_at->format('d/m/Y à H:i') }}
                                         </p>
                                     </div>
                                 </div>
@@ -224,7 +250,7 @@
                                                 <button @click="valModal = false" class="text-green-500 hover:text-green-700"><x-icon name="x-mark" class="h-5 w-5"/></button>
                                             </div>
                                             <div class="px-6 py-6">
-                                                <form action="{{ route('subjects.validate', $subject) }}" method="POST" class="space-y-4">
+                                                <form action="{{ route('cp.subjects.arbitrate', $subject->id) }}" method="POST" class="space-y-4">
                                                     @csrf
                                                     <div class="space-y-1.5">
                                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Directeur Principal d'Encadrement <span class="text-red-500">*</span></label>
@@ -284,6 +310,9 @@
                                     </div>
                                 </div>
 
+                            </div>
+                                @endforeach
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -365,9 +394,8 @@
                                                                 <button @click="scheModal = false" class="text-slate-400 hover:text-slate-650"><x-icon name="x-mark" class="h-5 w-5"/></button>
                                                             </div>
                                                             <div class="px-6 py-6 text-left">
-                                                                <form action="{{ route('subjects.schedule-defense', $subj) }}" method="POST" class="space-y-4">
+                                                                <form action="{{ route('cp.subjects.schedule-defense', $subj->id) }}" method="POST" class="space-y-4">
                                                                     @csrf
-                                                                    @method('PATCH')
                                                                     <div class="space-y-1.5">
                                                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Date & Heure <span class="text-red-500">*</span></label>
                                                                         <input type="datetime-local" name="defense_date" required class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white" value="{{ $subj->defense_date ? $subj->defense_date->format('Y-m-d\TH:i') : '' }}">
@@ -385,18 +413,32 @@
                                                                     
                                                                     <div class="space-y-1.5">
                                                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Président du Jury <span class="text-red-500">*</span></label>
-                                                                        <input type="text" name="jury_president" required class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white" value="{{ $subj->defenseSchedule?->jury_members['president'] ?? '' }}" placeholder="Nom complet du président">
+                                                                        <select name="president_id" required class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white">
+                                                                            <option value="">Sélectionner</option>
+                                                                            @foreach($teachers as $teacher)
+                                                                                <option value="{{ $teacher->id }}" {{ ($subj->defenseSchedule && isset($subj->defenseSchedule->jury_members['president']['user_id']) && $subj->defenseSchedule->jury_members['president']['user_id'] == $teacher->id) ? 'selected' : '' }}>{{ $teacher->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
                                                                     </div>
                                                                     
                                                                     <div class="space-y-1.5">
                                                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Secrétaire du Jury <span class="text-red-500">*</span></label>
-                                                                        <input type="text" name="jury_secretary" required class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white" value="{{ $subj->defenseSchedule?->jury_members['secretary'] ?? '' }}" placeholder="Nom complet du secrétaire">
+                                                                        <select name="secretary_id" required class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white">
+                                                                            <option value="">Sélectionner</option>
+                                                                            @foreach($teachers as $teacher)
+                                                                                <option value="{{ $teacher->id }}" {{ ($subj->defenseSchedule && isset($subj->defenseSchedule->jury_members['secretary']['user_id']) && $subj->defenseSchedule->jury_members['secretary']['user_id'] == $teacher->id) ? 'selected' : '' }}>{{ $teacher->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
                                                                     </div>
                                                                     
                                                                     <div class="space-y-1.5">
-                                                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Autres Membres du Jury</label>
-                                                                        <input type="text" name="jury_members" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white" value="{{ isset($subj->defenseSchedule?->jury_members['members']) ? implode(', ', $subj->defenseSchedule->jury_members['members']) : '' }}" placeholder="Séparés par des virgules">
-                                                                        <p class="text-[10px] text-slate-400 mt-1">Séparez les noms par des virgules</p>
+                                                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Membre Évaluateur <span class="text-red-500">*</span></label>
+                                                                        <select name="member_id" required class="w-full rounded-xl border-slate-200 shadow-sm focus:border-primary focus:ring-primary text-sm font-medium bg-white">
+                                                                            <option value="">Sélectionner</option>
+                                                                            @foreach($teachers as $teacher)
+                                                                                <option value="{{ $teacher->id }}" {{ ($subj->defenseSchedule && isset($subj->defenseSchedule->jury_members['membre']['user_id']) && $subj->defenseSchedule->jury_members['membre']['user_id'] == $teacher->id) ? 'selected' : '' }}>{{ $teacher->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
                                                                     </div>
                                                                     
                                                                     <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
@@ -473,11 +515,12 @@
                                 $percentage = min(100, ($count / 8) * 100);
                             @endphp
                             
-                            <div class="bg-white border {{ $border }} {{ $hoverBorder }} rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 group">
+                            <a href="{{ route('cp.teachers.show', $teacher) }}"
+                               class="bg-white border {{ $border }} {{ $hoverBorder }} rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 group block cursor-pointer">
                                 <div class="flex justify-between items-start mb-2">
-                                    <div class="space-y-1">
-                                        <p class="font-extrabold text-slate-800 text-sm leading-snug group-hover:text-primary transition-colors">{{ $teacher->name }}</p>
-                                        <p class="text-[10px] text-slate-400 font-semibold">{{ $teacher->email }}</p>
+                                    <div class="space-y-1 min-w-0 flex-1 pr-2">
+                                        <p class="font-extrabold text-slate-800 text-sm leading-snug group-hover:text-primary transition-colors truncate">{{ $teacher->name }}</p>
+                                        <p class="text-[10px] text-slate-400 font-semibold truncate">{{ $teacher->email }}</p>
                                     </div>
                                     <div class="w-10 h-10 rounded-xl {{ $circleBg }} {{ $circleText }} border border-slate-100 flex items-center justify-center font-black text-base shrink-0 shadow-inner">
                                         {{ $count }}
@@ -486,10 +529,16 @@
                                 <div class="w-full bg-slate-100 rounded-full h-1.5 mt-4 overflow-hidden">
                                     <div class="{{ $barBg }} h-1.5 rounded-full transition-all duration-1000" style="width: {{ $percentage }}%"></div>
                                 </div>
-                                <p class="text-right text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
-                                    Charge relative (Max 8)
-                                </p>
-                            </div>
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-[9px] font-bold text-primary/50 group-hover:text-primary transition-colors flex items-center gap-1">
+                                        <x-icon name="eye" class="h-3 w-3" />
+                                        Voir les dirigés
+                                    </span>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                        Charge relative (Max 8)
+                                    </p>
+                                </div>
+                            </a>
                         @endforeach
                     </div>
                 @endif

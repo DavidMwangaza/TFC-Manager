@@ -98,150 +98,181 @@
                 {{-- LEFT/CENTER: Subject details & Upload --}}
                 <div class="lg:col-span-2 space-y-8">
                     
-                    {{-- Subject Proposal Details Accordion --}}
-                    <div class="glass-card rounded-2xl overflow-hidden shadow-md shadow-slate-100">
-                        <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                <x-icon name="clipboard-document-list" class="h-5 w-5 text-primary" />
-                                <span>Fiche de Proposition Actuelle</span>
-                            </h3>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                                {{ $subject->subject_type === 'tfc' ? 'TFC' : 'Mémoire' }}
-                            </span>
-                        </div>
-                        
-                        <div class="p-4">
-                            <h4 class="font-serif text-lg font-extrabold text-slate-800 tracking-tight mb-4 leading-relaxed">
-                                {{ $subject->title }}
-                            </h4>
-                            
-                            {{-- Content sections accordion --}}
-                            <div x-data="{ activeTab: null }" class="space-y-3">
-                                
-                                {{-- 1. Problématique --}}
-                                <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30">
-                                    <button @click="activeTab = activeTab === 'problem' ? null : 'problem'" 
-                                            class="w-full px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
-                                        <span class="flex items-center gap-2.5">
-                                            <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><x-icon name="magnifying-glass" class="h-4 w-4" /></span>
-                                            <span>Construction du Problème</span>
-                                        </span>
-                                        <x-icon name="chevron-down" class="h-4 w-4 transform transition-transform duration-300 text-slate-400" ::class="activeTab === 'problem' ? 'rotate-180 text-primary' : ''" />
-                                    </button>
-                                    <div x-show="activeTab === 'problem'" x-collapse class="px-5 pb-5 space-y-4 border-t border-slate-100/50 pt-4">
-                                        @if($subject->context_relevance)
-                                            <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Contexte & Pertinence</span>
-                                                <p class="text-sm text-slate-600 leading-relaxed">{{ $subject->context_relevance }}</p>
-                                            </div>
-                                        @endif
-                                        @if($subject->challenges)
-                                            <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Défis & Lacunes</span>
-                                                <p class="text-sm text-slate-600 leading-relaxed">{{ $subject->challenges }}</p>
-                                            </div>
-                                        @endif
-                                        @if($subject->research_question)
-                                            <div class="space-y-1 bg-blue-50/50 p-4 rounded-lg border border-blue-100 shadow-inner">
-                                                <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Question Principale de Recherche</span>
-                                                <p class="text-base text-slate-800 font-bold leading-relaxed">{{ $subject->research_question }}</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                {{-- 2. Objectifs --}}
-                                <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30">
-                                    <button @click="activeTab = activeTab === 'objectives' ? null : 'objectives'" 
-                                            class="w-full px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
-                                        <span class="flex items-center gap-2.5">
-                                            <span class="p-1.5 bg-green-50 text-green-600 rounded-lg"><x-icon name="light-bulb" class="h-4 w-4" /></span>
-                                            <span>Hypothèses & Objectifs</span>
-                                        </span>
-                                        <x-icon name="chevron-down" class="h-4 w-4 transform transition-transform duration-300 text-slate-400" ::class="activeTab === 'objectives' ? 'rotate-180 text-primary' : ''" />
-                                    </button>
-                                    <div x-show="activeTab === 'objectives'" x-collapse class="px-5 pb-5 space-y-4 border-t border-slate-100/50 pt-4">
-                                        @if($subject->hypothesis)
-                                            <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Hypothèse Globale</span>
-                                                <p class="text-sm text-slate-600 leading-relaxed">{{ $subject->hypothesis }}</p>
-                                            </div>
-                                        @endif
-                                        @if($subject->general_objective)
-                                            <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Objectif Général</span>
-                                                <p class="text-sm text-slate-600 leading-relaxed">{{ $subject->general_objective }}</p>
-                                            </div>
-                                        @endif
-                                        @if($subject->specific_objectives && count($subject->specific_objectives) > 0)
-                                            <div class="space-y-2 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Objectifs Spécifiques</span>
-                                                <ul class="space-y-1.5">
-                                                    @foreach($subject->specific_objectives as $obj)
-                                                        <li class="text-sm text-slate-600 flex items-start gap-2">
-                                                            <span class="text-green-500 font-bold mt-0.5 shrink-0"></span>
-                                                            <span>{{ $obj }}</span>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                {{-- 3. Cadre scientifique --}}
-                                <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30">
-                                    <button @click="activeTab = activeTab === 'science' ? null : 'science'" 
-                                            class="w-full px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
-                                        <span class="flex items-center gap-2.5">
-                                            <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><x-icon name="book-open" class="h-4 w-4" /></span>
-                                            <span>Cadre Scientifique & Références</span>
-                                        </span>
-                                        <x-icon name="chevron-down" class="h-4 w-4 transform transition-transform duration-300 text-slate-400" ::class="activeTab === 'science' ? 'rotate-180 text-primary' : ''" />
-                                    </button>
-                                    <div x-show="activeTab === 'science'" x-collapse class="px-5 pb-5 space-y-4 border-t border-slate-100/50 pt-4">
-                                        @if($subject->state_of_art && count($subject->state_of_art) > 0)
-                                            <div class="space-y-2">
-                                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">État de l'art / Références</span>
-                                                <div class="overflow-x-auto rounded-xl border border-slate-100 shadow-sm bg-white">
-                                                    <table class="w-full text-left text-xs border-collapse">
-                                                        <thead>
-                                                            <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
-                                                                <th class="px-4 py-2.5">Auteur</th>
-                                                                <th class="px-4 py-2.5">Institution</th>
-                                                                <th class="px-4 py-2.5">Apport principal</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class="divide-y divide-slate-100 text-slate-600">
-                                                            @foreach($subject->state_of_art as $ref)
-                                                                <tr class="hover:bg-slate-50/50 transition-colors">
-                                                                    <td class="px-4 py-2.5 font-semibold text-slate-700 whitespace-nowrap">{{ $ref['author'] ?? '—' }}</td>
-                                                                    <td class="px-4 py-2.5 whitespace-nowrap text-slate-500">{{ $ref['institution'] ?? '—' }}</td>
-                                                                    <td class="px-4 py-2.5 leading-relaxed">{{ $ref['contribution'] ?? '—' }}</td>
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @if($subject->demarcations)
-                                            <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Démarcations</span>
-                                                <p class="text-sm text-slate-600 leading-relaxed">{{ $subject->demarcations }}</p>
-                                            </div>
-                                        @endif
-                                        @if($subject->methodologies)
-                                            <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Méthodologies envisagées</span>
-                                                <p class="text-sm text-slate-600 leading-relaxed">{{ $subject->methodologies }}</p>
-                                            </div>
-                                        @endif
-                                    </div>
+                    @if($subjects->count() < 2 && $subjects->where('status', 'validated')->count() === 0)
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm mb-6">
+                            <div class="flex items-center gap-3">
+                                <x-icon name="plus-circle" class="w-8 h-8 text-blue-600 shrink-0" />
+                                <div>
+                                    <h4 class="text-sm font-bold text-blue-900">Proposer un sujet alternatif</h4>
+                                    <p class="text-xs text-blue-700">Vous pouvez soumettre une 2ème proposition pour augmenter vos chances de validation.</p>
                                 </div>
                             </div>
+                            <a href="{{ route('subjects.create') }}" class="shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-sm transition">
+                                Ajouter un sujet
+                            </a>
                         </div>
-                    </div>
+                    @endif
+
+                    @foreach($subjects as $index => $sub)
+                        @if($sub->status === 'validated' || $subjects->where('status', 'validated')->count() === 0)
+                            {{-- Subject Proposal Details Accordion --}}
+                            <div class="glass-card rounded-2xl overflow-hidden shadow-md shadow-slate-100 {{ $index > 0 ? 'mt-6' : '' }}">
+                                <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                        <x-icon name="clipboard-document-list" class="h-5 w-5 text-primary" />
+                                        <span>Fiche de Proposition {{ $subjects->count() > 1 ? ($index === 0 ? 'A' : 'B') : 'Actuelle' }}</span>
+                                    </h3>
+                                    <div class="flex items-center gap-2">
+                                        <x-status-badge :status="$sub->status" class="py-0 px-2 text-[10px] font-black rounded-lg" />
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                                            {{ $sub->subject_type === 'tfc' ? 'TFC' : 'Mémoire' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4">
+                                    <h4 class="font-serif text-lg font-extrabold text-slate-800 tracking-tight mb-4 leading-relaxed">
+                                        {{ $sub->title }}
+                                    </h4>
+                                    
+                                    {{-- Content sections accordion --}}
+                                    <div x-data="{ activeTab: null }" class="space-y-3">
+                                        
+                                        {{-- 1. Problématique --}}
+                                        <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30">
+                                            <button @click="activeTab = activeTab === 'problem' ? null : 'problem'" 
+                                                    class="w-full px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
+                                                <span class="flex items-center gap-2.5">
+                                                    <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><x-icon name="magnifying-glass" class="h-4 w-4" /></span>
+                                                    <span>Construction du Problème</span>
+                                                </span>
+                                                <x-icon name="chevron-down" class="h-4 w-4 transform transition-transform duration-300 text-slate-400" ::class="activeTab === 'problem' ? 'rotate-180 text-primary' : ''" />
+                                            </button>
+                                            <div x-show="activeTab === 'problem'" x-collapse class="px-5 pb-5 space-y-4 border-t border-slate-100/50 pt-4">
+                                                @if($sub->context_relevance)
+                                                    <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Contexte & Pertinence</span>
+                                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $sub->context_relevance }}</p>
+                                                    </div>
+                                                @endif
+                                                @if($sub->challenges)
+                                                    <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Défis & Lacunes</span>
+                                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $sub->challenges }}</p>
+                                                    </div>
+                                                @endif
+                                                @if($sub->research_question)
+                                                    <div class="space-y-1 bg-blue-50/50 p-4 rounded-lg border border-blue-100 shadow-inner">
+                                                        <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Question Principale de Recherche</span>
+                                                        <p class="text-base text-slate-800 font-bold leading-relaxed">{{ $sub->research_question }}</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- 2. Objectifs --}}
+                                        <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30">
+                                            <button @click="activeTab = activeTab === 'objectives' ? null : 'objectives'" 
+                                                    class="w-full px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
+                                                <span class="flex items-center gap-2.5">
+                                                    <span class="p-1.5 bg-green-50 text-green-600 rounded-lg"><x-icon name="light-bulb" class="h-4 w-4" /></span>
+                                                    <span>Hypothèses & Objectifs</span>
+                                                </span>
+                                                <x-icon name="chevron-down" class="h-4 w-4 transform transition-transform duration-300 text-slate-400" ::class="activeTab === 'objectives' ? 'rotate-180 text-primary' : ''" />
+                                            </button>
+                                            <div x-show="activeTab === 'objectives'" x-collapse class="px-5 pb-5 space-y-4 border-t border-slate-100/50 pt-4">
+                                                @if($sub->hypothesis)
+                                                    <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Hypothèse Globale</span>
+                                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $sub->hypothesis }}</p>
+                                                    </div>
+                                                @endif
+                                                @if($sub->general_objective)
+                                                    <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Objectif Général</span>
+                                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $sub->general_objective }}</p>
+                                                    </div>
+                                                @endif
+                                                @if($sub->specific_objectives && count($sub->specific_objectives) > 0)
+                                                    <div class="space-y-2 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Objectifs Spécifiques</span>
+                                                        <ul class="space-y-1.5">
+                                                            @foreach($sub->specific_objectives as $obj)
+                                                                <li class="text-sm text-slate-600 flex items-start gap-2">
+                                                                    <span class="text-green-500 font-bold mt-0.5 shrink-0"></span>
+                                                                    <span>{{ $obj }}</span>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- 3. Cadre scientifique --}}
+                                        <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30">
+                                            <button @click="activeTab = activeTab === 'science' ? null : 'science'" 
+                                                    class="w-full px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
+                                                <span class="flex items-center gap-2.5">
+                                                    <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><x-icon name="book-open" class="h-4 w-4" /></span>
+                                                    <span>Cadre Scientifique & Références</span>
+                                                </span>
+                                                <x-icon name="chevron-down" class="h-4 w-4 transform transition-transform duration-300 text-slate-400" ::class="activeTab === 'science' ? 'rotate-180 text-primary' : ''" />
+                                            </button>
+                                            <div x-show="activeTab === 'science'" x-collapse class="px-5 pb-5 space-y-4 border-t border-slate-100/50 pt-4">
+                                                @if($sub->state_of_art && count($sub->state_of_art) > 0)
+                                                    <div class="space-y-2">
+                                                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">État de l'art / Références</span>
+                                                        <div class="overflow-x-auto rounded-xl border border-slate-100 shadow-sm bg-white">
+                                                            <table class="w-full text-left text-xs border-collapse">
+                                                                <thead>
+                                                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
+                                                                        <th class="px-4 py-2.5">Auteur</th>
+                                                                        <th class="px-4 py-2.5">Institution</th>
+                                                                        <th class="px-4 py-2.5">Apport principal</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="divide-y divide-slate-100 text-slate-600">
+                                                                    @foreach($sub->state_of_art as $ref)
+                                                                        <tr class="hover:bg-slate-50/50 transition-colors">
+                                                                            <td class="px-4 py-2.5 font-semibold text-slate-700 whitespace-nowrap">{{ $ref['author'] ?? '—' }}</td>
+                                                                            <td class="px-4 py-2.5 whitespace-nowrap text-slate-500">{{ $ref['institution'] ?? '—' }}</td>
+                                                                            <td class="px-4 py-2.5 leading-relaxed">{{ $ref['contribution'] ?? '—' }}</td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if($sub->demarcations)
+                                                    <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Démarcations</span>
+                                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $sub->demarcations }}</p>
+                                                    </div>
+                                                @endif
+                                                @if($sub->methodologies)
+                                                    <div class="space-y-1 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Méthodologies envisagées</span>
+                                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $sub->methodologies }}</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if($sub->status === 'rejected' && $sub->rejection_reason)
+                                        <div class="mt-4 bg-red-50 border border-red-200 rounded-xl p-3 flex gap-3">
+                                            <x-icon name="exclamation-circle" class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                                            <div>
+                                                <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Motif du rejet</p>
+                                                <p class="text-sm text-red-700">{{ $sub->rejection_reason }}</p>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
 
                     {{-- Defense Schedule Highlight --}}
                     @if($subject->defenseSchedule)
@@ -307,7 +338,9 @@
                             @php
                                 $hasJury = $subject->thesisFiles->where('version_type', 'jury')->count() > 0;
                                 $hasFinal = $subject->thesisFiles->where('version_type', 'final')->count() > 0;
-                                $canUploadFinal = $subject->defense_validated ?? false;
+                                $isDefenseValidated = $subject->defense_validated ?? false;
+                                $isFinanciallyValidated = $subject->financial_status === 'validated';
+                                $canUploadFinal = $isDefenseValidated && $isFinanciallyValidated;
                             @endphp
 
                             <form action="{{ route('thesis.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
@@ -332,10 +365,15 @@
                                 </div>
                                 
                                 <div class="flex items-center justify-between gap-4 flex-wrap pt-2">
-                                    @if(!$canUploadFinal)
+                                    @if(!$isDefenseValidated)
                                         <span class="text-xs text-amber-600 flex items-center gap-1.5 font-medium">
                                             <x-icon name="lock-closed" class="h-4 w-4 shrink-0 text-amber-500" />
                                             <span>La version finale requiert la validation de votre soutenance.</span>
+                                        </span>
+                                    @elseif(!$isFinanciallyValidated)
+                                        <span class="text-xs text-amber-600 flex items-center gap-1.5 font-medium">
+                                            <x-icon name="lock-closed" class="h-4 w-4 shrink-0 text-amber-500" />
+                                            <span>La version finale requiert la validation de vos frais par l'Appariteur.</span>
                                         </span>
                                     @else
                                         <span class="text-xs text-green-600 flex items-center gap-1.5 font-medium">
@@ -407,7 +445,13 @@
                             <span>Prochaine Action</span>
                         </h3>
                         
-                        @if($nextMilestone)
+                        @if($subject->milestones->isEmpty())
+                            <div class="py-4 text-center text-slate-400 space-y-2">
+                                <x-icon name="calendar" class="h-8 w-8 text-slate-300 mx-auto" />
+                                <p class="text-xs font-bold text-slate-700">Aucun jalon planifié</p>
+                                <p class="text-[10px] leading-relaxed">Votre encadreur n'a pas encore défini le calendrier de vos livrables.</p>
+                            </div>
+                        @elseif($nextMilestone)
                             <div class="space-y-4">
                                 <div class="space-y-1">
                                     <h4 class="font-bold text-slate-800 text-base leading-snug">{{ $nextMilestone->title }}</h4>
@@ -420,22 +464,47 @@
                                 {{-- Simple visual countdown highlight --}}
                                 @if($nextMilestone->due_date)
                                     @php
-                                        $diffDays = now()->diffInDays($nextMilestone->due_date, false);
+                                        $now = now();
+                                        $dueDate = $nextMilestone->due_date;
+                                        $isPast = $now->gt($dueDate);
+                                        $diff = $now->diff($dueDate);
+                                        
+                                        $totalDays = $diff->days;
+                                        $totalHours = $diff->h;
+                                        $totalMinutes = $diff->i;
+
+                                        if ($isPast) {
+                                            if ($totalDays > 0) {
+                                                $remainingText = "En retard de " . $totalDays . " jour" . ($totalDays > 1 ? 's' : '');
+                                            } elseif ($totalHours > 0) {
+                                                $remainingText = "En retard de " . $totalHours . " heure" . ($totalHours > 1 ? 's' : '');
+                                            } else {
+                                                $remainingText = "En retard de " . $totalMinutes . " minute" . ($totalMinutes > 1 ? 's' : '');
+                                            }
+                                        } else {
+                                            if ($totalDays > 0) {
+                                                $remainingText = "Reste " . $totalDays . " jour" . ($totalDays > 1 ? 's' : '') . ($totalHours > 0 ? " et " . $totalHours . " h" : "");
+                                            } elseif ($totalHours > 0) {
+                                                $remainingText = "Reste " . $totalHours . " heure" . ($totalHours > 1 ? 's' : '') . ($totalMinutes > 0 ? " et " . $totalMinutes . " min" : "");
+                                            } else {
+                                                $remainingText = "Reste " . $totalMinutes . " minute" . ($totalMinutes > 1 ? 's' : '');
+                                            }
+                                        }
                                     @endphp
-                                    @if($diffDays < 0)
+                                    @if($isPast)
                                         <div class="px-3.5 py-2.5 bg-red-50 text-red-800 rounded-xl border border-red-200 text-xs font-semibold animate-urgent-pulse flex items-center gap-2">
                                             <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
-                                            <span>En retard de {{ abs($diffDays) }} jours !</span>
+                                            <span>{{ $remainingText }} !</span>
                                         </div>
-                                    @elseif($diffDays <= 7)
+                                    @elseif($totalDays <= 7)
                                         <div class="px-3.5 py-2.5 bg-amber-50 text-amber-800 rounded-xl border border-amber-200 text-xs font-semibold animate-urgent-pulse flex items-center gap-2">
                                             <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-ping"></span>
-                                            <span>Reste {{ $diffDays }} jours pour finaliser.</span>
+                                            <span>{{ $remainingText }} pour finaliser.</span>
                                         </div>
                                     @else
                                         <div class="px-3.5 py-2.5 bg-slate-50 text-slate-600 rounded-xl border border-slate-200/60 text-xs font-medium flex items-center gap-2">
                                             <span class="w-2 h-2 rounded-full bg-primary-light shrink-0"></span>
-                                            <span>Il vous reste {{ $diffDays }} jours.</span>
+                                            <span>Il vous reste {{ $totalDays }} jours.</span>
                                         </div>
                                     @endif
                                 @endif

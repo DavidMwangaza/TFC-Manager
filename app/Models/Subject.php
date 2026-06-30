@@ -116,6 +116,14 @@ class Subject extends Model
     }
 
     /**
+     * Messages de la conversation Directeur ↔ Étudiant.
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class)->orderBy('created_at');
+    }
+
+    /**
      * L'utilisateur qui a signé le BAT.
      */
     public function batSigner(): BelongsTo

@@ -1,7 +1,7 @@
 <div class="bg-white shadow-sm sm:rounded-lg p-6" x-data="{}">
     <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><x-icon name="calendar" class="w-5 h-5 text-blue-500" /> Suivi par jalons</h2>
 
-    @if(Auth::user()->hasRole('Chef de département') || (Auth::user()->hasRole('Enseignant') && $subject->teacher_id === Auth::id()))
+    @if(Auth::user()->hasRole('Enseignant') && $subject->teacher_id === Auth::id())
         <div class="mb-6 bg-slate-50 border rounded-lg p-4">
             <h3 class="text-sm font-semibold text-slate-800 mb-3">Nouveau jalon</h3>
             <form action="{{ route('milestones.store', $subject) }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -222,9 +222,28 @@
                                         </form>
                                     </x-modal>
                                 @endif
+
+                                @if($milestone->status === 'pending' && !$milestone->thesisFile)
+                                    <button type="button" @click="$dispatch('open-modal', 'milestone-delete-{{ $milestone->id }}')" 
+                                            class="flex-1 sm:flex-none inline-flex justify-center items-center gap-1.5 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg shadow-sm transition">
+                                        <x-icon name="trash" class="w-4 h-4" /> Supprimer
+                                    </button>
+                                    <x-modal name="milestone-delete-{{ $milestone->id }}" focusable>
+                                        <form method="POST" action="{{ route('milestones.destroy', $milestone) }}" class="p-6">
+                                            @csrf
+                                            @method('DELETE')
+                                            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><x-icon name="trash" class="w-6 h-6 text-red-600"/> Supprimer le jalon</h3>
+                                            <p class="text-sm text-slate-600 mb-4">Êtes-vous sûr de vouloir supprimer le jalon : <strong>{{ $milestone->title }}</strong> ? Cette action est irréversible.</p>
+                                            <div class="flex justify-end gap-3">
+                                                <button type="button" @click="$dispatch('close-modal', 'milestone-delete-{{ $milestone->id }}')" class="px-4 py-2 bg-white text-slate-700 font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition">Annuler</button>
+                                                <button type="submit" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition">Confirmer la suppression</button>
+                                            </div>
+                                        </form>
+                                    </x-modal>
+                                @endif
                             @endif
 
-                            @if($milestone->thesisFile)
+                            @if($milestone->thesisFile && !Auth::user()->hasRole('Chef de département'))
                                 <a href="{{ route('thesis.download', $milestone->thesisFile) }}" 
                                    class="flex-1 sm:flex-none inline-flex justify-center items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition" title="Télécharger le document">
                                     <x-icon name="document-text" class="w-4 h-4 text-slate-500" /> Lire le PDF

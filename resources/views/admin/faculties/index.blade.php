@@ -17,9 +17,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <x-breadcrumb :items="[['label' => 'Administration', 'url' => route('dashboard')], ['label' => 'Facultés']]" />
             <div class="flex gap-6">
-                <div class="hidden lg:block w-64 flex-shrink-0">
-                    @include('admin.partials.sidebar')
-                </div>
 
                 <div class="flex-1 space-y-6">
                     @if(session('success'))

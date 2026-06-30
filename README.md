@@ -323,7 +323,7 @@ php artisan milestones:check-sla
 
 ## 📄 Licence
 
-Ce projet est développé dans le cadre d'un TFC à l'Université du Bassin du Lac (UDBL).
+Ce projet est développé dans le cadre d'un TFC à lUDBL.
 
 ---
 
