@@ -80,7 +80,8 @@ class DashboardController extends Controller
             ->where('status', 'pending')
             ->with('student')
             ->latest()
-            ->get();
+            ->get()
+            ->groupBy('student_id');
 
         $allSubjects = Subject::where('department_id', $user->department_id)
             ->with(['student', 'teacher', 'thesisFiles', 'defenseSchedule'])
@@ -134,9 +135,12 @@ class DashboardController extends Controller
      */
     private function studentDashboard(User $user)
     {
-        $subject = Subject::where('student_id', $user->id)
+        $subjects = Subject::where('student_id', $user->id)
             ->with(['teacher', 'thesisFiles.aiReport', 'milestones', 'defenseSchedule'])
-            ->first();
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $subject = $subjects->first();
 
         // Calcul de la progression des jalons
         $milestoneProgress = null;
@@ -150,7 +154,7 @@ class DashboardController extends Controller
             $milestoneProgress = compact('total', 'validated', 'submitted', 'rejected', 'pending', 'percent');
         }
 
-        return view('student.dashboard', compact('subject', 'milestoneProgress'));
+        return view('student.dashboard', compact('subject', 'subjects', 'milestoneProgress'));
     }
 
     /**

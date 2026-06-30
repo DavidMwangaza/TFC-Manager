@@ -66,7 +66,7 @@
                             <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejetés</option>
                         </select>
                         
-                        @if(Auth::user()->hasRole('Admin') && isset($departments) && $departments->count() > 0)
+                        @if(Auth::user()->hasAnyRole(['Admin', 'Doyen', 'Appariteur']) && isset($departments) && $departments->count() > 0)
                             <select name="department_id" class="py-1.5 px-3 text-sm border border-zinc-200 focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 bg-zinc-50 rounded-none transition-colors w-full sm:w-auto">
                                 <option value="">Toutes filières</option>
                                 @foreach($departments as $dept)
@@ -104,7 +104,7 @@
                                     <th class="px-3 py-2.5 border-r border-zinc-100">Étudiant</th>
                                 @endunless
                                 <th class="px-3 py-2.5 border-r border-zinc-100">Encadreur</th>
-                                @if(Auth::user()->hasRole('Admin'))
+                                @if(Auth::user()->hasAnyRole(['Admin', 'Doyen', 'Appariteur']))
                                     <th class="px-3 py-2.5 border-r border-zinc-100">Filière</th>
                                 @endif
                                 <th class="px-3 py-2.5 border-r border-zinc-100">Statut</th>
@@ -129,7 +129,7 @@
                                     <td class="px-3 py-2.5 font-medium text-zinc-600 border-r border-zinc-100">
                                         {{ $subject->teacher->name ?? '—' }}
                                     </td>
-                                    @if(Auth::user()->hasRole('Admin'))
+                                    @if(Auth::user()->hasAnyRole(['Admin', 'Doyen', 'Appariteur']))
                                         <td class="px-3 py-2.5 text-[11px] text-zinc-600 border-r border-zinc-100">
                                             {{ $subject->department->name ?? '—' }}
                                         </td>

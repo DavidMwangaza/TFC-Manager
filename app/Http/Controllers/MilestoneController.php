@@ -23,8 +23,7 @@ class MilestoneController extends Controller
     {
         $user = Auth::user();
 
-        $allowed = ($user->hasRole('Enseignant') && $subject->teacher_id === $user->id)
-            || ($user->hasRole('Chef de département') && $subject->department_id === $user->department_id);
+        $allowed = ($user->hasRole('Enseignant') && $subject->teacher_id === $user->id);
 
         if (!$allowed) {
             abort(403, 'Droits insuffisants pour créer un jalon.');
@@ -102,5 +101,33 @@ class MilestoneController extends Controller
         ActivityLog::log('milestone_rejected', 'Jalon rejeté (corrections demandées)', $milestone);
 
         return back()->with('success', 'Étape marquée comme "À refaire" et l\'étudiant en a été informé.');
+    }
+
+    /**
+     * L'enseignant supprime (annule) un jalon fixé par erreur.
+     */
+    public function destroy(Milestone $milestone)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('Enseignant') || $milestone->subject->teacher_id !== $user->id) {
+            abort(403, 'Droits insuffisants pour supprimer ce jalon.');
+        }
+
+        if ($milestone->status !== 'pending') {
+            return back()->with('error', 'Impossible de supprimer un jalon qui n\'est plus en attente.');
+        }
+
+        // Vérifier s'il y a des fichiers associés au jalon (livrables)
+        if ($milestone->thesisFile) {
+            return back()->with('error', 'Impossible de supprimer ce jalon car l\'étudiant a déjà soumis un document.');
+        }
+
+        $milestoneTitle = $milestone->title;
+        $milestone->delete();
+
+        ActivityLog::log('milestone_deleted', 'Jalon supprimé : ' . $milestoneTitle, $milestone->subject);
+
+        return back()->with('success', 'Jalon supprimé avec succès.');
     }
 }

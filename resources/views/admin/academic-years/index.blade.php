@@ -4,8 +4,8 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight inline-flex items-center gap-2">
                 <x-icon name="calendar" class="w-6 h-6" /> Années Académiques
             </h2>
-            <a href="{{ route('admin.academic-years.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition">
-                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <a href="{{ route('admin.academic-years.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1 text-white text-sm font-semibold rounded shadow-sm transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 Nouvelle année
@@ -17,9 +17,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <x-breadcrumb :items="[['label' => 'Administration', 'url' => route('dashboard')], ['label' => 'Années Académiques']]" />
             <div class="flex gap-6">
-                <div class="hidden lg:block w-64 flex-shrink-0">
-                    @include('admin.partials.sidebar')
-                </div>
 
                 <div class="flex-1 space-y-6">
                     @if(session('success'))

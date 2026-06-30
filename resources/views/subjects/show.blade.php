@@ -155,6 +155,16 @@
                     :class="currentTab === 'science' ? 'border-primary text-primary font-black' : 'border-transparent text-slate-400 hover:text-slate-650'">
                 Cadre & Fichiers
             </button>
+            @if(!empty($subject->teacher_id) && ((Auth::user()->hasRole('Etudiant') && $subject->student_id === Auth::id()) || (Auth::user()->hasRole('Enseignant') && $subject->teacher_id === Auth::id())))
+                <button @click="currentTab = 'messages'; fetch('{{ route('messages.read', $subject) }}', {method: 'POST', headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}}).then(() => { let badge = document.getElementById('unread-badge'); if(badge) badge.style.display = 'none'; })" 
+                        class="py-2.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2"
+                        :class="currentTab === 'messages' ? 'border-primary text-primary font-black' : 'border-transparent text-slate-400 hover:text-slate-650'">
+                    Messagerie
+                    @if(isset($unreadCount) && $unreadCount > 0)
+                        <span id="unread-badge" class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $unreadCount }}</span>
+                    @endif
+                </button>
+            @endif
         </div>
 
         {{-- TAB CONTENT PANELS --}}
@@ -164,6 +174,13 @@
             <div x-show="currentTab === 'overview'" x-cloak class="space-y-6">
                 @include('subjects.partials.milestones')
             </div>
+
+            {{-- TAB: MESSAGERIE --}}
+            @if(!empty($subject->teacher_id) && ((Auth::user()->hasRole('Etudiant') && $subject->student_id === Auth::id()) || (Auth::user()->hasRole('Enseignant') && $subject->teacher_id === Auth::id())))
+                <div x-show="currentTab === 'messages'" x-cloak class="space-y-6">
+                    @include('subjects.partials.messages')
+                </div>
+            @endif
 
             {{-- TAB 2: PROBLEM --}}
             <div x-show="currentTab === 'problem'" x-cloak class="space-y-6">
@@ -351,7 +368,7 @@
                                 @endif
 
                                 {{-- Add Feedback Form (Encadrants et CP) --}}
-                                @if(Auth::user()->hasAnyRole(['Enseignant', 'Chef de département']))
+                                @if(Auth::user()->hasRole('Enseignant') && $subject->teacher_id === Auth::id())
                                     <form action="{{ route('feedbacks.store', $tfile) }}" method="POST" class="mt-2 pl-4 border-l-2 border-blue-100">
                                         @csrf
                                         <div class="flex gap-2">
@@ -364,6 +381,49 @@
                                 @endif
                             @endforeach
                         </div>
+
+                        {{-- Autorisation de soutenance (Feu Vert) pour l'Enseignant --}}
+                        @if(Auth::user()->hasRole('Enseignant') && $subject->teacher_id === Auth::id())
+                            @php
+                                $hasJuryVersion = $subject->thesisFiles->where('version_type', 'jury')->count() > 0;
+                                $isFeuVert = $subject->defense_validated ?? false;
+                            @endphp
+                            
+                            @if($hasJuryVersion && !$isFeuVert)
+                                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-4 mt-6">
+                                    <div class="flex items-start gap-3">
+                                        <x-icon name="exclamation-triangle" class="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                                        <div class="space-y-3 flex-1">
+                                            <div>
+                                                <p class="text-sm font-extrabold text-amber-900 leading-tight">Autorisation de défense requise ("Feu Vert")</p>
+                                                <p class="text-xs text-amber-700 leading-normal mt-1">
+                                                    Le manuscrit de pré-soutenance (Jury) est déposé. Si la rédaction est jugée prête et intègre, accordez l'autorisation d'examen devant le jury.
+                                                </p>
+                                            </div>
+                                            <form action="{{ route('subjects.authorize-defense', $subject) }}" method="POST"
+                                                  onsubmit="return confirm('Accorder le Feu Vert de soutenance pour {{ $subject->student->name }} ?')">
+                                                @csrf
+                                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                                                    <x-icon name="rocket-launch" class="h-4 w-4" />
+                                                    <span>Accorder l'Autorisation (Feu Vert)</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif($isFeuVert)
+                                <div class="bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-xl p-4 mt-6">
+                                    <div class="flex items-start gap-3">
+                                        <x-icon name="check-circle" class="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <p class="text-sm font-extrabold text-green-900 leading-tight">Autorisation de soutenance validée</p>
+                                            <p class="text-xs text-green-700 mt-1">Le feu vert a été octroyé. L'étudiant peut déposer son manuscrit final pour archivage permanent après la soutenance.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+
                     </div>
                 @endif
                 

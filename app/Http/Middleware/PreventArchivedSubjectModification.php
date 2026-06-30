@@ -23,10 +23,35 @@ class PreventArchivedSubjectModification
 
         // Récupérer le sujet de la route s'il existe
         $subject = $request->route('subject');
+        if ($subject && !$subject instanceof \App\Models\Subject) {
+            $subject = \App\Models\Subject::find($subject);
+        }
 
         // Si la route a injecté un Milestone, on peut remonter au sujet
         if (!$subject && $request->route('milestone')) {
-            $subject = $request->route('milestone')->subject ?? null;
+            $milestone = $request->route('milestone');
+            if ($milestone && !$milestone instanceof \App\Models\Milestone) {
+                $milestone = \App\Models\Milestone::find($milestone);
+            }
+            $subject = $milestone ? $milestone->subject : null;
+        }
+
+        // Si la route a injecté un ThesisFile
+        if (!$subject && $request->route('thesisFile')) {
+            $file = $request->route('thesisFile');
+            if ($file && !$file instanceof \App\Models\ThesisFile) {
+                $file = \App\Models\ThesisFile::find($file);
+            }
+            $subject = $file ? $file->subject : null;
+        }
+
+        // Si la route a injecté un Message
+        if (!$subject && $request->route('message')) {
+            $msg = $request->route('message');
+            if ($msg && !$msg instanceof \App\Models\Message) {
+                $msg = \App\Models\Message::find($msg);
+            }
+            $subject = $msg ? $msg->subject : null;
         }
 
         // Vérifier si c'est un upload général de thèse (l'étudiant dépose un fichier)
